@@ -12,18 +12,10 @@ namespace MessengerRando.GameOverrideManagers
         {
             public ELevel LevelName { get; }
             public Vector3 PlayerPos { get; }
-            public ELevelEntranceID EntranceID { get; }
-            public RandoLevel(ELevel levelName, Vector3 playerPos, ELevelEntranceID entranceID)
-            {
-                LevelName = levelName;
-                PlayerPos = playerPos;
-                EntranceID = entranceID;
-            }
             public RandoLevel(ELevel levelName, Vector3 playerPos)
             {
                 LevelName = levelName;
                 PlayerPos = playerPos;
-                EntranceID = ELevelEntranceID.NONE;
             }
 
             public bool Equals(RandoLevel other)
@@ -42,7 +34,6 @@ namespace MessengerRando.GameOverrideManagers
                 {
                     var hashCode = (int)LevelName;
                     hashCode = (hashCode * 397) ^ PlayerPos.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (int)EntranceID;
                     return hashCode;
                 }
             }
@@ -80,56 +71,56 @@ namespace MessengerRando.GameOverrideManagers
         public static readonly Dictionary<string, RandoLevel> EntranceNameToRandoLevel =
             new Dictionary<string, RandoLevel>
             {
-                { "Ninja Village - Right", new RandoLevel(ELevel.Level_01_NinjaVillage, new Vector3(-153.32f, -57f), ELevelEntranceID.ENTRANCE_B) },
-                { "Autumn Hills - Portal", new RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(-20076.59f, -20004f), ELevelEntranceID.ENTRANCE_C) },
-                { "Autumn Hills - Left", new RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(-304.7717f, -72.99999f), ELevelEntranceID.ENTRANCE_A) },
-                { "Autumn Hills - Right", new RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(968.5283f, -27f), ELevelEntranceID.ENTRANCE_B) },
-                { "Autumn Hills - Bottom", new RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(679.6884f, -139f), ELevelEntranceID.ENTRANCE_D) }, // Must be 16
-                { "Forlorn Temple - Left", new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(-17.13942f, -11f), ELevelEntranceID.ENTRANCE_A) },
-                { "Forlorn Temple - Bottom", new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(36.87273f, -20.98116f), ELevelEntranceID.ENTRANCE_C) }, // Must be 16
-                { "Forlorn Temple - Right", new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(454.4301f, -11f), ELevelEntranceID.ENTRANCE_B) },
-                { "Catacombs - Top Left", new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(), ELevelEntranceID.ENTRANCE_A) },
-                { "Catacombs - Right", new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(-177.0621f, -11f), ELevelEntranceID.ENTRANCE_B) },
-                { "Catacombs - Bottom", new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(511.0319f, -123f), ELevelEntranceID.ENTRANCE_C) }, // Must be 16
-                { "Catacombs - Bottom Left", new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(144.5119f, -59f), ELevelEntranceID.ENTRANCE_D) }, // Must be 16
-                { "Dark Cave - Right", new RandoLevel(ELevel.Level_04_B_DarkCave, new Vector3(-4.059998f, -4f), ELevelEntranceID.ENTRANCE_A) }, // This needs to be forced to 16 bit to not soft lock the player
+                { "Ninja Village - Right", new RandoLevel(ELevel.Level_01_NinjaVillage, new Vector3(-153.32f, -57f)) },
+                { "Autumn Hills - Portal", new RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(-20076.59f, -20004f)) },
+                { "Autumn Hills - Left", new RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(-304.7717f, -72.99999f)) },
+                { "Autumn Hills - Right", new RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(968.5283f, -27f)) },
+                { "Autumn Hills - Bottom", new RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(679.6884f, -139f)) }, // Must be 16
+                { "Forlorn Temple - Left", new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(-17.13942f, -11f)) },
+                { "Forlorn Temple - Bottom", new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(36.87273f, -20.98116f)) }, // Must be 16
+                { "Forlorn Temple - Right", new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(454.4301f, -11f)) },
+                { "Catacombs - Top Left", new RandoLevel(ELevel.Level_04_Catacombs, new Vector3()) },
+                { "Catacombs - Right", new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(-177.0621f, -11f)) },
+                { "Catacombs - Bottom", new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(511.0319f, -123f)) }, // Must be 1
+                { "Catacombs - Bottom Left", new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(144.5119f, -59f)) }, // Must be 16
+                { "Dark Cave - Right", new RandoLevel(ELevel.Level_04_B_DarkCave, new Vector3(-4.059998f, -4f)) }, // This needs to be forced to 16 bit to not soft lock the player
                 // { "Dark Cave - Left", new RandoLevel(ELevel.Level_04_B_DarkCave, new Vector3()) }, // This may or may not be possible. This is a drop down into riviere in vanilla and you can't return from riviere
-                { "Riviere Turquoise - Portal", new RandoLevel(ELevel.Level_04_C_RiviereTurquoise, new Vector3(837f, 13f), ELevelEntranceID.ENTRANCE_D) }, //TOT D
-                { "Riviere Turquoise - Right", new RandoLevel(ELevel.Level_04_C_RiviereTurquoise, new Vector3(997.7f, 5.999998f), ELevelEntranceID.ENTRANCE_A) }, // This needs to be forced to 8 bit
-                { "Howling Grotto - Portal", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(241f, -196f), ELevelEntranceID.ENTRANCE_C) }, //TOT G
-                { "Howling Grotto - Left", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(-46.82001f, -11f), ELevelEntranceID.ENTRANCE_A) },
-                { "Howling Grotto - Right", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(584.21f, -123f), ELevelEntranceID.ENTRANCE_B) }, // Emerald Golem is here. Need to either figure out teleporting out of boss rooms without fighting them or temporarily mark it as dead. Scene loaded gets called before the check, but level loaded is after 
-                { "Howling Grotto - Top", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(419.95f, -58.66491f), ELevelEntranceID.NONE) }, // This needs to be forced to 16 bit
-                { "Howling Grotto - Bottom", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(194.9271f, -151.665f), ELevelEntranceID.NONE) }, // needs to be 16
-                { "Sunken Shrine - Portal", new RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(29f, -55f), ELevelEntranceID.NONE) }, // 16
-                { "Sunken Shrine - Left", new RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(-46.41f, -58.66499f), ELevelEntranceID.NONE) }, // This needs to be forced to 16 bit
-                { "Bamboo Creek - Top Left", new RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(-50.09212f, 45f), ELevelEntranceID.ENTRANCE_A) },
-                { "Bamboo Creek - Bottom Left", new RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(-177.0621f, -11f), ELevelEntranceID.NONE) },
-                { "Bamboo Creek - Right", new RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(488.4079f, -91f), ELevelEntranceID.ENTRANCE_B) },
-                { "Quillshroom Marsh - Top Left", new RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(-16.80286f, -11f), ELevelEntranceID.NONE) },
-                { "Quillshroom Marsh - Bottom Left", new RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(598.1053f, -75.66499f), ELevelEntranceID.NONE) }, // This needs to be forced to 16 bit
-                { "Quillshroom Marsh - Top Right", new RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(1160.79f, -43f), ELevelEntranceID.NONE) },
-                { "Quillshroom Marsh - Bottom Right", new RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(841.3f, -121f), ELevelEntranceID.NONE) }, // 16
-                { "Searing Crags - Portal", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(384.5f, 135f), ELevelEntranceID.NONE) },
-                { "Searing Crags - Left", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(-17.23438f, -27f), ELevelEntranceID.NONE) },
-                { "Searing Crags - Bottom", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(303.3f, 39f), ELevelEntranceID.NONE) },
-                { "Searing Crags - Right", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(521.8f, 71f), ELevelEntranceID.NONE) }, // Force 8 bit
-                { "Searing Crags - Top", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(351.5f, 324.2888f), ELevelEntranceID.NONE) },
-                { "Glacial Peak - Portal", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(220.6358f, -67f), ELevelEntranceID.ENTRANCE_E) },
-                { "Glacial Peak - Bottom", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(194.9839f, -517.7611f), ELevelEntranceID.NONE) },
+                { "Riviere Turquoise - Portal", new RandoLevel(ELevel.Level_04_C_RiviereTurquoise, new Vector3(837f, 13f)) }, //TOT D
+                { "Riviere Turquoise - Right", new RandoLevel(ELevel.Level_04_C_RiviereTurquoise, new Vector3(997.7f, 5.999998f)) }, // This needs to be forced to 8 bit
+                { "Howling Grotto - Portal", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(241f, -196f)) }, //TOT G
+                { "Howling Grotto - Left", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(-46.82001f, -11f)) },
+                { "Howling Grotto - Right", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(584.21f, -123f)) }, // Emerald Golem is here. Need to either figure out teleporting out of boss rooms without fighting them or temporarily mark it as dead. Scene loaded gets called before the check, but level loaded is after 
+                { "Howling Grotto - Top", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(419.95f, -58.66491f)) }, // This needs to be forced to 16 bit
+                { "Howling Grotto - Bottom", new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(194.9271f, -151.665f)) }, // needs to be 16
+                { "Sunken Shrine - Portal", new RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(29f, -55f)) }, // 16
+                { "Sunken Shrine - Left", new RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(-46.41f, -58.66499f)) }, // This needs to be forced to 16 bit
+                { "Bamboo Creek - Top Left", new RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(-50.09212f, 45f)) },
+                { "Bamboo Creek - Bottom Left", new RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(-177.0621f, -11f)) },
+                { "Bamboo Creek - Right", new RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(488.4079f, -91f)) },
+                { "Quillshroom Marsh - Top Left", new RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(-16.80286f, -11f)) },
+                { "Quillshroom Marsh - Bottom Left", new RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(598.1053f, -75.66499f)) }, // This needs to be forced to 16 bit
+                { "Quillshroom Marsh - Top Right", new RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(1160.79f, -43f)) },
+                { "Quillshroom Marsh - Bottom Right", new RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(841.3f, -121f)) }, // 16
+                { "Searing Crags - Portal", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(384.5f, 135f)) },
+                { "Searing Crags - Left", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(-17.23438f, -27f)) },
+                { "Searing Crags - Bottom", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(303.3f, 39f)) },
+                { "Searing Crags - Right", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(521.8f, 71f)) }, // Force 8 bit
+                { "Searing Crags - Top", new RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(351.5f, 324.2888f)) },
+                { "Glacial Peak - Portal", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(220.6358f, -67f)) },
+                { "Glacial Peak - Bottom", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(194.9839f, -517.7611f)) },
                 // { "Glacial Peak - Left", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(), ELevelEntranceID.NONE) }, // This is one way to ES so no actual entrance here
-                { "Glacial Peak - Top", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(176.04f, -13.71676f), ELevelEntranceID.NONE) },
-                { "Elemental Skylands - Left", new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-424.9693f, 366.5677f), ELevelEntranceID.NONE) }, // 16 - This will probably be really difficult since it uses a different controller
-                { "Tower of Time - Left", new RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(-18f, -11f), ELevelEntranceID.NONE) }, // 8
-                { "Cloud Ruins - Left", new RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-486f, -57f), ELevelEntranceID.NONE) },
-                { "Music Box - Left", new RandoLevel(ELevel.Level_11_B_MusicBox, new Vector3(-428, -55), ELevelEntranceID.NONE) },
-                { "Underworld - Top Left", new RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-337.5526f, -25f), ELevelEntranceID.NONE) }, // Force 8 bit
-                { "Underworld - Bottom Left", new RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-431.7626f, -57f), ELevelEntranceID.NONE) }, // force 16 bit - one time and one way only - after defeating manfred - might be able to force it by calling ManfredBossOutroCutscene?
-                { "Corrupted Future - Portal", new RandoLevel(ELevel.Level_14_CorruptedFuture, new Vector3(-19971.98f, -20011f), ELevelEntranceID.NONE) }, // 16
-                { "Ruxxtin Surfin'", new RandoLevel(ELevel.Level_15_Surf, new Vector3(-472.191f, 472f), ELevelEntranceID.NONE) }, // 8
-                { "Beach - Left", new RandoLevel(ELevel.Level_16_Beach, new Vector3(-431.7f, -9f), ELevelEntranceID.NONE) },
-                { "Fire Mountain - Bottom", new RandoLevel(ELevel.Level_17_Volcano, new Vector3(-443.5f, -34f), ELevelEntranceID.NONE) },
-                { "Voodoo Heart - Left", new RandoLevel(ELevel.Level_18_Volcano_Chase, new Vector3(-165.5f, 104.5551f), ELevelEntranceID.NONE) }, // 8
+                { "Glacial Peak - Top", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(176.04f, -13.71676f)) },
+                { "Elemental Skylands - Left", new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-424.9693f, 366.5677f)) }, // 16 - This will probably be really difficult since it uses a different controller
+                { "Tower of Time - Left", new RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(-18f, -11f)) }, // 8
+                { "Cloud Ruins - Left", new RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-486f, -57f)) },
+                { "Music Box - Left", new RandoLevel(ELevel.Level_11_B_MusicBox, new Vector3(-428, -55)) },
+                { "Underworld - Top Left", new RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-337.5526f, -25f)) }, // Force 8 bit
+                { "Underworld - Bottom Left", new RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-431.7626f, -57f)) }, // force 16 bit - one time and one way only - after defeating manfred - might be able to force it by calling ManfredBossOutroCutscene?
+                { "Corrupted Future - Portal", new RandoLevel(ELevel.Level_14_CorruptedFuture, new Vector3(-19971.98f, -20011f)) }, // 16
+                { "Ruxxtin Surfin'", new RandoLevel(ELevel.Level_15_Surf, new Vector3(-472.191f, 472f)) }, // 8
+                { "Beach - Left", new RandoLevel(ELevel.Level_16_Beach, new Vector3(-431.7f, -9f)) },
+                { "Fire Mountain - Bottom", new RandoLevel(ELevel.Level_17_Volcano, new Vector3(-443.5f, -34f)) },
+                { "Voodoo Heart - Left", new RandoLevel(ELevel.Level_18_Volcano_Chase, new Vector3(-165.5f, 104.5551f)) }, // 8
             };
 
         public static readonly Dictionary<Transition, string> TransitionToEntranceName =

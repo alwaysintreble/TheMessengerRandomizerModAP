@@ -143,19 +143,25 @@ namespace MessengerRando
             On.BackToTitleScreen.GoBackToTitleScreen += PauseScreen_OnQuitToTitle;
             On.NecrophobicWorkerCutscene.Play += NecrophobicWorkerCutscene_Play;
             IL.RuxxtinNoteAndAwardAmuletCutscene.Play += RuxxtinNoteAndAwardAmuletCutscene_Play;
+            On.DialogCutscene.ShouldPlay += DialogCutscene_ShouldPlay;
             On.DialogCutscene.Play += DialogCutscene_Play;
             On.CatacombLevelInitializer.OnBeforeInitDone += CatacombLevelInitializer_OnBeforeInitDone;
             On.DialogManager.LoadDialogs_ELanguage += DialogChanger.LoadDialogs_Elanguage;
             On.UpgradeButtonData.IsStoryUnlocked += UpgradeButtonData_IsStoryUnlocked;
-            // boss management
-            On.ProgressionManager.HasDefeatedBoss +=
-                (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
-            On.ProgressionManager.HasEverDefeatedBoss +=
-                (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
-            On.ProgressionManager.SetBossAsDefeated +=
-                (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
+            // boss management which we only want done when randomized
+            if (randoStateManager.IsRandomizedFile)
+            {
+                On.ProgressionManager.HasDefeatedBoss +=
+                    (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
+                On.ProgressionManager.SetBossAsDefeated +=
+                    (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
+                On.ProgressionManager.HasEverDefeatedBoss +=
+                    (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
+            }
             // level teleporting etc management
             On.Level.ChangeRoom += RandoLevelManager.Level_ChangeRoom;
+            On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
+            On.TotHQLevelInitializer.InitLevel += RandoLevelManager.PortalIntoArea;
             //These functions let us override and manage power seals ourselves with 'fake' items
             On.ProgressionManager.TotalPowerSealCollected += ProgressionManager_TotalPowerSealCollected;
             On.ShopChestOpenCutscene.OnChestOpened += (orig, self) =>
@@ -175,11 +181,10 @@ namespace MessengerRando
             On.UIManager.ShowView += UIManager_ShowView;
             On.MusicBox.SetNotesState += MusicBox_SetNotesState;
             On.PowerSeal.OnEnterRoom += PowerSeal_OnEnterRoom;
-            On.LevelManager.LoadLevel += LevelManager_LoadLevel;
+            On.LevelManager.LoadLevel += RandoLevelManager.LoadLevel;
             On.LevelManager.OnLevelLoaded += LevelManager_onLevelLoaded;
             #endif
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
-            On.LevelManager.EndLevelLoading += LevelManager_EndLevelLoading;
             
             Console.WriteLine("Randomizer finished loading!");
         }
@@ -196,18 +201,18 @@ namespace MessengerRando
             archipelagoPassButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
             archipelagoConnectButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
             //These AP buttons can exist in or out of game
-            archipelagoReleaseButton.IsEnabled = () => ArchipelagoClient.CanRelease();
-            archipelagoCollectButton.IsEnabled = () => ArchipelagoClient.CanCollect();
-            archipelagoHintButton.IsEnabled = () => ArchipelagoClient.CanHint();
+            archipelagoReleaseButton.IsEnabled = ArchipelagoClient.CanRelease;
+            archipelagoCollectButton.IsEnabled = ArchipelagoClient.CanCollect;
+            archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
             archipelagoToggleMessagesButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             archipelagoStatusButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             archipelagoDeathLinkButton.IsEnabled = () => ArchipelagoClient.Authenticated;
 
             //Options I only want working while actually in the game
-            windmillShurikenToggleButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<InventoryManager>.Instance.GetItemQuantity(EItems.WINDMILL_SHURIKEN) > 0);
-            teleportToHqButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && randoStateManager.IsSafeTeleportState());
-            teleportToNinjaVillage.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && randoStateManager.IsSafeTeleportState());
-            seedNumButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE);
+            windmillShurikenToggleButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<InventoryManager>.Instance.GetItemQuantity(EItems.WINDMILL_SHURIKEN) > 0;
+            teleportToHqButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && randoStateManager.IsSafeTeleportState();
+            teleportToNinjaVillage.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && randoStateManager.IsSafeTeleportState();
+            seedNumButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
 
             SceneManager.sceneLoaded += OnSceneLoadedRando;
 
@@ -574,12 +579,18 @@ namespace MessengerRando
         bool CutsceneHasPlayed_IsTrue(On.CutsceneHasPlayed.orig_IsTrue orig, CutsceneHasPlayed self)
         {
             LocationRO cutsceneCheck;
-            if (randoStateManager.IsRandomizedFile && RandomizerConstants.GetCutsceneMappings().ContainsKey(self.cutsceneId) && randoStateManager.IsLocationRandomized(RandomizerConstants.GetCutsceneMappings()[self.cutsceneId], out cutsceneCheck))
+            Console.WriteLine($"Checking if {self.cutsceneId} has been played");
+            if (!randoStateManager.IsRandomizedFile) return orig(self);
+            if (RandoLevelManager.SpecialCutscenes.Contains(self.cutsceneId) || RandoLevelManager.RandoLevelMapping != null)
+            {
+                return Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
+                       RandoLevelManager.PlayedSpecialCutscenes.Contains(self.cutsceneId);
+            }
+            if (RandomizerConstants.GetCutsceneMappings().TryGetValue(self.cutsceneId, out var mappedItem) && randoStateManager.IsLocationRandomized(mappedItem, out cutsceneCheck))
             {
 
                 //Check to make sure this is a cutscene i am configured to check, then check to make sure I actually have the item that is mapped to it
                 Console.WriteLine($"Rando cutscene magic ahoy! Handling rando cutscene '{self.cutsceneId}' | Linked Item: {RandomizerConstants.GetCutsceneMappings()[self.cutsceneId]} | Rando Item: {randoStateManager.CurrentLocationToItemMapping[cutsceneCheck]}");
-                if (self.cutsceneId.Equals("RuxxtinNoteAndAwardAmuletCutscene") && ArchipelagoClient.HasConnected) return ArchipelagoClient.ServerData.RuxxCutscene;
                 
 
                 //Check to see if I have the item that is at this check.
@@ -780,7 +791,8 @@ namespace MessengerRando
         void Cutscene_Play(On.Cutscene.orig_Play orig, Cutscene self)
         {
             Console.WriteLine($"Playing cutscene: {self}");
-            // if (randoStateManager)
+            if (randoStateManager.IsRandomizedFile && RandoLevelManager.RandoLevelMapping != null)
+                RandoLevelManager.PlayedSpecialCutscenes.Add(self.name);
             orig(self);
         }
 
@@ -808,6 +820,12 @@ namespace MessengerRando
             Console.WriteLine($"transition {transitionIn}");
             Console.WriteLine($"updateMode {animUpdateMode}");
             return orig(self, viewType, layer, screenParams, transitionIn, animUpdateMode);
+        }
+
+        bool DialogCutscene_ShouldPlay(On.DialogCutscene.orig_ShouldPlay orig, DialogCutscene self)
+        {
+            Console.WriteLine($"Seeing if {self.name} should play");
+            return orig(self);
         }
 
         void DialogCutscene_Play(On.DialogCutscene.orig_Play orig, DialogCutscene self)

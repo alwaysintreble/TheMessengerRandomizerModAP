@@ -581,7 +581,7 @@ namespace MessengerRando
             LocationRO cutsceneCheck;
             Console.WriteLine($"Checking if {self.cutsceneId} has been played");
             if (!randoStateManager.IsRandomizedFile) return orig(self);
-            if (RandoLevelManager.SpecialCutscenes.Contains(self.cutsceneId) || RandoLevelManager.RandoLevelMapping != null)
+            if (LevelConstants.SpecialCutscenes.Contains(self.cutsceneId) && RandoLevelManager.RandoLevelMapping != null)
             {
                 return Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
                        RandoLevelManager.PlayedSpecialCutscenes.Contains(self.cutsceneId);

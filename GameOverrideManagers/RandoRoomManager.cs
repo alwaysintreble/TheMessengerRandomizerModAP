@@ -25,8 +25,8 @@ namespace MessengerRando.GameOverrideManagers
 
         public static bool IsBossRoom(string roomKey, out string bossName)
         {
-            return RandoBossManager.RoomToVanillaBoss.TryGetValue(roomKey, out bossName) &&
-                   RandoBossManager.BossLocations.TryGetValue(bossName, out var bossLocation) &&
+            return BossConstants.RoomToVanillaBoss.TryGetValue(roomKey, out bossName) &&
+                   BossConstants.BossLocations.TryGetValue(bossName, out var bossLocation) &&
                    bossLocation.BossRegion.Equals(Manager<LevelManager>.Instance.GetCurrentLevelEnum());
         }
         

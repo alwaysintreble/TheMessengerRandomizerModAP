@@ -6,8 +6,6 @@ namespace MessengerRando.GameOverrideManagers
 {
     public class RandoTimeShardManager
     {
-
-
         public struct MegaShard
         {
             public readonly ELevel ShardRegion;

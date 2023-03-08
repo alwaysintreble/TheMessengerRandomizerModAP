@@ -140,8 +140,7 @@ namespace MessengerRando.Archipelago
                     }
                     try
                     {
-                        RandomizerStateManager.Instance.BossManager =
-                            new RandoBossManager(bossMap);
+                        RandoBossManager.OrigToNewBoss = bossMap;
                     }
                     catch (Exception e)
                     {

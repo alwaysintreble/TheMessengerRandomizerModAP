@@ -159,7 +159,7 @@ namespace MessengerRando
                     (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
             }
             // level teleporting etc management
-            On.Level.ChangeRoom += RandoLevelManager.Level_ChangeRoom;
+            On.Level.ChangeRoom += RandoRoomManager.Level_ChangeRoom;
             On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
             On.TotHQLevelInitializer.InitLevel += RandoLevelManager.PortalIntoArea;
             //These functions let us override and manage power seals ourselves with 'fake' items
@@ -1187,7 +1187,7 @@ namespace MessengerRando
         private void Quarble_OnPlayerDied(On.Quarble.orig_OnPlayerDied orig, Quarble self, EDeathType deathType, bool fastReload)
         {
             orig(self, deathType, fastReload);
-            ArchipelagoClient.DeathLinkHandler.SendDeathLink(deathType);
+            ArchipelagoClient.DeathLinkHandler?.SendDeathLink(deathType);
         }
     }
 }

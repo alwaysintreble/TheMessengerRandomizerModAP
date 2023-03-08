@@ -7,15 +7,15 @@ using Object = UnityEngine.Object;
 
 namespace MessengerRando.GameOverrideManagers
 {
-    public class RandoBossManager
+    public static class RandoBossManager
     {
-        public RandoBossManager Instance;
-        private string currentBoss;
+        private static string currentBoss;
         private static readonly List<string> DefeatedBosses = new List<string>();
-        private readonly Dictionary<string, string> origToNewBoss;
+        public static Dictionary<string, string> OrigToNewBoss;
         private static bool bossOverride;
+        public static bool FightingBoss;
 
-        private struct BossLocation
+        public struct BossLocation
         {
             public readonly ELevel BossRegion;
             public readonly Vector2 PlayerPosition;
@@ -59,7 +59,7 @@ namespace MessengerRando.GameOverrideManagers
             { "Phantom", "PhantomIntroCutscene" }
         };
 
-        private static readonly Dictionary<string, string> RoomToVanillaBoss = new Dictionary<string, string>
+        public static readonly Dictionary<string, string> RoomToVanillaBoss = new Dictionary<string, string>
         {
             { "908940-28-12", "LeafGolem" },
             { "748780-76-60", "Necromancer" },
@@ -73,7 +73,7 @@ namespace MessengerRando.GameOverrideManagers
             { "-308-276420", "ButterflyMatriarch" }
         };
 
-        private static readonly Dictionary<string, BossLocation> BossLocations = new Dictionary<string, BossLocation> 
+        public static readonly Dictionary<string, BossLocation> BossLocations = new Dictionary<string, BossLocation> 
         {
             { "LeafGolem", new BossLocation(ELevel.Level_02_AutumnHills, new Vector2(908, -27), EBits.BITS_8) },
             { "Necromancer", new BossLocation(ELevel.Level_04_Catacombs, new Vector2(752, -75), EBits.BITS_8) },
@@ -86,25 +86,6 @@ namespace MessengerRando.GameOverrideManagers
             { "DemonArtificier", new BossLocation(ELevel.Level_03_ForlornTemple, new Vector2(396, -11), EBits.BITS_16)},
             { "ButterflyMatriarch", new BossLocation(ELevel.Level_04_C_RiviereTurquoise, new Vector2(-276, 6), EBits.BITS_16) }
         };
-
-        public static readonly List<string> BossRoomKeys = new List<string>
-        {
-            "908940-28-12",
-            "748780-76-60",
-            "556588-140-60",
-            "11001132-44-28",
-            "332364308324",
-            "11641228-28-12",
-            "108140228244",
-            "140172-44-28",
-            "396428-12436",
-            "-308-276420",
-        };
-
-        private static string GetVanillaBoss(string roomKey)
-        {
-            return RoomToVanillaBoss[roomKey];
-        }
 
         private static void AdjustPlayerInBossRoom(string bossName)
         {
@@ -125,22 +106,22 @@ namespace MessengerRando.GameOverrideManagers
         public static bool HasBossDefeated(string bossName)
         {
             if (bossOverride)
-                bossName = RandomizerStateManager.Instance.BossManager.origToNewBoss
-                    .First(name => name.Value.Equals(bossName)).Key;
+                bossName = OrigToNewBoss.First(name => name.Value.Equals(bossName)).Key;
             Console.WriteLine($"Checking if {bossName} is defeated.");
             return !VanillaBossNames.Contains(bossName) || DefeatedBosses.Contains(bossName);
         }
 
         public static void SetBossAsDefeated(string bossName)
         {
+            FightingBoss = false;
             if (bossOverride)
             {
-                bossName = RandomizerStateManager.Instance.BossManager.currentBoss;
+                bossName = currentBoss;
                 bossOverride = false;
             }
             if (ArchipelagoClient.HasConnected) ArchipelagoClient.ServerData.DefeatedBosses.Add(bossName);
             DefeatedBosses.Add(bossName);
-            if (RandomizerStateManager.Instance.BossManager != null)
+            if (OrigToNewBoss != null)
             {
                 var newPosition = BossLocations[bossName];
                 
@@ -149,17 +130,15 @@ namespace MessengerRando.GameOverrideManagers
             }
         }
 
-        public static bool ShouldFightBoss(string newRoomKey)
+        public static bool ShouldFightBoss(string bossName)
         {
-            if (!BossRoomKeys.Contains(newRoomKey) || bossOverride) return false;
-            var bossName = GetVanillaBoss(newRoomKey);
             Console.WriteLine($"Entered {bossName}'s room. Has Defeated: {HasBossDefeated(bossName)}");
             if (HasBossDefeated(bossName)) return false;
-            var teleporting = RandomizerStateManager.Instance.BossManager != null;
+            var teleporting = OrigToNewBoss != null;
             Console.WriteLine($"Should teleport: {teleporting}");
             if (teleporting)
             {
-                RandomizerStateManager.Instance.BossManager.currentBoss = bossName;
+                currentBoss = bossName;
                 try
                 {
                     foreach (var cutscene in Object.FindObjectsOfType<Cutscene>())
@@ -198,25 +177,11 @@ namespace MessengerRando.GameOverrideManagers
                 {
                     Console.WriteLine(e);
                 }
-                bossName = RandomizerStateManager.Instance.BossManager.GetActualBoss(newRoomKey);
+                bossName = OrigToNewBoss[bossName];
             }
             AdjustPlayerInBossRoom(bossName);
+            FightingBoss = true;
             return teleporting;
-        }
-
-        public RandoBossManager(Dictionary<string, string> bossMapping)
-        {
-            Manager<ProgressionManager>.Instance.bossesDefeated =
-                Manager<ProgressionManager>.Instance.allTimeBossesDefeated = new List<string>();
-            origToNewBoss = bossMapping;
-            Instance = this;
-        }
-
-        private string GetActualBoss(string roomKey)
-        {
-            var vanillaBoss = RoomToVanillaBoss[roomKey];
-            Console.WriteLine($"requested {vanillaBoss}, going to {origToNewBoss[vanillaBoss]}");
-            return origToNewBoss[vanillaBoss];
         }
     }
 }

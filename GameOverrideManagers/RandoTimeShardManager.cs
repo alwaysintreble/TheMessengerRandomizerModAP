@@ -27,7 +27,8 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void BreakShard(MegaShard shardToBreak)
         {
-            var location = MegaShardLookup[shardToBreak];
+            
+            if (!MegaShardLookup.TryGetValue(shardToBreak, out var location)) return;
             if (ArchipelagoClient.HasConnected)
                 ItemsAndLocationsHandler.SendLocationCheck(location);
             else

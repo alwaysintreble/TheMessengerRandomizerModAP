@@ -17,7 +17,6 @@ namespace MessengerRando
         public int CurrentFileSlot { set; get; }
 
         public RandoPowerSealManager PowerSealManager;
-        public RandoBossManager BossManager;
 
         public string Goal;
         public bool SkipMusicBox = false;
@@ -154,7 +153,7 @@ namespace MessengerRando
             return !(Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
                      Manager<Shop>.Instance.gameObject.activeInHierarchy ||
                      Manager<GameManager>.Instance.IsCutscenePlaying() ||
-                     RandoBossManager.BossRoomKeys.Contains(Manager<Level>.Instance.CurrentRoom.roomKey) ||
+                     RandoBossManager.FightingBoss ||
                      Manager<PlayerManager>.Instance.Player.IsInvincible());
         }
 

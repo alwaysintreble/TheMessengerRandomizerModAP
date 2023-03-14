@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MessengerRando.Utils;
+using MessengerRando.Utils.Constants;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,21 +14,14 @@ namespace MessengerRando.GameOverrideManagers
         private static ELevel currentLevel;
         public static readonly List<string> PlayedSpecialCutscenes = new List<string>();
 
-        public static readonly Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel> RandoLevelMapping =
-            new Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel>
-            {
-                { LevelConstants.EntranceNameToRandoLevel["Howling Grotto - Top"], LevelConstants.EntranceNameToRandoLevel["Underworld - Top Left"] }
-            };
+        public static Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel> RandoLevelMapping;
 
         public static void LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
         {
             #if DEBUG
             Console.WriteLine($"Current Level: {Manager<LevelManager>.Instance.GetCurrentLevelEnum()}");
             Console.WriteLine($"Loading Level: {levelInfo.levelName}");
-            Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}, Scene Mode: {levelInfo.loadSceneMode}");
-            Console.WriteLine($"Position Player: {levelInfo.positionPlayer}, Show Transition: {levelInfo.showTransition}, Transition Type: {levelInfo.transitionType}");
-            Console.WriteLine($"Pooled Level Instance: {levelInfo.pooledLevelInstance}, Show Intro: {levelInfo.showLevelIntro}, Close Transition On Level Loaded: {levelInfo.closeTransitionOnLevelLoaded}");
-            Console.WriteLine($"Set Scene as Active Scene: {levelInfo.setSceneAsActiveScene}");
+            Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}");
             #endif
             orig(self, levelInfo);
             if (teleportOverride || RandoLevelMapping == null) teleportOverride = false;
@@ -51,12 +44,10 @@ namespace MessengerRando.GameOverrideManagers
             try
             {
                 currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
-                Console.WriteLine($"Moving between levels: {lastLevel}, {currentLevel}");
                 var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
                 if (!LevelConstants.TransitionToEntranceName.TryGetValue(
                         new LevelConstants.Transition(lastLevel, currentLevel), out entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
-                Console.WriteLine($"Transitioning from {entrance}");
                 LevelConstants.RandoLevel oldLevel = default;
                 if (LevelConstants.SpecialEntranceNames.Contains(entrance))
                 {
@@ -133,30 +124,41 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void EndLevelLoading(On.LevelManager.orig_EndLevelLoading orig, LevelManager self)
         {
-            #if DEBUG
-            var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
-            Console.WriteLine($"Finished loading into {Manager<LevelManager>.Instance.GetCurrentLevelEnum()}\n" +
-                              $"From {Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(Manager<LevelManager>.Instance.lastLevelLoaded)}\n" +
-                              $"player position: {playerPos.x}f, {playerPos.y}f");
-            #endif
             orig(self);
+            // i haven't figured out any way to teleport the player between boss rooms yet still
+            // this check is specifically for emerald golem since that boss exists on a transition screen
+            // if (RandoBossManager.OrigToNewBoss != null &&
+            //     RandoRoomManager.IsBossRoom(Manager<Level>.Instance.CurrentRoom.roomKey, out var bossName))
+            // {
+            //     if (RandoBossManager.OrigToNewBoss.TryGetValue(bossName, out bossName))
+            //     {
+            //         try
+            //         {
+            //             RandoBossManager.AdjustPlayerInBossRoom(bossName);
+            //         }
+            //         catch (Exception e)
+            //         {
+            //             Console.WriteLine(e);
+            //             throw;
+            //         }
+            //         return;
+            //     }
+            // }
             if (teleportOverride || RandoLevelMapping == null)
             {
                 teleportOverride = false;
                 return;
             }
-            Console.WriteLine("Attempting to teleport player");
 
             var oldLevel = FindEntrance(out var entrance);
-            Console.WriteLine($"teleporting from {oldLevel.LevelName}, {entrance}");
             if (!RandoLevelMapping.TryGetValue(oldLevel, out var newLevel)) return;
             var actualEntrance = LevelConstants.EntranceNameToRandoLevel
                 .First(ret => ret.Value.Equals(newLevel)).Key;
-            Console.WriteLine($"Teleporting to {newLevel.LevelName}");
             EBits newDimension;
             if (LevelConstants.Force16.Contains(actualEntrance)) newDimension = EBits.BITS_16;
             else if (LevelConstants.Force8.Contains(actualEntrance)) newDimension = EBits.BITS_8;
             else newDimension = Manager<DimensionManager>.Instance.currentDimension;
+            
             if (newLevel.LevelName.Equals(ELevel.Level_11_B_MusicBox) && RandomizerStateManager.Instance.SkipMusicBox)
                 SkipMusicBox();
             else TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newDimension);
@@ -166,8 +168,6 @@ namespace MessengerRando.GameOverrideManagers
             Scene levelScene, ELevelEntranceID levelEntranceID, EBits dimension, bool positionPlayer,
             LevelInitializerParams levelInitParams)
         {
-            Console.WriteLine("Initializing level from ToTHQ");
-            Console.WriteLine($"Scene: {levelScene.name}, EntranceID: {levelEntranceID}, dimen: {dimension}");
             orig(self, levelScene, levelEntranceID, dimension, positionPlayer, levelInitParams);
         }
         
@@ -188,7 +188,7 @@ namespace MessengerRando.GameOverrideManagers
             TeleportInArea(ELevel.Level_11_B_MusicBox, playerPosition, playerDimension);
         }
 
-        public static void TeleportInArea(ELevel area, Vector2 position, EBits dimension)
+        public static void TeleportInArea(ELevel area, Vector2 position, EBits dimension = EBits.NONE)
         {
             if (teleportOverride)
             {
@@ -198,6 +198,7 @@ namespace MessengerRando.GameOverrideManagers
             Console.WriteLine($"Attempting to teleport to {area}, ({position.x}, {position.y}), {dimension}");
             Manager<AudioManager>.Instance.StopMusic();
             Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition = position;
+            if (dimension.Equals(EBits.NONE)) dimension = Manager<DimensionManager>.Instance.currentDimension;
             LevelLoadingInfo levelLoadingInfo = new LevelLoadingInfo(area + "_Build",
                 true, true, LoadSceneMode.Single,
                 ELevelEntranceID.NONE, dimension);

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MessengerRando.Utils.Constants
 {
-    public class BossConstants
+    public static class BossConstants
     {
         public struct BossLocation
         {

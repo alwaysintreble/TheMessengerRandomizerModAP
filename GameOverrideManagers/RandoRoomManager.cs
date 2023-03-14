@@ -25,7 +25,8 @@ namespace MessengerRando.GameOverrideManagers
 
         public static bool IsBossRoom(string roomKey, out string bossName)
         {
-            return BossConstants.RoomToVanillaBoss.TryGetValue(roomKey, out bossName) &&
+            bossName = string.Empty;
+            return roomKey != null && BossConstants.RoomToVanillaBoss.TryGetValue(roomKey, out bossName) &&
                    BossConstants.BossLocations.TryGetValue(bossName, out var bossLocation) &&
                    bossLocation.BossRegion.Equals(Manager<LevelManager>.Instance.GetCurrentLevelEnum());
         }
@@ -36,6 +37,9 @@ namespace MessengerRando.GameOverrideManagers
             bool teleportedInRoom)
         {
             var oldRoomKey = GetRoomKey(leftEdge, rightEdge, bottomEdge, topEdge);
+            Console.WriteLine("Changing rooms.");
+            Console.WriteLine($"Last Level: {Manager<LevelManager>.Instance.lastLevelLoaded}");
+            Console.WriteLine($"Current Level: {Manager<LevelManager>.Instance.GetCurrentLevelEnum()}");
             Console.WriteLine($"new roomKey: {oldRoomKey}");
             Console.WriteLine(self.CurrentRoom != null
                 ? $"currentRoom roomKey: {self.CurrentRoom.roomKey}"
@@ -56,8 +60,12 @@ namespace MessengerRando.GameOverrideManagers
                 RoomOverride = false;
                 return;
             }
-            if (IsBossRoom(oldRoomKey, out var bossName))
+
+            var bossRoomKey = oldRoomKey.Replace(" ", string.Empty);
+            if (IsBossRoom(bossRoomKey, out var bossName))
+            {
                 RandoBossManager.ShouldFightBoss(bossName);
+            }
             else if (RoomRando)
             {
                 var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
@@ -80,19 +88,19 @@ namespace MessengerRando.GameOverrideManagers
             return comparison <= 10;
         }
 
-        public static RoomConstants.RandoRoom PlaceInRoom(string oldRoomName, ELevel currentLevel, out RoomConstants.RoomTransition newTransition)
+        public static RoomConstants.RandoRoom PlaceInRoom(string oldRoomKey, ELevel currentLevel, out RoomConstants.RoomTransition newTransition)
         {
             newTransition = new RoomConstants.RoomTransition();
-            if (!RoomConstants.RoomNameLookup.TryGetValue(new RoomConstants.RandoRoom(oldRoomName, currentLevel),
-                    out var oldRoom)
-                || !RoomConstants.TransitionLookup.TryGetValue(oldRoom, out var oldTransitions)
-                || !RoomMap.TryGetValue(oldRoom, out var newName)
+            if (!RoomConstants.RoomNameLookup.TryGetValue(new RoomConstants.RandoRoom(oldRoomKey, currentLevel),
+                    out var oldRoomName)
+                || !RoomConstants.TransitionLookup.TryGetValue(oldRoomName, out var oldTransitions)
+                || !RoomMap.TryGetValue(oldRoomName, out var newName)
                 || !RoomConstants.TransitionLookup.TryGetValue(newName, out var newTransitions))
                 return new RoomConstants.RandoRoom();
             
-            var currentPos = Manager<PlayerManager>.Instance.Player.transform.position.x;
+            var currentPosX = Manager<PlayerManager>.Instance.Player.transform.position.x;
             var currentTransition =
-                oldTransitions.Find(transition => WithinRange(currentPos, transition.Position.x));
+                oldTransitions.Find(transition => WithinRange(currentPosX, transition.Position.x));
             newTransition = newTransitions.Find(transition => currentTransition.Equals(transition));
 
             return !RoomConstants.RoomLookup.TryGetValue(newName, out var newRoom)

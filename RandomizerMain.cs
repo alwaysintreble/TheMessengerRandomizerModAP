@@ -18,6 +18,8 @@ using System.Linq;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.GameOverrideManagers;
+using MessengerRando.Utils.Constants;
+using WebSocketSharp;
 
 namespace MessengerRando 
 {
@@ -149,15 +151,15 @@ namespace MessengerRando
             On.DialogManager.LoadDialogs_ELanguage += DialogChanger.LoadDialogs_Elanguage;
             On.UpgradeButtonData.IsStoryUnlocked += UpgradeButtonData_IsStoryUnlocked;
             // boss management which we only want done when randomized
-            if (randoStateManager.IsRandomizedFile)
-            {
-                On.ProgressionManager.HasDefeatedBoss +=
-                    (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
-                On.ProgressionManager.SetBossAsDefeated +=
-                    (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
-                On.ProgressionManager.HasEverDefeatedBoss +=
-                    (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
-            }
+            // if (randoStateManager.IsRandomizedFile)
+            // {
+            On.ProgressionManager.HasDefeatedBoss +=
+                (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
+            On.ProgressionManager.SetBossAsDefeated +=
+                (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
+            On.ProgressionManager.HasEverDefeatedBoss +=
+                (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
+            // }
             // level teleporting etc management
             On.Level.ChangeRoom += RandoRoomManager.Level_ChangeRoom;
             On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
@@ -241,17 +243,14 @@ namespace MessengerRando
             if (!randoStateManager.IsRandomizedFile) return orig(self);
             if (!new[] { "RANDO_ITEM", "ARCHIPELAGO_ITEM", "DEATH_LINK"}.Contains(self.dialogID))
                 return orig(self);
-            Console.WriteLine("Trying some rando dialog stuff.");
             List<DialogInfo> dialogInfoList = new List<DialogInfo>();
             DialogInfo dialog = new DialogInfo();
             switch (self.dialogID)
             {
                 case "RANDO_ITEM":
-                    Console.WriteLine($"Item is {self.name}");
                     dialog.text = $"You have received item: '{self.name}'";
                     break;
                 case "ARCHIPELAGO_ITEM":
-                    Console.WriteLine($"Item is {self.name}");
                     dialog.text = $"You have found {self.name}";
                     break;
                 case "DEATH_LINK":
@@ -276,7 +275,7 @@ namespace MessengerRando
 
             if (itemId != EItems.TIME_SHARD) //killing the timeshard noise in the logs
             {
-                Console.WriteLine($"Called InventoryManager_AddItem method. Looking to give x{quantity} amount of item '{itemId}'.");
+                // Console.WriteLine($"Called InventoryManager_AddItem method. Looking to give x{quantity} amount of item '{itemId}'.");
                 if (quantity == ItemsAndLocationsHandler.APQuantity)
                 {
                     //We received this item from the AP server so grant it
@@ -293,8 +292,8 @@ namespace MessengerRando
                         randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Add(ArchipelagoClient.ServerData.LocationToItemMapping[randoItemCheck]);
                         return;
                     }
-                    Console.WriteLine("Need to grant item");
-                    Console.WriteLine($"{randoStateManager.IsRandomizedFile} | {!RandomizerStateManager.Instance.HasTempOverrideOnRandoItem(itemId)} | {randoStateManager.IsLocationRandomized(itemId, out randoItemCheck)}");
+                    // Console.WriteLine("Need to grant item");
+                    // Console.WriteLine($"{randoStateManager.IsRandomizedFile} | {!RandomizerStateManager.Instance.HasTempOverrideOnRandoItem(itemId)} | {randoStateManager.IsLocationRandomized(itemId, out randoItemCheck)}");
                 }
             }
 
@@ -490,16 +489,6 @@ namespace MessengerRando
             return orig(self, item);
         }
 
-        void LevelManager_LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
-        {
-            Console.WriteLine($"Loading Level: {levelInfo.levelName}");
-            Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}, Scene Mode: {levelInfo.loadSceneMode}");
-            Console.WriteLine($"Position Player: {levelInfo.positionPlayer}, Show Transition: {levelInfo.showTransition}, Transition Type: {levelInfo.transitionType}");
-            Console.WriteLine($"Pooled Level Instance: {levelInfo.pooledLevelInstance}, Show Intro: {levelInfo.showLevelIntro}, Close Transition On Level Loaded: {levelInfo.closeTransitionOnLevelLoaded}");
-            Console.WriteLine($"Set Scene as Active Scene: {levelInfo.setSceneAsActiveScene}");
-            orig(self, levelInfo);
-        }
-
         System.Collections.IEnumerator LevelManager_onLevelLoaded(On.LevelManager.orig_OnLevelLoaded orig,
             LevelManager self, Scene scene)
         {
@@ -538,22 +527,6 @@ namespace MessengerRando
 
             return orig(self, scene);
         }
-
-        void LevelManager_EndLevelLoading(On.LevelManager.orig_EndLevelLoading orig, LevelManager self)
-        {
-            #if DEBUG
-            Console.WriteLine($"Finished loading into {Manager<LevelManager>.Instance.GetCurrentLevelEnum()}. " +
-                              $"player position: {Manager<PlayerManager>.Instance.Player.transform.position.x}, " +
-                              $"{Manager<PlayerManager>.Instance.Player.transform.position.y}");
-            #endif
-            orig(self);
-            if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
-                randoStateManager.SkipMusicBox && randoStateManager.IsSafeTeleportState())
-            {
-                RandoLevelManager.SkipMusicBox();
-            }
-        }
-
 
         bool AwardNoteCutscene_ShouldPlay(On.AwardNoteCutscene.orig_ShouldPlay orig, AwardNoteCutscene self)
         {
@@ -608,12 +581,9 @@ namespace MessengerRando
                     return self.mustHavePlayed == false;
                 }
             }
-            else //call the orig method
-            {
-                return orig(self);
-            }
-
-            
+            // if (RandoBossManager.ShouldPlayBossCutscene(self.cutsceneId))
+            //     return true;
+            return orig(self);
         }
 
         void SaveGameSelectionScreen_OnLoadGame(On.SaveGameSelectionScreen.orig_OnLoadGame orig, SaveGameSelectionScreen self, int slotIndex)
@@ -776,7 +746,11 @@ namespace MessengerRando
         {
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             var currentRoom = Manager<Level>.Instance.CurrentRoom.roomKey;
+            #if DEBUG
+            var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
             Console.WriteLine($"Broke Mega Time shard in {currentLevel}, {currentRoom}");
+            Console.WriteLine($"Player position: {playerPos.x}, {playerPos.y}");
+            #endif
             if (randoStateManager.MegaShards)
                 RandoTimeShardManager.BreakShard(new RandoTimeShardManager.MegaShard(currentLevel, currentRoom));
             orig(self);
@@ -793,6 +767,7 @@ namespace MessengerRando
             Console.WriteLine($"Playing cutscene: {self}");
             if (randoStateManager.IsRandomizedFile && RandoLevelManager.RandoLevelMapping != null)
                 RandoLevelManager.PlayedSpecialCutscenes.Add(self.name);
+            if (self is NecromancerIntroCutscene) return;
             orig(self);
         }
 
@@ -1113,6 +1088,21 @@ namespace MessengerRando
 
         private void OnSceneLoadedRando(Scene scene, LoadSceneMode mode)
         {
+            try
+            {
+                if (RandoBossManager.OrigToNewBoss != null && Manager<Level>.Instance != null &&
+                    RandoRoomManager.IsBossRoom(Manager<Level>.Instance.CurrentRoom?.roomKey, out var bossName) &&
+                    !RandoBossManager.HasBossDefeated(bossName) && RandoBossManager.TempBossOverride.IsNullOrEmpty())
+                {
+                    Console.WriteLine($"temp overriding {bossName}");
+                    RandoBossManager.TempBossOverride = bossName;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
             Console.WriteLine($"Scene loaded: '{scene.name}'");
         }
 

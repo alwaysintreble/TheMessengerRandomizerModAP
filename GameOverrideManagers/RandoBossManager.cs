@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
+using WebSocketSharp;
 using Object = UnityEngine.Object;
 
 namespace MessengerRando.GameOverrideManagers
 {
     public static class RandoBossManager
     {
-        private static string currentBoss;
         private static readonly List<string> DefeatedBosses = new List<string>();
         public static Dictionary<string, string> OrigToNewBoss;
-        private static bool bossOverride;
-        public static bool FightingBoss;
 
-        private static void AdjustPlayerInBossRoom(string bossName)
+        public static bool FightingBoss;
+        public static string TempBossOverride;
+
+        public static void AdjustPlayerInBossRoom(string bossName)
         {
             var newLocation = BossConstants.BossLocations[bossName];
             if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(newLocation.BossRegion))
@@ -25,7 +26,6 @@ namespace MessengerRando.GameOverrideManagers
             }
             else
             {
-                bossOverride = true;
                 RandoLevelManager.TeleportInArea(newLocation.BossRegion, newLocation.PlayerPosition,
                     newLocation.PlayerDimension);
             }
@@ -33,40 +33,62 @@ namespace MessengerRando.GameOverrideManagers
         
         public static bool HasBossDefeated(string bossName)
         {
-            if (bossOverride)
-                bossName = OrigToNewBoss.First(name => name.Value.Equals(bossName)).Key;
             Console.WriteLine($"Checking if {bossName} is defeated.");
-            return !BossConstants.VanillaBossNames.Contains(bossName) || DefeatedBosses.Contains(bossName);
+            return true;
+            bool result;
+            // if we currently have a boss override we want to change rooms so return true if the current boss == override
+            if (!TempBossOverride.IsNullOrEmpty()) result = bossName == TempBossOverride;
+            // boss rando but it isn't currently overriden. override it and get the new boss name if the new boss
+            // hasn't been defeated
+            else if (OrigToNewBoss != null)
+            {
+                if (OrigToNewBoss.TryGetValue(bossName, out var newBossName))
+                {
+                    Console.WriteLine($"Boss is shuffled. should be false");
+                    TempBossOverride = bossName;
+                    result = false;
+                }
+                else result = true;
+            }
+            // don't fight emerald golem when we're on entrance shuffle. might change this so that you have to fight
+            // him when entering from the left side specifically, just need to verify order of operations
+            else result = (RandoLevelManager.RandoLevelMapping != null && bossName == "EmeraldGolem") || !BossConstants.VanillaBossNames.Contains(bossName) ||
+                          DefeatedBosses.Contains(bossName);
+            Console.WriteLine($"returning {result}");
+            return result;
         }
 
         public static void SetBossAsDefeated(string bossName)
         {
-            FightingBoss = false;
-            if (bossOverride)
+            if (!TempBossOverride.IsNullOrEmpty())
             {
-                bossName = currentBoss;
-                bossOverride = false;
+                bossName = TempBossOverride;
+                OrigToNewBoss.Remove(bossName); // doing this so we can probably force fighting the same boss multiple times?
+                TempBossOverride = String.Empty;
             }
             if (ArchipelagoClient.HasConnected) ArchipelagoClient.ServerData.DefeatedBosses.Add(bossName);
             DefeatedBosses.Add(bossName);
             if (OrigToNewBoss != null)
             {
                 var newPosition = BossConstants.BossLocations[bossName];
-                
+
+                FightingBoss = false;
                 RandoLevelManager.TeleportInArea(newPosition.BossRegion, newPosition.PlayerPosition,
                     newPosition.PlayerDimension);
             }
         }
 
+        public static bool ShouldPlayBossCutscene(string currentScene)
+        {
+            return OrigToNewBoss != null && !BossConstants.BossCutscenes.Values.Contains(currentScene);
+        }
+
         public static bool ShouldFightBoss(string bossName)
         {
-            Console.WriteLine($"Entered {bossName}'s room. Has Defeated: {HasBossDefeated(bossName)}");
-            if (HasBossDefeated(bossName)) return false;
+            if (HasBossDefeated(bossName) && TempBossOverride.IsNullOrEmpty()) return false;
             var teleporting = OrigToNewBoss != null;
-            Console.WriteLine($"Should teleport: {teleporting}");
             if (teleporting)
             {
-                currentBoss = bossName;
                 try
                 {
                     foreach (var cutscene in Object.FindObjectsOfType<Cutscene>())

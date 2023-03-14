@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MessengerRando.Utils
+namespace MessengerRando.Utils.Constants
 {
-    public class LevelConstants
+    public static class LevelConstants
     {
-        public struct RandoLevel : IEquatable<RandoLevel>
+        public readonly struct RandoLevel : IEquatable<RandoLevel>
         {
             public ELevel LevelName { get; }
             public Vector3 PlayerPos { get; }
@@ -186,10 +186,10 @@ namespace MessengerRando.Utils
                     "Glacial Peak - Top",
                     new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(176.04f, -13.71676f))
                 },
-                {
-                    "Elemental Skylands - Left",
-                    new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-424.9693f, 366.5677f))
-                }, // 16 - This will probably be really difficult since it uses a different controller
+                // {
+                //     "Elemental Skylands - Left",
+                //     new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-424.9693f, 366.5677f))
+                // }, // 16 - This will probably be really difficult since it uses a different controller
                 { "Tower of Time - Left", new RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(-18f, -11f)) }, // 8
                 { "Cloud Ruins - Left", new RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-486f, -57f)) },
                 { "Music Box - Left", new RandoLevel(ELevel.Level_11_B_MusicBox, new Vector3(-428, -55)) },

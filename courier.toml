@@ -1,5 +1,5 @@
-name = "TheMessengerRandomizer"
-version = "0.4.2"
+name = "TheMessengerRandomizerAP"
+version = "0.8.0"
 dependencies = [
   { name = "Courier", version = "0.7.0" }
 ]

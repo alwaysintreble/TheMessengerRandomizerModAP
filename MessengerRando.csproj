@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>E:\Games\SteamLibrary\steamapps\common\The Messenger\Mods\TheMessengerRandomizer\</OutputPath>
+    <OutputPath>E:\Games\SteamLibrary\steamapps\common\The Messenger\Mods\TheMessengerRandomizerAP\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,7 +28,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\TheMessengerRandomizer\</OutputPath>
+    <OutputPath>bin\Release\TheMessengerRandomizerAP\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

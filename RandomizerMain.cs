@@ -80,7 +80,7 @@ namespace MessengerRando
             randomizerSaveMethod = new RandomizerSaveMethod();
 
             //Add Randomizer Version button
-            versionButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Messenger Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
+            versionButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
 
             //Add current seed number button
             seedNumButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Current seed number: " + GetCurrentSeedNum(), null);

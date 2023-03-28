@@ -27,7 +27,7 @@ namespace MessengerRando.Utils
 
             foreach (CourierModuleMetadata modMetadata in Courier.Mods)
             {
-                if ("TheMessengerRandomizer".Equals(modMetadata.Name))
+                if ("TheMessengerRandomizerAP".Equals(modMetadata.Name))
                 {
                     version = modMetadata.VersionString;
                 }

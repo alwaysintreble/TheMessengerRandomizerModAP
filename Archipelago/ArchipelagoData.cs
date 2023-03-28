@@ -193,6 +193,8 @@ namespace MessengerRando.Archipelago
                     //We're continuing an existing multiworld so likely a port change. Save the new data
                     Index = tempServerData.Index;
                     CheckedLocations.AddRange(tempServerData.CheckedLocations);
+                    PowerSealsCollected = tempServerData.PowerSealsCollected;
+                    RandoBossManager.DefeatedBosses.AddRange(tempServerData.DefeatedBosses);
 
                     return true;
                 }
@@ -208,15 +210,15 @@ namespace MessengerRando.Archipelago
                 Port = tempServerData.Port;
                 SlotName = tempServerData.SlotName;
                 Password = tempServerData.Password;
-                Index = tempServerData.Index;
                 SeedName = tempServerData.SeedName;
                 SlotData = tempServerData.SlotData;
-                PowerSealsCollected = tempServerData.PowerSealsCollected;
+                Index = tempServerData.Index;
                 CheckedLocations.AddRange(tempServerData.CheckedLocations);
+                PowerSealsCollected = tempServerData.PowerSealsCollected;
+                RandoBossManager.DefeatedBosses.AddRange(tempServerData.DefeatedBosses);
                 //Attempt to connect to the server and save the new data
                 ArchipelagoClient.ConnectAsync();
                 if (!ArchipelagoClient.Authenticated) ItemsAndLocationsHandler.Initialize();
-                RandoBossManager.DefeatedBosses.AddRange(tempServerData.DefeatedBosses);
                 return ArchipelagoClient.HasConnected = true; //Doing this here because of race conditions and the actual connection being threaded
             }
             catch (Exception ex) 

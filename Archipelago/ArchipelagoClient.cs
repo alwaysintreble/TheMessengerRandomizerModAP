@@ -20,10 +20,6 @@ namespace MessengerRando.Archipelago
         private const string ApVersion = "0.3.7";
         public static ArchipelagoData ServerData;
 
-        //for timers to attempt to reconnect if connection is lost
-        private static int lastAttemptTime;
-        private static int disconnectTimeout = 5;
-
         private delegate void OnConnectAttempt(bool result);
         public static bool Authenticated;
         public static bool HasConnected;
@@ -222,14 +218,8 @@ namespace MessengerRando.Archipelago
             HasConnected = true;
             if (!Authenticated)
             {
-                var now = DateTime.Now.Second;
-                var dT = now - lastAttemptTime;
-                lastAttemptTime = now;
-                disconnectTimeout -= dT;
-                if (!(disconnectTimeout <= 0.0f)) return;
                 Console.WriteLine("Attempting to reconnect to Archipelago Server...");
-                ConnectAsync();
-                disconnectTimeout = 5;
+                ThreadPool.QueueUserWorkItem(o => ConnectAsync());
                 return;
             }
             if (ServerData.Index >= Session.Items.AllItemsReceived.Count) return;

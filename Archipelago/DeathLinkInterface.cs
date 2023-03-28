@@ -11,11 +11,10 @@ namespace MessengerRando.Archipelago
     public class DeathLinkInterface
     {
         public DeathLinkService DeathLinkService;
-        public static DeathLinkInterface Instance;
         public PlayerController Player;
         private readonly List<DeathLink> deathLinks = new List<DeathLink>();
-        private bool receivedDeath = false;
-        private System.Random random = new System.Random();
+        private bool receivedDeath;
+        private System.Random random;
         private int deathsSent;
         private List<string> genericDeathCauses;
         private List<string> projectileDeathCauses;
@@ -32,17 +31,17 @@ namespace MessengerRando.Archipelago
                 DeathLinkService = ArchipelagoClient.Session.CreateDeathLinkService();
                 DeathLinkService.OnDeathLinkReceived += DeathLinkReceived;
                 GenerateFunnyCauses();
-                Instance = this;
+                random = new System.Random();
 
                 if (ArchipelagoData.DeathLink)
-                {
                     DeathLinkService.EnableDeathLink();
-                }
                 else
                     DeathLinkService.DisableDeathLink();
             }
-            catch { }
-            
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public void DeathLinkReceived(DeathLink deathLink)
@@ -98,8 +97,6 @@ namespace MessengerRando.Archipelago
 
         private void GenerateFunnyCauses()
         {
-            FieldInfo stolenShardsCount =
-                typeof(Quarble).GetField("timeShardList", BindingFlags.NonPublic | BindingFlags.Instance);
             genericDeathCauses = new List<string> 
             {
                 " dropped their message.",
@@ -108,7 +105,6 @@ namespace MessengerRando.Archipelago
                 " thought it was a simulation.",
                 " blames that on input delay.",
                 $" has had their life saved {deathsSent} times.",
-                $" has given Quarble {stolenShardsCount?.GetValue(Object.FindObjectOfType<Quarble>()) : 0} Time Shards.",
                 " zigged when they should have zagged.",
                 " let Quarble win another bet.",
                 " wasn't able to get a selfie with Quarble.",
@@ -166,24 +162,39 @@ namespace MessengerRando.Archipelago
 
         private string GetDeathLinkCause(EDeathType deathType)
         {
-            switch (deathType)
+            try
             {
-                case EDeathType.INTRO:
-                    return " is a new customer!";
-                case EDeathType.GENERIC:
-                    return genericDeathCauses[random.Next()];
-                case EDeathType.PROJECTILE:
-                    return projectileDeathCauses[random.Next()];
-                case EDeathType.SPIKES:
-                    return spikeDeathCauses[random.Next()];
-                case EDeathType.PITFALL:
-                    return pitfallDeathCauses[random.Next()];
-                case EDeathType.SQUISH:
-                    return squishDeathCauses[random.Next()];
-                case EDeathType.FREQUENT:
-                    return frequentDeathCauses[random.Next()];
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(deathType));
+                switch (deathType)
+                {
+                    case EDeathType.INTRO:
+                        return " is a new customer!";
+                    case EDeathType.GENERIC:
+                        return genericDeathCauses[random.Next(genericDeathCauses.Count)];
+                    case EDeathType.PROJECTILE:
+                        return projectileDeathCauses[random.Next(projectileDeathCauses.Count)];
+                    case EDeathType.SPIKES:
+                        return spikeDeathCauses[random.Next(spikeDeathCauses.Count)];
+                    case EDeathType.PITFALL:
+                        return pitfallDeathCauses[random.Next(pitfallDeathCauses.Count)];
+                    case EDeathType.SQUISH:
+                        return squishDeathCauses[random.Next(squishDeathCauses.Count)];
+                    case EDeathType.FREQUENT:
+                        return frequentDeathCauses[random.Next(frequentDeathCauses.Count)];
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(deathType));
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine(genericDeathCauses);
+                Console.WriteLine(projectileDeathCauses);
+                Console.WriteLine(spikeDeathCauses);
+                Console.WriteLine(pitfallDeathCauses);
+                Console.WriteLine(squishDeathCauses);
+                Console.WriteLine(frequentDeathCauses);
+                Console.WriteLine(random);
+                return " is a menace";
             }
         }
     }

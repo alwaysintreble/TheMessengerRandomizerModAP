@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using MessengerRando.RO;
 using MessengerRando.GameOverrideManagers;
 
@@ -214,7 +215,9 @@ namespace MessengerRando.Archipelago
             long checkID = LocationsLookup[checkedLocation];
             ArchipelagoClient.ServerData.CheckedLocations.Add(checkID);
             if (ArchipelagoClient.Authenticated)
-                ArchipelagoClient.Session.Locations.CompleteLocationChecks(checkID);
+                ThreadPool.QueueUserWorkItem(o =>
+                    ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
+                        ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
         }
     }
 }

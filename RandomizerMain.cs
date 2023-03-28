@@ -346,6 +346,7 @@ namespace MessengerRando
         
         void ProgressionManager_SetChallengeRoomAsCompleted(On.ProgressionManager.orig_SetChallengeRoomAsCompleted orig, ProgressionManager self, string roomKey)
         {
+            Console.WriteLine($"Marking {roomKey} as completed.");
             //if this is a rando file, go ahead and give the item we expect to get
             if (randoStateManager.IsRandomizedFile)
             {
@@ -371,8 +372,22 @@ namespace MessengerRando
                     throw new RandomizerException($"Challenge room with room key '{roomKey}' was not found in the list of locations. This will need to be corrected for this challenge room to work.");
                 }
 
-                RandoItemRO challengeRoomRandoItem = RandomizerStateManager.Instance.CurrentLocationToItemMapping[powerSealLocation];
-
+                RandoItemRO challengeRoomRandoItem;
+                if (RandomizerStateManager.Instance.CurrentLocationToItemMapping.TryGetValue(powerSealLocation,
+                        out challengeRoomRandoItem))
+                {
+                }
+                else if (ArchipelagoClient.HasConnected &&
+                         ArchipelagoClient.ServerData.LocationToItemMapping.TryGetValue(powerSealLocation,
+                             out challengeRoomRandoItem))
+                {
+                }
+                else
+                {
+                    orig(self, roomKey);
+                    return;
+                }
+                
                 Console.WriteLine($"Challenge room '{powerSealLocation.PrettyLocationName}' completed. Providing rando item '{challengeRoomRandoItem}'.");
                 if (ArchipelagoClient.HasConnected)
                 {
@@ -1032,6 +1047,8 @@ namespace MessengerRando
         static void OnToggleDeathLink()
         {
             ArchipelagoData.DeathLink = !ArchipelagoData.DeathLink;
+            if (ArchipelagoData.DeathLink) ArchipelagoClient.DeathLinkHandler.DeathLinkService.EnableDeathLink();
+            else ArchipelagoClient.DeathLinkHandler.DeathLinkService.DisableDeathLink();
         }
 
         bool OnSelectMessageTimer(string answer)

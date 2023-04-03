@@ -39,6 +39,7 @@ namespace MessengerRando.Archipelago
             LocationsLookup = new Dictionary<LocationRO, long>();
             var megaShards = RandoTimeShardManager.MegaShardLookup.Values.ToList();
             ArchipelagoLocations.AddRange(megaShards);
+            ArchipelagoLocations.AddRange(BossLocations);
             foreach (var progLocation in ArchipelagoLocations)
             {
                 LocationsLookup.Add(progLocation, offset);
@@ -48,7 +49,7 @@ namespace MessengerRando.Archipelago
             randoStateManager = RandomizerStateManager.Instance;
         }
 
-        public static List<RandoItemRO> ArchipelagoItems = new List<RandoItemRO>()
+        private static readonly List<RandoItemRO> ArchipelagoItems = new List<RandoItemRO>
         {
             //notes
             new RandoItemRO("Key_Of_Hope", EItems.KEY_OF_HOPE),
@@ -84,7 +85,7 @@ namespace MessengerRando.Archipelago
             new RandoItemRO("Timeshard", EItems.TIME_SHARD),
         };
 
-        public static List<LocationRO> ArchipelagoLocations = new List<LocationRO>()
+        public static readonly List<LocationRO> ArchipelagoLocations = new List<LocationRO>
         {
             //notes
             new LocationRO("Key_Of_Love", EItems.KEY_OF_LOVE),
@@ -176,6 +177,14 @@ namespace MessengerRando.Archipelago
             new LocationRO("18361868372388", "Elemental Skylands Seal - Water Seal"),
             new LocationRO("28602892356388", "Elemental Skylands Seal - Fire Seal"),
         };
+
+        private static readonly List<LocationRO> BossLocations = new List<LocationRO>
+        {
+            new LocationRO("LeafGolem"),
+            new LocationRO("Necromancer"),
+            new LocationRO("EmeraldGolem"),
+            new LocationRO("QueenOfQuills"),
+        };
         
         /// <summary>
         /// We received an item from the server so add it to our inventory. Set the quantity to an absurd number here so we can differentiate.
@@ -212,7 +221,7 @@ namespace MessengerRando.Archipelago
         public static void SendLocationCheck(LocationRO checkedLocation)
         {
             Console.WriteLine($"Player found item at {checkedLocation.PrettyLocationName}");
-            long checkID = LocationsLookup[checkedLocation];
+            if (!LocationsLookup.TryGetValue(checkedLocation, out var checkID)) return;
             ArchipelagoClient.ServerData.CheckedLocations.Add(checkID);
             if (ArchipelagoClient.Authenticated)
                 ThreadPool.QueueUserWorkItem(o =>

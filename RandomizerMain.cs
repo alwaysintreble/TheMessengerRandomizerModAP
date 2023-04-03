@@ -1056,7 +1056,7 @@ namespace MessengerRando
             if (answer == null) return true;
             if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
             int.TryParse(answer, out var newTime);
-            updateTimer = newTime;
+            updateTime = newTime;
             return true;
         }
 

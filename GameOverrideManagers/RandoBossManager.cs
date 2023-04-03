@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MessengerRando.Archipelago;
+using MessengerRando.RO;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -140,7 +141,11 @@ namespace MessengerRando.GameOverrideManagers
                 bossName = RandomizerStateManager.Instance.BossManager.origToNewBoss[bossName];
                 BossOverride = false;
             }
-            if (ArchipelagoClient.HasConnected) ArchipelagoClient.ServerData.DefeatedBosses.Add(bossName);
+            if (ArchipelagoClient.HasConnected)
+            {
+                ArchipelagoClient.ServerData.DefeatedBosses.Add(bossName);
+                ItemsAndLocationsHandler.SendLocationCheck(new LocationRO(bossName));
+            }
             DefeatedBosses.Add(bossName);
             if (RandomizerStateManager.Instance.BossManager != null)
             {

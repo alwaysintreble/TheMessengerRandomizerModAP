@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
+using Steamworks;
 
 namespace MessengerRando.GameOverrideManagers
 {
@@ -18,18 +20,73 @@ namespace MessengerRando.GameOverrideManagers
                 ShardRegion = area;
                 RoomKey = key;
             }
+
+            public bool Equals(MegaShard other)
+            {
+                return RoomKey == other.RoomKey && ShardRegion == other.ShardRegion;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is MegaShard other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((int)ShardRegion * 397) ^ (RoomKey != null ? RoomKey.GetHashCode() : 0);
+                }
+            }
         }
         
         public static readonly Dictionary<MegaShard, LocationRO> MegaShardLookup = new Dictionary<MegaShard, LocationRO>
         {
-            { new MegaShard(ELevel.Level_01_NinjaVillage, ""), new LocationRO("Ninja Village Time Shard")}
+            { new MegaShard(ELevel.Level_02_AutumnHills, "268300-108-92"), new LocationRO("Autumn Hills Mega Shard") },
+            { new MegaShard(ELevel.Level_03_ForlornTemple, "-2044420"), new LocationRO("Hidden Entrance Mega Shard") },
+            { new MegaShard(ELevel.Level_04_Catacombs, "108172420"), new LocationRO("Catacombs Mega Shard") },
+            { new MegaShard(ELevel.Level_06_A_BambooCreek, "-84-20420"), new LocationRO("Above Entrance Mega Shard") },
+            { new MegaShard(ELevel.Level_06_A_BambooCreek, "-52-202052"), new LocationRO("Abandoned Mega Shard") },
+            { new MegaShard(ELevel.Level_06_A_BambooCreek, "364396420"), new LocationRO("Time Loop Mega Shard") },
+            { new MegaShard(ELevel.Level_05_A_HowlingGrotto, "108140-108-92"), new LocationRO("Bottom Left Mega Shard") },
+            { new MegaShard(ELevel.Level_05_A_HowlingGrotto, "332364-172-156"), new LocationRO("Near Portal Mega Shard") },
+            { new MegaShard(ELevel.Level_05_A_HowlingGrotto, "460492-76-60"), new LocationRO("Pie in the Sky Mega Shard") },
+            { new MegaShard(ELevel.Level_07_QuillshroomMarsh, "4476-28-12"), new LocationRO("Quillshroom Marsh Mega Shard") },
+            { new MegaShard(ELevel.Level_08_SearingCrags, "236268116132"), new LocationRO("Searing Crags Mega Shard") },
+            { new MegaShard(ELevel.Level_09_A_GlacialPeak, "268300-284-268"), new LocationRO("Glacial Peak Mega Shard") },
+            { new MegaShard(ELevel.Level_11_A_CloudRuins, "-404-372-60-44"), new LocationRO("Entrance Mega Shard") },
+            { new MegaShard(ELevel.Level_11_A_CloudRuins, "-308-276-44-28"), new LocationRO("Time Warp Mega Shard") },
+            { new MegaShard(ELevel.Level_11_A_CloudRuins, "11321164-124"), new LocationRO("Money Farm Room Mega Shard 1") },
+            { new MegaShard(ELevel.Level_11_A_CloudRuins, "11321164-124"), new LocationRO("Money Farm Room Mega Shard 2") },
+            { new MegaShard(ELevel.Level_12_UnderWorld, "-436-308-60-44"), new LocationRO("Entrance Mega Shard") },
+            { new MegaShard(ELevel.Level_12_UnderWorld, "44766884"), new LocationRO("Hot Tub Mega Shard") },
+            { new MegaShard(ELevel.Level_12_UnderWorld, "76108-4420"), new LocationRO("Projectile Pit Mega Shard") },
+            { new MegaShard(ELevel.Level_03_ForlornTemple, "761402036"), new LocationRO("Sunny Day Mega Shard") },
+            { new MegaShard(ELevel.Level_03_ForlornTemple, "268300-44-28"), new LocationRO("Down Under Mega Shard") },
+            { new MegaShard(ELevel.Level_05_B_SunkenShrine, "4476-172-156"), new LocationRO("Mega Shard of the Moon") },
+            { new MegaShard(ELevel.Level_05_B_SunkenShrine, "108140-60-44"), new LocationRO("Beginner's Mega Shard") },
+            { new MegaShard(ELevel.Level_05_B_SunkenShrine, "4476420"), new LocationRO("Mega Shard of the Stars") },
+            { new MegaShard(ELevel.Level_05_B_SunkenShrine, "-52-20-92-76"), new LocationRO("Mega Shard of the Sun") },
+            { new MegaShard(ELevel.Level_04_C_RiviereTurquoise, "780812-124"), new LocationRO("Waterfall Mega Shard") },
+            { new MegaShard(ELevel.Level_04_C_RiviereTurquoise, "1244-124"), new LocationRO("Quick Restock Mega Shard 1") },
+            { new MegaShard(ELevel.Level_04_C_RiviereTurquoise, "1244-124"), new LocationRO("Quick Restock Mega Shard 2") },
         };
 
         public static void BreakShard(MegaShard shardToBreak)
         {
-            var location = MegaShardLookup[shardToBreak];
+            var location = MegaShardLookup.FirstOrDefault(pair => pair.Key.Equals(shardToBreak)).Value;
             if (ArchipelagoClient.HasConnected)
+            {
+                if (location.Equals(new LocationRO("Money Farm Room Mega Shard 1")) &&
+                    ArchipelagoClient.ServerData.CheckedLocations.Contains(
+                        ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Money Farm Room Mega Shard 1")]))
+                    location = new LocationRO("Money Farm Room Mega Shard 2");
+                else if (location.Equals(new LocationRO("Quick Restock Mega Shard 1")) &&
+                         ArchipelagoClient.ServerData.CheckedLocations.Contains(
+                             ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Quick Restock Mega Shard 1")]))
+                    location = new LocationRO("Quick Restock Mega Shard 2");
                 ItemsAndLocationsHandler.SendLocationCheck(location);
+            }
             else
                 Manager<InventoryManager>.Instance.AddItem(
                     RandomizerStateManager.Instance.CurrentLocationToItemMapping[location].Item,

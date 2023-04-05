@@ -174,7 +174,6 @@ namespace MessengerRando
             On.Quarble.OnPlayerDied += Quarble_OnPlayerDied;
             //temp add
             #if DEBUG
-            On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.Cutscene.Play += Cutscene_Play;
             On.PhantomIntroCutscene.OnEnterRoom += PhantomIntro_OnEnterRoom; //this lets us skip the phantom fight
             On.UIManager.ShowView += UIManager_ShowView;
@@ -183,6 +182,7 @@ namespace MessengerRando
             On.LevelManager.LoadLevel += LevelManager_LoadLevel;
             On.LevelManager.OnLevelLoaded += LevelManager_onLevelLoaded;
             #endif
+            On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
             On.LevelManager.EndLevelLoading += LevelManager_EndLevelLoading;
             

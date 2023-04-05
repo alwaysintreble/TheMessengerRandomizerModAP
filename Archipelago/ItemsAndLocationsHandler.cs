@@ -31,18 +31,20 @@ namespace MessengerRando.Archipelago
             foreach (var item in ArchipelagoItems)
             {
                 ItemsLookup.Add(offset, item);
+                // Console.WriteLine($"{item.Name}: {offset}");
                 ++offset;
             }
 
             offset = baseOffset;
             Console.WriteLine("Building LocationsLookup...");
             LocationsLookup = new Dictionary<LocationRO, long>();
-            var megaShards = RandoTimeShardManager.MegaShardLookup.Values.ToList();
+            var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
             ArchipelagoLocations.AddRange(megaShards);
             ArchipelagoLocations.AddRange(BossLocations);
             foreach (var progLocation in ArchipelagoLocations)
             {
                 LocationsLookup.Add(progLocation, offset);
+                // Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
                 ++offset;
             }
 
@@ -222,6 +224,7 @@ namespace MessengerRando.Archipelago
         {
             Console.WriteLine($"Player found item at {checkedLocation.PrettyLocationName}");
             if (!LocationsLookup.TryGetValue(checkedLocation, out var checkID)) return;
+            Console.WriteLine($"Sending {checkID}");
             ArchipelagoClient.ServerData.CheckedLocations.Add(checkID);
             if (ArchipelagoClient.Authenticated)
                 ThreadPool.QueueUserWorkItem(o =>

@@ -17,10 +17,10 @@ namespace MessengerRando.Archipelago
 {
     public static class ArchipelagoClient
     {
-        private const string ApVersion = "0.3.7";
+        private const string ApVersion = "0.4.0";
         public static ArchipelagoData ServerData;
 
-        private delegate void OnConnectAttempt(bool result);
+        private delegate void OnConnectAttempt(LoginResult result);
         public static bool Authenticated;
         public static bool HasConnected;
 
@@ -45,23 +45,30 @@ namespace MessengerRando.Archipelago
             Connect(result => OnConnected(result, connectButton));
         }
 
-        private static void OnConnected(bool connectStats)
+        private static void OnConnected(LoginResult connectStats)
         {
             return;
         }
 
-        private static void OnConnected(bool connectStatus, SubMenuButtonInfo connectButton)
+        private static void OnConnected(LoginResult connectResult, SubMenuButtonInfo connectButton)
         {
             TextEntryPopup successPopup = InitTextEntryPopup(connectButton.addedTo, string.Empty,
                 entry => true, 0, null, CharsetFlags.Space);
-            var successText = connectStatus
-                ? $"Successfully connected to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}!"
-                : $"Failed to connect to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}. " +
-                  "Verify correct information.";
-            successPopup.Init(successText);
+
+            string outputText;
+            if (connectResult.Successful)
+                outputText = $"Successfully connected to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}!";
+            else
+            {
+                outputText = $"Failed to connect to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}\n";
+                foreach (var error in ((LoginFailure)connectResult).Errors)
+                    outputText += error;
+            }
+            
+            successPopup.Init(outputText);
             successPopup.gameObject.SetActive(true);
             // Object.Destroy(successPopup.transform.Find("BigFrame").Find("SymbolsGrid").gameObject);
-            Console.WriteLine(successText);
+            Console.WriteLine(outputText);
         }
 
         private static void Connect(OnConnectAttempt attempt)
@@ -79,7 +86,7 @@ namespace MessengerRando.Archipelago
 
             try
             {
-                Console.WriteLine($"Attempting Connection...");
+                Console.WriteLine("Attempting Connection...");
                 result = Session.TryConnectAndLogin(
                     "The Messenger",
                     ServerData.SlotName,
@@ -147,6 +154,14 @@ namespace MessengerRando.Archipelago
                 }
                 else Console.WriteLine("Failed to get bosses option");
 
+                if (ServerData.SlotData.TryGetValue("settings", out var genSettings))
+                {
+                    var gameSettings = JsonConvert.DeserializeObject<Dictionary<string, string>>(genSettings.ToString());
+                    if (gameSettings.TryGetValue("Mega Shards", out var shuffleShards))
+                        if (Int32.TryParse(shuffleShards, out var shardsSetting) && shardsSetting == 1)
+                            RandomizerStateManager.Instance.MegaShards = true;
+                }
+
                 DeathLinkHandler = new DeathLinkInterface();
                 if (HasConnected)
                 {
@@ -156,6 +171,7 @@ namespace MessengerRando.Archipelago
                     ServerData.CheckedLocations = Session.Locations.AllLocationsChecked.ToList();
                     return;
                 }
+
                 ServerData.UpdateSave();
                 HasConnected = true;
             }
@@ -174,7 +190,7 @@ namespace MessengerRando.Archipelago
                 Disconnect();
             }
 
-            attempt(result.Successful);
+            attempt(result);
         }
 
         private static void OnMessageReceived(LogMessage message)
@@ -240,6 +256,7 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)
         {
+            if (newState == ArchipelagoClientState.ClientGoal) Session.DataStorage[Scope.Slot, "HasFinished"] = true;
             Console.WriteLine($"Updating client status to {newState}");
             var statusUpdatePacket = new StatusUpdatePacket { Status = newState };
             Session.Socket.SendPacket(statusUpdatePacket);

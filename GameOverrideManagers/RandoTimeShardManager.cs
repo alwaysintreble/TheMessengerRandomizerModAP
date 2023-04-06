@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
+using UnityEngine;
 
 namespace MessengerRando.GameOverrideManagers
 {
@@ -98,6 +99,18 @@ namespace MessengerRando.GameOverrideManagers
                              ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Quick Restock Mega Shard 1")]))
                     location = new LocationRO("Quick Restock Mega Shard 2");
                 ItemsAndLocationsHandler.SendLocationCheck(location);
+                if (ArchipelagoClient.ServerData.CheckedLocations.Contains(
+                        ItemsAndLocationsHandler.LocationsLookup[location])) return;
+                if (!ArchipelagoClient.ServerData.LocationToItemMapping.TryGetValue(location, out var randoItem))
+                    return;
+                var shardSequence = ScriptableObject.CreateInstance<DialogSequence>();
+                shardSequence.dialogID = "ARCHIPELAGO_ITEM";
+                shardSequence.name = randoItem.RecipientName.Equals(ArchipelagoClient.ServerData.SlotName)
+                    ? $"{randoItem.Name}"
+                    : $"{randoItem.Name} for {randoItem.RecipientName}";
+                shardSequence.choices = new List<DialogSequenceChoice>();
+                AwardItemPopupParams challengeAwardItemParams = new AwardItemPopupParams(shardSequence, true);
+                Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, challengeAwardItemParams);
             }
             else
                 Manager<InventoryManager>.Instance.AddItem(

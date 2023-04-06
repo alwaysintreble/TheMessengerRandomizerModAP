@@ -144,7 +144,19 @@ namespace MessengerRando.GameOverrideManagers
             if (ArchipelagoClient.HasConnected)
             {
                 ArchipelagoClient.ServerData.DefeatedBosses.Add(bossName);
-                ItemsAndLocationsHandler.SendLocationCheck(new LocationRO(bossName));
+                var bossLoc = new LocationRO(bossName);
+                ItemsAndLocationsHandler.SendLocationCheck(bossLoc);
+                if (ArchipelagoClient.ServerData.LocationToItemMapping.TryGetValue(bossLoc, out var bossItem))
+                {
+                    var bossSequence = ScriptableObject.CreateInstance<DialogSequence>();
+                    bossSequence.dialogID = "ARCHIPELAGO_ITEM";
+                    bossSequence.name = bossItem.RecipientName.Equals(ArchipelagoClient.ServerData.SlotName)
+                        ? $"{bossItem.Name}"
+                        : $"{bossItem.Name} for {bossItem.RecipientName}";
+                    bossSequence.choices = new List<DialogSequenceChoice>();
+                    AwardItemPopupParams challengeAwardItemParams = new AwardItemPopupParams(bossSequence, true);
+                    Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, challengeAwardItemParams);
+                }
             }
             DefeatedBosses.Add(bossName);
             if (RandomizerStateManager.Instance.BossManager != null)

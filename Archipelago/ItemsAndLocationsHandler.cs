@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using MessengerRando.RO;
 using MessengerRando.GameOverrideManagers;
+using UnityEngine;
 
 namespace MessengerRando.Archipelago
 {
@@ -81,10 +82,15 @@ namespace MessengerRando.Archipelago
             new RandoItemRO("Pyro", EItems.PYROPHOBIC_WORKER),
             new RandoItemRO("Claustro", EItems.CLAUSTROPHOBIC_WORKER),
             new RandoItemRO("Acro", EItems.ACROPHOBIC_WORKER),
-            //Power seals - not sure if i can make these work
+            //Power seals
             new RandoItemRO("PowerSeal", EItems.POWER_SEAL),
             //time shards
             new RandoItemRO("Timeshard", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (10)", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (50)", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (100)", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (300)", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (500)", EItems.TIME_SHARD),
         };
 
         public static readonly List<LocationRO> ArchipelagoLocations = new List<LocationRO>
@@ -208,6 +214,21 @@ namespace MessengerRando.Archipelago
                     break;
                 case EItems.TIME_SHARD:
                     Console.WriteLine("Unlocking time shards...");
+                    switch (randoItem.Name)
+                    {
+                        case "Timeshard": quantity = 1;
+                            break;
+                        case "Timeshard (10)": quantity = 10;
+                            break;
+                        case "Timeshard (50)": quantity = 50;
+                            break;
+                        case "Timeshard (100)": quantity = 100;
+                            break;
+                        case "Timeshard (300)": quantity = 300;
+                            break;
+                        case "Timeshard (500)": quantity = 500;
+                            break;
+                    }
                     Manager<InventoryManager>.Instance.CollectTimeShard(quantity);
                     break;
                 case EItems.POWER_SEAL:

@@ -162,6 +162,18 @@ namespace MessengerRando.Archipelago
                             RandomizerStateManager.Instance.MegaShards = true;
                 }
 
+                if (ServerData.SlotData.TryGetValue("shop", out var shopSettings))
+                {
+                    var shopPrices = JsonConvert.DeserializeObject<Dictionary<string, int>>(shopSettings.ToString());
+                    RandoShopManager.shopPrices = new Dictionary<EShopUpgradeID, int>();
+                    foreach (var shopItem in shopPrices)
+                    {
+                        RandoShopManager.shopPrices.Add(
+                            (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopItem.Key),
+                            shopItem.Value);
+                    }
+                }
+
                 DeathLinkHandler = new DeathLinkInterface();
                 if (HasConnected)
                 {

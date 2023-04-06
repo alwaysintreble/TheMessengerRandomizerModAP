@@ -1,21 +1,15 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 namespace MessengerRando.GameOverrideManagers
 {
     public static class RandoShopManager
     {
+        public static Dictionary<EShopUpgradeID, int> shopPrices;
         public static int GetPrice(On.UpgradeButtonData.orig_GetPrice orig, UpgradeButtonData self)
         {
             //should be able to modify shop prices here
-            return 1;
+            if (shopPrices != null && shopPrices.TryGetValue(self.upgradeID, out var price)) return price;
             return orig(self);
-        }
-
-        public static void SetShopUpgradeAsUnlocked(On.InventoryManager.orig_SetShopUpgradeAsUnlocked orig,
-            InventoryManager self, EShopUpgradeID shopUnlock)
-        {
-            Console.WriteLine($"Unlocking {shopUnlock}");
-            orig(self, shopUnlock);
         }
         
         public static bool IsStoryUnlocked(On.UpgradeButtonData.orig_IsStoryUnlocked orig, UpgradeButtonData self)

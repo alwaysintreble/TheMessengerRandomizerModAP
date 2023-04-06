@@ -98,9 +98,9 @@ namespace MessengerRando.GameOverrideManagers
                          ArchipelagoClient.ServerData.CheckedLocations.Contains(
                              ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Quick Restock Mega Shard 1")]))
                     location = new LocationRO("Quick Restock Mega Shard 2");
-                ItemsAndLocationsHandler.SendLocationCheck(location);
                 if (ArchipelagoClient.ServerData.CheckedLocations.Contains(
                         ItemsAndLocationsHandler.LocationsLookup[location])) return;
+                ItemsAndLocationsHandler.SendLocationCheck(location);
                 if (!ArchipelagoClient.ServerData.LocationToItemMapping.TryGetValue(location, out var randoItem))
                     return;
                 var shardSequence = ScriptableObject.CreateInstance<DialogSequence>();

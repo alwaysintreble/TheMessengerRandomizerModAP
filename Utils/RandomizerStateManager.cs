@@ -153,22 +153,12 @@ namespace MessengerRando
         public bool IsSafeTeleportState()
         {
             //Unsafe teleport states are shops/hq/boss fights
-            bool isTeleportSafe = true;
-
-            //Console.WriteLine($"In ToT HQ: {Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy}");
-            //Console.WriteLine($"In Shop: {Manager<Shop>.Instance.gameObject.activeInHierarchy}");
-
-            //ToT HQ or Shop
-            if (Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy || Manager<Shop>.Instance.gameObject.activeInHierarchy)
-            {
-                isTeleportSafe = false;
-            }
-            //Player is in a cutscene or recovering from taking damage
-            if (Manager<GameManager>.Instance.IsCutscenePlaying() || Manager<PlayerManager>.Instance.Player.IsInvincible())
-            {
-                isTeleportSafe = false;
-            }
-            return isTeleportSafe;
+            return !(Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
+                     Manager<Shop>.Instance.gameObject.activeInHierarchy ||
+                     Manager<GameManager>.Instance.IsCutscenePlaying() ||
+                     Manager<PlayerManager>.Instance.Player.IsInvincible() ||
+                     Manager<PlayerManager>.Instance.Player.InputBlocked() || 
+                     Manager<PlayerManager>.Instance.Player.IsKnockedBack);
         }
 
         /// <summary>

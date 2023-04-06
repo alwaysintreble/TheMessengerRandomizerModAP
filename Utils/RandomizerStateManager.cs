@@ -4,6 +4,7 @@ using MessengerRando.Archipelago;
 using MessengerRando.Utils;
 using MessengerRando.RO;
 using MessengerRando.GameOverrideManagers;
+using UnityEngine;
 
 namespace MessengerRando
 {
@@ -42,13 +43,13 @@ namespace MessengerRando
         private RandomizerStateManager()
         {
             //Create initial values for the state machine
-            this.seeds = new Dictionary<int, SeedRO>();
+            seeds = new Dictionary<int, SeedRO>();
 
             
 
-            this.ResetRandomizerState();
-            this.initializeCutsceneTriggerStates();
-            this.temporaryRandoOverrides = new List<EItems>();
+            ResetRandomizerState();
+            initializeCutsceneTriggerStates();
+            temporaryRandoOverrides = new List<EItems>();
         }
 
         private void initializeCutsceneTriggerStates()
@@ -93,14 +94,14 @@ namespace MessengerRando
         public void ResetSeedForFileSlot(int fileSlot)
         {
             //Simply keeping resetting logic here in case I want to change it i'll only do so here
-            Console.WriteLine($"Resetting file slot '{fileSlot}'");
+            Debug.Log($"Resetting file slot '{fileSlot}'");
             if (seeds.ContainsKey(fileSlot))
             {
                 seeds[fileSlot] = new SeedRO(fileSlot, SeedType.None, 0, null, null, null);
                 if (DefeatedBosses == null) DefeatedBosses = new Dictionary<int, List<string>>();
                 DefeatedBosses[fileSlot] = new List<string>();
             }
-            Console.WriteLine("File slot reset complete.");
+            Debug.Log("File slot reset complete.");
         }
 
         /// <summary>
@@ -109,14 +110,9 @@ namespace MessengerRando
         /// <returns>true if a seed was found and that the seed has a non-zero seed number and that seed does not have a NONE seed type. False otherwise.</returns>
         public bool HasSeedForFileSlot(int fileSlot)
         {
-            bool seedFound = false;
-
-            if(this.seeds.ContainsKey(fileSlot) && this.seeds[fileSlot].Seed != 0 && this.seeds[fileSlot].SeedType != SeedType.None)
-            {
-                seedFound = true;
-            }
-
-            return seedFound;
+            return seeds.ContainsKey(fileSlot) &&
+                   seeds[fileSlot].Seed != 0 &&
+                   seeds[fileSlot].SeedType != SeedType.None;
         }
 
         public void ResetRandomizerState()
@@ -171,70 +167,13 @@ namespace MessengerRando
         {
             bool isLocationRandomized = false;
             locationFromItem = null;
-            
-            if (ArchipelagoClient.HasConnected)
-            {
-                locationFromItem = ItemsAndLocationsHandler.ArchipelagoLocations.Find(location => location.PrettyLocationName.Equals(vanillaLocationItem.ToString()));
-                if (locationFromItem != null ) isLocationRandomized = true;
-                return isLocationRandomized;
-            }
 
-            //We'll check through notes first
-            foreach (RandoItemRO note in RandomizerConstants.GetNotesList())
-            {
-                if (note.Item.Equals(vanillaLocationItem))
-                {
-                    
-                    locationFromItem = new LocationRO(note.Name);
-
-                    if (CurrentLocationToItemMapping.ContainsKey(locationFromItem))
-                    {
-                        isLocationRandomized = true;
-                    }
-                    else
-                    {
-                        //Then we know for certain it was not randomized. No reason to continue.
-                        locationFromItem = null;
-                        return false;
-                    }
-                }
-            }
-
-            //If it wasn't a note we'll look through the rest of the items
-            if (!isLocationRandomized){
-                
-                //Real quick, check Climbing Claws because it is special
-                if(EItems.CLIMBING_CLAWS.Equals(vanillaLocationItem))
-                {
-                    locationFromItem = new LocationRO("Climbing_Claws");
-                    return true;
-                }
-
-
-                foreach (RandoItemRO item in CurrentLocationToItemMapping.Values)
-                {
-                    if (item.Item.Equals(vanillaLocationItem))
-                    { 
-
-                        locationFromItem = new LocationRO(item.Name);
-
-                        if (CurrentLocationToItemMapping.ContainsKey(locationFromItem))
-                        {
-                            isLocationRandomized = true;
-                        }
-                        else
-                        {
-                            //Then we know for certain it was not randomized.
-                            locationFromItem = null;
-                            return false;
-                        }
-
-                    }
-                }
-
-            }
-
-            //Return whether we found it or not.
+            if (!ArchipelagoClient.HasConnected) return isLocationRandomized;
+            locationFromItem = ItemsAndLocationsHandler.ArchipelagoLocations.Find(location =>
+                location.PrettyLocationName.Equals(vanillaLocationItem.ToString()));
+            if (locationFromItem != null &&
+                ArchipelagoClient.ServerData.LocationToItemMapping.ContainsKey(locationFromItem))
+                isLocationRandomized = true;
             return isLocationRandomized;
         }
 
@@ -243,33 +182,32 @@ namespace MessengerRando
         /// </summary>
         public void LogCurrentMappings()
         {
-            if(this.CurrentLocationToItemMapping != null)
+            if(CurrentLocationToItemMapping != null)
             {
-                Console.WriteLine("----------------BEGIN Current Mappings----------------");
+                Debug.Log("----------------BEGIN Current Mappings----------------");
                 foreach (LocationRO check in this.CurrentLocationToItemMapping.Keys)
                 {
-                    Console.WriteLine($"Check '{check.PrettyLocationName}'({check.LocationName}) contains Item '{this.CurrentLocationToItemMapping[check]}' for {CurrentLocationToItemMapping[check].RecipientName}");
-                    //Console.WriteLine($"Item '{this.CurrentLocationToItemMapping[check]}' is located at Check '{check.PrettyLocationName}'");
+                    Debug.Log($"Check '{check.PrettyLocationName}'({check.LocationName}) contains Item '{CurrentLocationToItemMapping[check]}' for {CurrentLocationToItemMapping[check].RecipientName}");
                 }
-                Console.WriteLine("----------------END Current Mappings----------------");
+                Debug.Log("----------------END Current Mappings----------------");
             }
             else
             {
-                Console.WriteLine("Location mappings were not set for this seed.");
+                Debug.Log("Location mappings were not set for this seed.");
             }
 
             if (CurrentLocationDialogtoRandomDialogMapping != null)
             {
-                Console.WriteLine("----------------BEGIN Current Dialog Mappings----------------");
+                Debug.Log("----------------BEGIN Current Dialog Mappings----------------");
                 foreach (KeyValuePair<string, string> KVP in CurrentLocationDialogtoRandomDialogMapping)
                 {
-                    Console.WriteLine($"Dialog '{KVP.Value}' is located at Check '{KVP.Key}'");
+                    Debug.Log($"Dialog '{KVP.Value}' is located at Check '{KVP.Key}'");
                 }
-                Console.WriteLine("----------------END Current Dialog Mappings----------------");
+                Debug.Log("----------------END Current Dialog Mappings----------------");
             }
             else
             {
-                Console.WriteLine("Dialog mappings were not set for this seed.");
+                Debug.Log("Dialog mappings were not set for this seed.");
             }
         }
 

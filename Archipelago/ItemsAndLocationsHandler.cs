@@ -42,6 +42,7 @@ namespace MessengerRando.Archipelago
             var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
             ArchipelagoLocations.AddRange(megaShards);
             ArchipelagoLocations.AddRange(BossLocations);
+            ArchipelagoLocations.AddRange(ShopLocations);
             foreach (var progLocation in ArchipelagoLocations)
             {
                 LocationsLookup.Add(progLocation, offset);
@@ -91,6 +92,31 @@ namespace MessengerRando.Archipelago
             new RandoItemRO("Timeshard (100)", EItems.TIME_SHARD),
             new RandoItemRO("Timeshard (300)", EItems.TIME_SHARD),
             new RandoItemRO("Timeshard (500)", EItems.TIME_SHARD),
+            //shop items
+            new RandoItemRO("Karuta Plates", EItems.HEART_CONTAINER),
+            new RandoItemRO("Serendipitous Bodies", EItems.ENEMY_DROP_HP),
+            new RandoItemRO("Path of Resilience", EItems.DAMAGE_REDUCTION),
+            new RandoItemRO("Kusari Jacket", EItems.HEART_CONTAINER),
+            new RandoItemRO("Energy Shuriken", EItems.SHURIKEN),
+            new RandoItemRO("Serendipitous Minds", EItems.ENEMY_DROP_MANA),
+            new RandoItemRO("Prepared Mind", EItems.SHURIKEN_UPGRADE),
+            new RandoItemRO("Meditation", EItems.CHECKPOINT_UPGRADE),
+            new RandoItemRO("Rejuvenative Spirit", EItems.POTION_FULL_HEAL_AND_HP_UPGRADE),
+            new RandoItemRO("Centered Mind", EItems.SHURIKEN_UPGRADE),
+            new RandoItemRO("Strike of the Ninja", EItems.ATTACK_PROJECTILES),
+            new RandoItemRO("Second Wind", EItems.AIR_RECOVER),
+            new RandoItemRO("Currents Master", EItems.SWIM_DASH),
+            new RandoItemRO("Aerobatics Warrior", EItems.GLIDE_ATTACK),
+            new RandoItemRO("Demon's Bane", EItems.CHARGED_ATTACK),
+            new RandoItemRO("Devil's Due", EItems.QUARBLE_DISCOUNT_50),
+            new RandoItemRO("Time Sense", EItems.MAP_TIME_WARP),
+            new RandoItemRO("Power Sense", EItems.MAP_POWER_SEAL_TOTAL),
+            new RandoItemRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS),
+            new RandoItemRO("Money Wrench", EItems.MONEY_WRENCH),
+            new RandoItemRO("Health", EItems.POTION),
+            new RandoItemRO("Mana", EItems.MANA),
+            new RandoItemRO("Feather", EItems.FEATHER),
+            new RandoItemRO("Mask Fragment", EItems.MASK_PIECE),
         };
 
         public static readonly List<LocationRO> ArchipelagoLocations = new List<LocationRO>
@@ -193,7 +219,32 @@ namespace MessengerRando.Archipelago
             new LocationRO("EmeraldGolem"),
             new LocationRO("QueenOfQuills"),
         };
-        
+
+        private static readonly List<LocationRO> ShopLocations = new List<LocationRO>
+        {
+            //shop items
+            new LocationRO("Karuta Plates", EItems.HEART_CONTAINER),
+            new LocationRO("Serendipitous Bodies", EItems.ENEMY_DROP_HP),
+            new LocationRO("Path of Resilience", EItems.DAMAGE_REDUCTION),
+            new LocationRO("Kusari Jacket", EItems.HEART_CONTAINER),
+            new LocationRO("Energy Shuriken", EItems.SHURIKEN),
+            new LocationRO("Serendipitous Minds", EItems.ENEMY_DROP_MANA),
+            new LocationRO("Prepared Mind", EItems.SHURIKEN_UPGRADE),
+            new LocationRO("Meditation", EItems.CHECKPOINT_UPGRADE),
+            new LocationRO("Rejuvenative Spirit", EItems.POTION_FULL_HEAL_AND_HP_UPGRADE),
+            new LocationRO("Centered Mind", EItems.SHURIKEN_UPGRADE),
+            new LocationRO("Strike of the Ninja", EItems.ATTACK_PROJECTILES),
+            new LocationRO("Second Wind", EItems.AIR_RECOVER),
+            new LocationRO("Currents Master", EItems.SWIM_DASH),
+            new LocationRO("Aerobatics Warrior", EItems.GLIDE_ATTACK),
+            new LocationRO("Demon's Bane", EItems.CHARGED_ATTACK),
+            new LocationRO("Devil's Due", EItems.QUARBLE_DISCOUNT_50),
+            new LocationRO("Time Sense", EItems.MAP_TIME_WARP),
+            new LocationRO("Power Sense", EItems.MAP_POWER_SEAL_TOTAL),
+            new LocationRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS),
+            new LocationRO("Money Wrench", EItems.MONEY_WRENCH),
+        };
+
         /// <summary>
         /// We received an item from the server so add it to our inventory. Set the quantity to an absurd number here so we can differentiate.
         /// </summary>

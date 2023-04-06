@@ -26,16 +26,12 @@ namespace MessengerRando
     /// </summary>
     public class RandomizerMain : CourierModule
     {
-        private const string RANDO_OPTION_KEY = "minous27RandoSeeds";
-        private const int MAX_BEATABLE_SEED_ATTEMPTS = 1;
-
         private float updateTimer;
         private float updateTime = 3.0f;
 
         private RandomizerStateManager randoStateManager;
         private RandomizerSaveMethod randomizerSaveMethod;
 
-        TextEntryButtonInfo loadRandomizerFileForFileSlotButton;
         TextEntryButtonInfo resetRandoSaveFileButton;
   
         SubMenuButtonInfo versionButton;
@@ -84,9 +80,6 @@ namespace MessengerRando
 
             //Add current seed number button
             seedNumButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Current seed number: " + GetCurrentSeedNum(), null);
-
-            //Add load seed file button
-            loadRandomizerFileForFileSlotButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Load Randomizer File For File Slot", (entry) => OnEnterFileSlot(entry), 1, () => "Which save slot would you like to start a rando seed?(1/2/3)", () => "1", CharsetFlags.Number);
 
             //Add Reset rando mod button
             resetRandoSaveFileButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Reset Randomizer File Slot", (entry) => OnRandoFileResetConfirmation(entry), 1, () => "Are you sure you wish to reset your save file for randomizer play?(y/n)", () => "n", CharsetFlags.Letter);
@@ -151,7 +144,9 @@ namespace MessengerRando
             On.DialogCutscene.Play += DialogCutscene_Play;
             On.CatacombLevelInitializer.OnBeforeInitDone += CatacombLevelInitializer_OnBeforeInitDone;
             On.DialogManager.LoadDialogs_ELanguage += DialogChanger.LoadDialogs_Elanguage;
-            On.UpgradeButtonData.IsStoryUnlocked += UpgradeButtonData_IsStoryUnlocked;
+            // shop management
+            On.UpgradeButtonData.GetPrice += RandoShopManager.GetPrice;
+            On.UpgradeButtonData.IsStoryUnlocked += RandoShopManager.IsStoryUnlocked;
             // boss management
             On.ProgressionManager.HasDefeatedBoss +=
                 (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
@@ -192,7 +187,6 @@ namespace MessengerRando
         public override void Initialize()
         {
             //I only want the generate seed/enter seed mod options available when not in the game.
-            loadRandomizerFileForFileSlotButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
             resetRandoSaveFileButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE;
             //Also the AP buttons
             archipelagoHostButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
@@ -272,68 +266,17 @@ namespace MessengerRando
 
         void InventoryManager_AddItem(On.InventoryManager.orig_AddItem orig, InventoryManager self, EItems itemId, int quantity)
         {
-
-            LocationRO randoItemCheck;
-
-            if (itemId != EItems.TIME_SHARD) //killing the timeshard noise in the logs
+            Debug.Log($"Called InventoryManager_AddItem method. Looking to give x{quantity} amount of item '{itemId}'.");
+            if (quantity == ItemsAndLocationsHandler.APQuantity)
             {
-                Console.WriteLine($"Called InventoryManager_AddItem method. Looking to give x{quantity} amount of item '{itemId}'.");
-                if (quantity == ItemsAndLocationsHandler.APQuantity)
-                {
-                    //We received this item from the AP server so grant it
-                    orig(self, itemId, 1);
-                    return;
-                }
-                if (ArchipelagoClient.HasConnected && randoStateManager.IsLocationRandomized(itemId, out randoItemCheck))
-                {
-                    ItemsAndLocationsHandler.SendLocationCheck(randoItemCheck);
-                    if (string.IsNullOrEmpty(randoStateManager.CurrentLocationToItemMapping[randoItemCheck].RecipientName))
-                    {
-
-                        //This isn't our item so we add it to rando state and exit, otherwise the existing rando code can resolve it fine
-                        randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Add(ArchipelagoClient.ServerData.LocationToItemMapping[randoItemCheck]);
-                        return;
-                    }
-                    Console.WriteLine("Need to grant item");
-                    Console.WriteLine($"{randoStateManager.IsRandomizedFile} | {!RandomizerStateManager.Instance.HasTempOverrideOnRandoItem(itemId)} | {randoStateManager.IsLocationRandomized(itemId, out randoItemCheck)}");
-                }
+                orig(self, itemId, 1);
+                return;
             }
-
-            //Wierd Ruxxtin logic stuff
-            if(EItems.NONE.Equals(itemId))
+            if (randoStateManager.IsLocationRandomized(itemId, out var randoItemCheck))
             {
-                Console.WriteLine("Looks like Ruxxtin has a timeshard.");
+                ItemsAndLocationsHandler.SendLocationCheck(randoItemCheck);
+                return;
             }
-
-            //Lets make sure that the item they are collecting is supposed to be randomized
-            if (randoStateManager.IsRandomizedFile && !RandomizerStateManager.Instance.HasTempOverrideOnRandoItem(itemId) && randoStateManager.IsLocationRandomized(itemId, out randoItemCheck))
-            {
-                //Based on the item that is attempting to be added, determine what SHOULD be added instead
-                RandoItemRO randoItemId = randoStateManager.CurrentLocationToItemMapping[randoItemCheck];
-                
-                Console.WriteLine($"Randomizer magic engage! Game wants item '{itemId}', giving it rando item '{randoItemId}' with a quantity of '{quantity}'");
-                
-                //If that item is the windmill shuriken, immediately activate it and the mod option
-                if(EItems.WINDMILL_SHURIKEN.Equals(randoItemId.Item))
-                {
-                    OnToggleWindmillShuriken();
-                }
-                else if (EItems.TIME_SHARD.Equals(randoItemId.Item)) //Handle timeshards
-                {
-                    Manager<InventoryManager>.Instance.CollectTimeShard(quantity);
-                    randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Add(randoItemId);
-                    return; //Collecting timeshards internally call add item so I dont need to do it again.
-                }
-
-                //Set the itemId to the new item
-                itemId = randoItemId.Item;
-                //Set this item to have been collected in the state manager
-                randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Add(randoItemId);
-
-                //Save
-                Save.seedData = randomizerSaveMethod.GenerateSaveData();
-            }
-            
             //Call original add with items
             orig(self, itemId, quantity);
             
@@ -732,28 +675,6 @@ namespace MessengerRando
             
         }
 
-        bool UpgradeButtonData_IsStoryUnlocked(On.UpgradeButtonData.orig_IsStoryUnlocked orig, UpgradeButtonData self)
-        {
-            bool isUnlocked;
-
-            //Checking if this particular upgrade is the glide attack
-            if(EShopUpgradeID.GLIDE_ATTACK.Equals(self.upgradeID))
-            {
-                //Unlock the glide attack (no need to keep it hidden, player can just buy it whenever they want.
-                isUnlocked = true;
-            }
-            else
-            {
-                isUnlocked = orig(self);
-            }
-
-            //I think there is where I can catch things like checks for the wingsuit attack upgrade.
-            Console.WriteLine($"Checking upgrade '{self.upgradeID}'. Is story unlocked: {isUnlocked}");
-
-            return isUnlocked;
-        }
-        
-        
         void MegaTimeShard_OnBreakDone(On.MegaTimeShard.orig_OnBreakDone orig, MegaTimeShard self)
         {
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();

@@ -695,29 +695,13 @@ namespace MessengerRando
         //Fixing necro cutscene check
         void CatacombLevelInitializer_OnBeforeInitDone(On.CatacombLevelInitializer.orig_OnBeforeInitDone orig, CatacombLevelInitializer self)
         {
-            LocationRO necroLocation;
-            if(randoStateManager.IsRandomizedFile && randoStateManager.IsLocationRandomized(EItems.NECROPHOBIC_WORKER, out necroLocation))
+            //check to see if we already have the item at Necro check
+            if(ArchipelagoClient.HasConnected)
             {
-                //check to see if we already have the item at Necro check
-                if (ArchipelagoClient.HasConnected &&
-                    !ArchipelagoClient.ServerData.CheckedLocations.Contains(
-                        ItemsAndLocationsHandler.LocationsLookup[necroLocation]))
+                if (!ArchipelagoClient.ServerData.CheckedLocations
+                    .Contains(ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Necro")]))
                     self.necrophobicWorkerCutscene.Play();
-                
-                //if (Manager<InventoryManager>.Instance.GetItemQuantity(randoStateManager.CurrentLocationToItemMapping[new LocationRO(EItems.NECROPHOBIC_WORKER.ToString())].Item) <= 0 && !Manager<DemoManager>.Instance.demoMode)
-                if (!randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Contains(randoStateManager.CurrentLocationToItemMapping[necroLocation]) && !Manager<DemoManager>.Instance.demoMode)
-                {
-                    //Run the cutscene if we dont
-                    Console.WriteLine($"Have not received item '{randoStateManager.CurrentLocationToItemMapping[necroLocation]}' from Necro check. Playing cutscene.");
-                    self.necrophobicWorkerCutscene.Play();
-                }
-                //if (Manager<InventoryManager>.Instance.GetItemQuantity(randoStateManager.CurrentLocationToItemMapping[new LocationRO(EItems.NECROPHOBIC_WORKER.ToString())].Item) >= 1 || Manager<DemoManager>.Instance.demoMode)
-                if (randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Contains(randoStateManager.CurrentLocationToItemMapping[necroLocation]) || Manager<DemoManager>.Instance.demoMode)
-                {
-                    //set necro inactive if we do
-                    Console.WriteLine($"Already have item '{randoStateManager.CurrentLocationToItemMapping[necroLocation]}' from Necro check. Will not play cutscene.");
-                    self.necrophobicWorkerCutscene.phobekin.gameObject.SetActive(false);
-                }
+                else self.necrophobicWorkerCutscene.phobekin.gameObject.SetActive(false);
                 //Call our overriden fixing function
                 RandoCatacombLevelInitializer.FixPlayerStuckInChallengeRoom();
             }
@@ -827,8 +811,7 @@ namespace MessengerRando
             {
                 if (randoStateManager.IsLocationRandomized(EItems.RUXXTIN_AMULET, out var check))
                 {
-                    var locID = ItemsAndLocationsHandler.LocationsLookup
-                        .FirstOrDefault(location => location.Key.Equals(check)).Value;
+                    var locID = ItemsAndLocationsHandler.LocationsLookup[check];
                     if (!ArchipelagoClient.ServerData.CheckedLocations.Contains(locID))
                     {
                         var sendItem = randoStateManager.CurrentLocationToItemMapping[check];

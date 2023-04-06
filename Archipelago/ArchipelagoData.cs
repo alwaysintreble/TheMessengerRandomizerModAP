@@ -110,7 +110,11 @@ namespace MessengerRando.Archipelago
                         var genSettings = JsonConvert.DeserializeObject<Dictionary<string, string>>(settings.ToString());
                         foreach (string settingType in genSettings.Keys)
                         {
-                            mapping.Add((SettingType)Enum.Parse(typeof(SettingType), settingType), (SettingValue)Enum.Parse(typeof(SettingValue), genSettings[settingType]));
+                            try
+                            {
+                                mapping.Add((SettingType)Enum.Parse(typeof(SettingType), settingType),
+                                    (SettingValue)Enum.Parse(typeof(SettingValue), genSettings[settingType]));   
+                            } catch (Exception e) { }
                         }
                     }
                 }

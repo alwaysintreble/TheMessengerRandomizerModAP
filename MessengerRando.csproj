@@ -94,6 +94,7 @@
     <Compile Include="GameOverrideManagers\RandoBossManager.cs" />
     <Compile Include="GameOverrideManagers\RandoPowerSealManager.cs" />
     <Compile Include="GameOverrideManagers\RandoLevelManager.cs" />
+    <Compile Include="GameOverrideManagers\RandoShopManager.cs" />
     <Compile Include="GameOverrideManagers\RandoTimeShardManager.cs" />
     <Compile Include="Overrides\RandoCatacombLevelInitializer.cs" />
     <Compile Include="RO\SamplePlayerRO.cs" />
@@ -115,6 +116,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utils\Constants" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

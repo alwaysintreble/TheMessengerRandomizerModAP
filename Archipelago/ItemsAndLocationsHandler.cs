@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using MessengerRando.RO;
 using MessengerRando.GameOverrideManagers;
+using UnityEngine;
 
 namespace MessengerRando.Archipelago
 {
@@ -31,24 +32,28 @@ namespace MessengerRando.Archipelago
             foreach (var item in ArchipelagoItems)
             {
                 ItemsLookup.Add(offset, item);
+                // Console.WriteLine($"{item.Name}: {offset}");
                 ++offset;
             }
 
             offset = baseOffset;
             Console.WriteLine("Building LocationsLookup...");
             LocationsLookup = new Dictionary<LocationRO, long>();
-            var megaShards = RandoTimeShardManager.MegaShardLookup.Values.ToList();
+            var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
             ArchipelagoLocations.AddRange(megaShards);
+            ArchipelagoLocations.AddRange(BossLocations);
+            ArchipelagoLocations.AddRange(ShopLocations);
             foreach (var progLocation in ArchipelagoLocations)
             {
                 LocationsLookup.Add(progLocation, offset);
+                // Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
                 ++offset;
             }
 
             randoStateManager = RandomizerStateManager.Instance;
         }
 
-        public static List<RandoItemRO> ArchipelagoItems = new List<RandoItemRO>()
+        private static readonly List<RandoItemRO> ArchipelagoItems = new List<RandoItemRO>
         {
             //notes
             new RandoItemRO("Key_Of_Hope", EItems.KEY_OF_HOPE),
@@ -78,13 +83,43 @@ namespace MessengerRando.Archipelago
             new RandoItemRO("Pyro", EItems.PYROPHOBIC_WORKER),
             new RandoItemRO("Claustro", EItems.CLAUSTROPHOBIC_WORKER),
             new RandoItemRO("Acro", EItems.ACROPHOBIC_WORKER),
-            //Power seals - not sure if i can make these work
+            //Power seals
             new RandoItemRO("PowerSeal", EItems.POWER_SEAL),
             //time shards
             new RandoItemRO("Timeshard", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (10)", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (50)", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (100)", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (300)", EItems.TIME_SHARD),
+            new RandoItemRO("Timeshard (500)", EItems.TIME_SHARD),
+            //shop items
+            new RandoItemRO("Karuta Plates", EItems.HEART_CONTAINER),
+            new RandoItemRO("Serendipitous Bodies", EItems.ENEMY_DROP_HP),
+            new RandoItemRO("Path of Resilience", EItems.DAMAGE_REDUCTION),
+            new RandoItemRO("Kusari Jacket", EItems.HEART_CONTAINER),
+            new RandoItemRO("Energy Shuriken", EItems.SHURIKEN),
+            new RandoItemRO("Serendipitous Minds", EItems.ENEMY_DROP_MANA),
+            new RandoItemRO("Prepared Mind", EItems.SHURIKEN_UPGRADE),
+            new RandoItemRO("Meditation", EItems.CHECKPOINT_UPGRADE),
+            new RandoItemRO("Rejuvenative Spirit", EItems.POTION_FULL_HEAL_AND_HP_UPGRADE),
+            new RandoItemRO("Centered Mind", EItems.SHURIKEN_UPGRADE),
+            new RandoItemRO("Strike of the Ninja", EItems.ATTACK_PROJECTILES),
+            new RandoItemRO("Second Wind", EItems.AIR_RECOVER),
+            new RandoItemRO("Currents Master", EItems.SWIM_DASH),
+            new RandoItemRO("Aerobatics Warrior", EItems.GLIDE_ATTACK),
+            new RandoItemRO("Demon's Bane", EItems.CHARGED_ATTACK),
+            new RandoItemRO("Devil's Due", EItems.QUARBLE_DISCOUNT_50),
+            new RandoItemRO("Time Sense", EItems.MAP_TIME_WARP),
+            new RandoItemRO("Power Sense", EItems.MAP_POWER_SEAL_TOTAL),
+            new RandoItemRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS),
+            new RandoItemRO("Money Wrench", EItems.MONEY_WRENCH),
+            new RandoItemRO("Health", EItems.POTION),
+            new RandoItemRO("Mana", EItems.MANA),
+            new RandoItemRO("Feather", EItems.FEATHER),
+            new RandoItemRO("Mask Fragment", EItems.MASK_PIECE),
         };
 
-        public static List<LocationRO> ArchipelagoLocations = new List<LocationRO>()
+        public static readonly List<LocationRO> ArchipelagoLocations = new List<LocationRO>
         {
             //notes
             new LocationRO("Key_Of_Love", EItems.KEY_OF_LOVE),
@@ -176,7 +211,40 @@ namespace MessengerRando.Archipelago
             new LocationRO("18361868372388", "Elemental Skylands Seal - Water Seal"),
             new LocationRO("28602892356388", "Elemental Skylands Seal - Fire Seal"),
         };
-        
+
+        private static readonly List<LocationRO> BossLocations = new List<LocationRO>
+        {
+            new LocationRO("LeafGolem"),
+            new LocationRO("Necromancer"),
+            new LocationRO("EmeraldGolem"),
+            new LocationRO("QueenOfQuills"),
+        };
+
+        private static readonly List<LocationRO> ShopLocations = new List<LocationRO>
+        {
+            //shop items
+            new LocationRO("Karuta Plates", EItems.HEART_CONTAINER),
+            new LocationRO("Serendipitous Bodies", EItems.ENEMY_DROP_HP),
+            new LocationRO("Path of Resilience", EItems.DAMAGE_REDUCTION),
+            new LocationRO("Kusari Jacket", EItems.HEART_CONTAINER),
+            new LocationRO("Energy Shuriken", EItems.SHURIKEN),
+            new LocationRO("Serendipitous Minds", EItems.ENEMY_DROP_MANA),
+            new LocationRO("Prepared Mind", EItems.SHURIKEN_UPGRADE),
+            new LocationRO("Meditation", EItems.CHECKPOINT_UPGRADE),
+            new LocationRO("Rejuvenative Spirit", EItems.POTION_FULL_HEAL_AND_HP_UPGRADE),
+            new LocationRO("Centered Mind", EItems.SHURIKEN_UPGRADE),
+            new LocationRO("Strike of the Ninja", EItems.ATTACK_PROJECTILES),
+            new LocationRO("Second Wind", EItems.AIR_RECOVER),
+            new LocationRO("Currents Master", EItems.SWIM_DASH),
+            new LocationRO("Aerobatics Warrior", EItems.GLIDE_ATTACK),
+            new LocationRO("Demon's Bane", EItems.CHARGED_ATTACK),
+            new LocationRO("Devil's Due", EItems.QUARBLE_DISCOUNT_50),
+            new LocationRO("Time Sense", EItems.MAP_TIME_WARP),
+            new LocationRO("Power Sense", EItems.MAP_POWER_SEAL_TOTAL),
+            new LocationRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS),
+            new LocationRO("Money Wrench", EItems.MONEY_WRENCH),
+        };
+
         /// <summary>
         /// We received an item from the server so add it to our inventory. Set the quantity to an absurd number here so we can differentiate.
         /// </summary>
@@ -197,6 +265,21 @@ namespace MessengerRando.Archipelago
                     break;
                 case EItems.TIME_SHARD:
                     Console.WriteLine("Unlocking time shards...");
+                    switch (randoItem.Name)
+                    {
+                        case "Timeshard": quantity = 1;
+                            break;
+                        case "Timeshard (10)": quantity = 10;
+                            break;
+                        case "Timeshard (50)": quantity = 50;
+                            break;
+                        case "Timeshard (100)": quantity = 100;
+                            break;
+                        case "Timeshard (300)": quantity = 300;
+                            break;
+                        case "Timeshard (500)": quantity = 500;
+                            break;
+                    }
                     Manager<InventoryManager>.Instance.CollectTimeShard(quantity);
                     break;
                 case EItems.POWER_SEAL:
@@ -212,7 +295,8 @@ namespace MessengerRando.Archipelago
         public static void SendLocationCheck(LocationRO checkedLocation)
         {
             Console.WriteLine($"Player found item at {checkedLocation.PrettyLocationName}");
-            long checkID = LocationsLookup[checkedLocation];
+            if (!LocationsLookup.TryGetValue(checkedLocation, out var checkID)) return;
+            Console.WriteLine($"Sending {checkID}");
             ArchipelagoClient.ServerData.CheckedLocations.Add(checkID);
             if (ArchipelagoClient.Authenticated)
                 ThreadPool.QueueUserWorkItem(o =>

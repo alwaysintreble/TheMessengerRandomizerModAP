@@ -245,6 +245,12 @@ namespace MessengerRando.Archipelago
             new LocationRO("Money Wrench", EItems.MONEY_WRENCH),
         };
 
+        private static readonly Dictionary<string, string> SpecialNames = new Dictionary<string, string>
+        {
+            { "Karuta Plates", "Kusari Jacket" },
+            { "Prepared Mind", "Centered Mind" },
+        };
+
         /// <summary>
         /// We received an item from the server so add it to our inventory. Set the quantity to an absurd number here so we can differentiate.
         /// </summary>
@@ -296,6 +302,13 @@ namespace MessengerRando.Archipelago
         {
             Console.WriteLine($"Player found item at {checkedLocation.PrettyLocationName}");
             if (!LocationsLookup.TryGetValue(checkedLocation, out var checkID)) return;
+            if (ArchipelagoClient.ServerData.CheckedLocations.Contains(checkID) &&
+                SpecialNames.TryGetValue(checkedLocation.LocationName, out var name))
+            {
+                checkedLocation = new LocationRO(name,
+                    (EItems)Enum.Parse(typeof(EItems), checkedLocation.PrettyLocationName));
+                LocationsLookup.TryGetValue(checkedLocation, out checkID);
+            }
             Console.WriteLine($"Sending {checkID}");
             ArchipelagoClient.ServerData.CheckedLocations.Add(checkID);
             if (ArchipelagoClient.Authenticated)

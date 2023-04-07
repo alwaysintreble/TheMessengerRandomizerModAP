@@ -6,12 +6,12 @@ namespace MessengerRando.GameOverrideManagers
 {
     public class RandoLevelManager
     {
-        public static bool Teleporting;
+        private static bool teleporting;
         public static void SkipMusicBox()
         {
-            if (Teleporting)
+            if (teleporting)
             {
-                Teleporting = false;
+                teleporting = false;
                 return;
             }
             Manager<AudioManager>.Instance.StopMusic();
@@ -19,16 +19,14 @@ namespace MessengerRando.GameOverrideManagers
                 ? new Vector2(125, 40)
                 : new Vector2(-428, -55);
 
-            var playerDimension = RandomizerStateManager.Instance.SkipMusicBox ? EBits.BITS_8 : EBits.BITS_16;
-
-            TeleportInArea(ELevel.Level_11_B_MusicBox, playerPosition, playerDimension);
+            TeleportInArea(ELevel.Level_11_B_MusicBox, playerPosition, EBits.BITS_16);
         }
 
         public static void TeleportInArea(ELevel area, Vector2 position, EBits dimension)
         {
-            if (Teleporting)
+            if (teleporting)
             {
-                Teleporting = false;
+                teleporting = false;
                 return;
             }
             Manager<AudioManager>.Instance.StopMusic();
@@ -36,7 +34,7 @@ namespace MessengerRando.GameOverrideManagers
             LevelLoadingInfo levelLoadingInfo = new LevelLoadingInfo(area + "_Build",
                 true, true, LoadSceneMode.Single,
                 ELevelEntranceID.NONE, dimension);
-            Teleporting = true;
+            teleporting = true;
             Manager<LevelManager>.Instance.LoadLevel(levelLoadingInfo);
         }
 

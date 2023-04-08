@@ -165,10 +165,10 @@ namespace MessengerRando.Archipelago
                 if (ServerData.SlotData.TryGetValue("shop", out var shopSettings))
                 {
                     var shopPrices = JsonConvert.DeserializeObject<Dictionary<string, int>>(shopSettings.ToString());
-                    RandoShopManager.shopPrices = new Dictionary<EShopUpgradeID, int>();
+                    RandoShopManager.ShopPrices = new Dictionary<EShopUpgradeID, int>();
                     foreach (var shopItem in shopPrices)
                     {
-                        RandoShopManager.shopPrices.Add(
+                        RandoShopManager.ShopPrices.Add(
                             (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopItem.Key),
                             shopItem.Value);
                     }

@@ -28,7 +28,17 @@ namespace MessengerRando.Archipelago
             long offset = baseOffset;
             Console.WriteLine("Building ItemsLookup...");
             ItemsLookup = new Dictionary<long, RandoItemRO>();
-
+            foreach (var figurine in Enum.GetValues(typeof(EFigurine)))
+                ArchipelagoItems.Add(new RandoItemRO(figurine.ToString(), EItems.NONE));
+            ArchipelagoItems.AddRange(new List<RandoItemRO>
+            {
+                new RandoItemRO("Money Wrench", EItems.MONEY_WRENCH),
+                new RandoItemRO("Health", EItems.POTION),
+                new RandoItemRO("Mana", EItems.MANA),
+                new RandoItemRO("Feather", EItems.FEATHER),
+                new RandoItemRO("Mask Fragment", EItems.MASK_PIECE),
+            });
+            
             foreach (var item in ArchipelagoItems)
             {
                 ItemsLookup.Add(offset, item);
@@ -43,6 +53,10 @@ namespace MessengerRando.Archipelago
             ArchipelagoLocations.AddRange(megaShards);
             ArchipelagoLocations.AddRange(BossLocations);
             ArchipelagoLocations.AddRange(ShopLocations);
+            foreach (var figurine in Enum.GetValues(typeof(EFigurine)))
+                ArchipelagoLocations.Add(new LocationRO(figurine.ToString()));
+            ArchipelagoLocations.Add(new LocationRO("Money Wrench", EItems.MONEY_WRENCH));
+            
             foreach (var progLocation in ArchipelagoLocations)
             {
                 LocationsLookup.Add(progLocation, offset);
@@ -112,11 +126,6 @@ namespace MessengerRando.Archipelago
             new RandoItemRO("Time Sense", EItems.MAP_TIME_WARP),
             new RandoItemRO("Power Sense", EItems.MAP_POWER_SEAL_TOTAL),
             new RandoItemRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS),
-            new RandoItemRO("Money Wrench", EItems.MONEY_WRENCH),
-            new RandoItemRO("Health", EItems.POTION),
-            new RandoItemRO("Mana", EItems.MANA),
-            new RandoItemRO("Feather", EItems.FEATHER),
-            new RandoItemRO("Mask Fragment", EItems.MASK_PIECE),
         };
 
         public static readonly List<LocationRO> ArchipelagoLocations = new List<LocationRO>
@@ -242,7 +251,6 @@ namespace MessengerRando.Archipelago
             new LocationRO("Time Sense", EItems.MAP_TIME_WARP),
             new LocationRO("Power Sense", EItems.MAP_POWER_SEAL_TOTAL),
             new LocationRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS),
-            new LocationRO("Money Wrench", EItems.MONEY_WRENCH),
         };
 
         private static readonly Dictionary<string, string> SpecialNames = new Dictionary<string, string>
@@ -290,6 +298,17 @@ namespace MessengerRando.Archipelago
                     break;
                 case EItems.POWER_SEAL:
                     randoStateManager.PowerSealManager.AddPowerSeal();
+                    break;
+                case EItems.NONE:
+                    try
+                    {
+                        var figurine = (EFigurine)Enum.Parse(typeof(EFigurine), randoItem.Name);
+                        RandoShopManager.UnlockFigurine(figurine);
+                    }
+                    catch
+                    {
+                        break;
+                    }
                     break;
                 default:
                     Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);

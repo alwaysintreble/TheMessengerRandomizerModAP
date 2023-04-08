@@ -146,6 +146,9 @@ namespace MessengerRando
             On.DialogManager.LoadDialogs_ELanguage += DialogChanger.LoadDialogs_Elanguage;
             // shop management
             On.UpgradeButtonData.GetPrice += RandoShopManager.GetPrice;
+            On.SousSol.UnlockFigurine += RandoShopManager.UnlockFigurine;
+            On.Shop.Init += RandoShopManager.ShopInit;
+            On.BuyMoneyWrenchCutscene.OnBuyWrenchChoice += RandoShopManager.BuyMoneyWrench;
             On.UpgradeButtonData.IsStoryUnlocked += RandoShopManager.IsStoryUnlocked;
             // boss management
             On.ProgressionManager.HasDefeatedBoss +=
@@ -266,16 +269,19 @@ namespace MessengerRando
 
         void InventoryManager_AddItem(On.InventoryManager.orig_AddItem orig, InventoryManager self, EItems itemId, int quantity)
         {
-            Debug.Log($"Called InventoryManager_AddItem method. Looking to give x{quantity} amount of item '{itemId}'.");
-            if (quantity == ItemsAndLocationsHandler.APQuantity)
+            if (!itemId.Equals(EItems.TIME_SHARD))
             {
-                orig(self, itemId, 1);
-                return;
-            }
-            if (randoStateManager.IsLocationRandomized(itemId, out var randoItemCheck))
-            {
-                ItemsAndLocationsHandler.SendLocationCheck(randoItemCheck);
-                return;
+                Debug.Log($"Called InventoryManager_AddItem method. Looking to give x{quantity} amount of item '{itemId}'.");
+                if (quantity == ItemsAndLocationsHandler.APQuantity)
+                {
+                    orig(self, itemId, 1);
+                    return;
+                }
+                if (randoStateManager.IsLocationRandomized(itemId, out var randoItemCheck))
+                {
+                    ItemsAndLocationsHandler.SendLocationCheck(randoItemCheck);
+                    return;
+                }
             }
             //Call original add with items
             orig(self, itemId, quantity);

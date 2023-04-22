@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using MessengerRando.RO;
 using MessengerRando.GameOverrideManagers;
-using UnityEngine;
+using MessengerRando.Utils;
 
 namespace MessengerRando.Archipelago
 {
@@ -12,6 +12,7 @@ namespace MessengerRando.Archipelago
     {
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
+        public static Dictionary<EItems, long> EitemsLocationsLookup;
 
         private static RandomizerStateManager randoStateManager;
 
@@ -49,6 +50,8 @@ namespace MessengerRando.Archipelago
             offset = baseOffset;
             Console.WriteLine("Building LocationsLookup...");
             LocationsLookup = new Dictionary<LocationRO, long>();
+            EitemsLocationsLookup = new Dictionary<EItems, long>();
+            
             var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
             ArchipelagoLocations.AddRange(megaShards);
             ArchipelagoLocations.AddRange(BossLocations);
@@ -61,6 +64,9 @@ namespace MessengerRando.Archipelago
             {
                 LocationsLookup.Add(progLocation, offset);
                 // Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
+                if (progLocation.VanillaItem != EItems.NONE &&
+                    !EitemsLocationsLookup.ContainsKey(progLocation.VanillaItem))
+                    EitemsLocationsLookup.Add(progLocation.VanillaItem, offset);
                 ++offset;
             }
 
@@ -259,6 +265,33 @@ namespace MessengerRando.Archipelago
             { "Prepared Mind", "Centered Mind" },
         };
 
+        public static long ItemFromEItem(EItems item)
+        {
+            return ItemsLookup.First(x => x.Value.Equals(item)).Key;
+        }
+
+        public static long LocationFromEItem(EItems location)
+        {
+            return !EitemsLocationsLookup.ContainsKey(location) ? 0 : EitemsLocationsLookup[location];
+        }
+
+        public static bool HasDialog(long locationID)
+        {
+            Console.WriteLine($"Checking if {locationID} has associated dialog");
+            var location = LocationsLookup.First(x => x.Value.Equals(locationID)).Key.PrettyLocationName;
+            try
+            {
+                var locationEnum = (EItems)Enum.Parse(typeof(EItems), location);
+                Console.WriteLine($"{locationEnum}");
+                return DialogChanger.ItemDialogID.ContainsKey(locationEnum);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
+        }
+
         /// <summary>
         /// We received an item from the server so add it to our inventory. Set the quantity to an absurd number here so we can differentiate.
         /// </summary>
@@ -275,7 +308,7 @@ namespace MessengerRando.Archipelago
             switch (randoItem.Item)
             {
                 case EItems.WINDMILL_SHURIKEN:
-                    RandomizerMain.OnToggleWindmillShuriken();
+                    APRandomizerMain.OnToggleWindmillShuriken();
                     break;
                 case EItems.TIME_SHARD:
                     Console.WriteLine("Unlocking time shards...");
@@ -314,26 +347,65 @@ namespace MessengerRando.Archipelago
                     Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);
                     break;
             }
-            randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Add(randoItem);
+
+            if (ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(itemToUnlock))
+                ArchipelagoClient.ServerData.ReceivedItems[itemToUnlock] += 1;
+            else
+                ArchipelagoClient.ServerData.ReceivedItems.Add(itemToUnlock, 1);
         }
 
         public static void SendLocationCheck(LocationRO checkedLocation)
         {
-            Console.WriteLine($"Player found item at {checkedLocation.PrettyLocationName}");
-            if (!LocationsLookup.TryGetValue(checkedLocation, out var checkID)) return;
-            if (ArchipelagoClient.ServerData.CheckedLocations.Contains(checkID) &&
-                SpecialNames.TryGetValue(checkedLocation.LocationName, out var name))
+            LocationsLookup.TryGetValue(checkedLocation, out var locationID);
+            SendLocationCheck(locationID);
+        }
+
+        public static void SendLocationCheck(long locationID)
+        {
+            Console.WriteLine($"Checking if we need to modify the location {locationID} before sending");
+            if (ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
             {
-                checkedLocation = new LocationRO(name,
-                    (EItems)Enum.Parse(typeof(EItems), checkedLocation.PrettyLocationName));
-                LocationsLookup.TryGetValue(checkedLocation, out checkID);
+                var locName = LocationsLookup.First(x => x.Value.Equals(locationID)).Key;
+                if (SpecialNames.TryGetValue(locName.LocationName, out var name))
+                {
+                    LocationsLookup.TryGetValue(new LocationRO(name,
+                        (EItems)Enum.Parse(typeof(EItems), locName.PrettyLocationName)), out locationID);
+                }
+                else return;
             }
-            Console.WriteLine($"Sending {checkID}");
-            ArchipelagoClient.ServerData.CheckedLocations.Add(checkID);
+            ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
+            try
+            {
+                Console.WriteLine("Checking if we need to draw a dialog box");
+                if (!HasDialog(locationID))
+                {
+                    if (!randoStateManager.ScoutedLocations.TryGetValue(locationID, out var locationInfo)) return;
+                    DialogChanger.CreateDialogBox(locationInfo.ToReadableString());
+                }
+            } catch {}
+            
+            Console.WriteLine("Sending location checks");
             if (ArchipelagoClient.Authenticated)
                 ThreadPool.QueueUserWorkItem(o =>
                     ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
+            Manager<SaveManager>.Instance.SaveGame();
+        }
+
+        public static void ReSync()
+        {
+            var receivedItems = new Dictionary<long, int>();
+            for (int i = 0; i < ArchipelagoClient.ServerData.Index; i++)
+            {
+                var currentItem = ArchipelagoClient.Session.Items.AllItemsReceived[i].Item;
+                if (!receivedItems.ContainsKey(currentItem)) receivedItems.Add(currentItem, 1);
+                else receivedItems[currentItem] += 1;
+                if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(currentItem) ||
+                    ArchipelagoClient.ServerData.ReceivedItems[currentItem] < receivedItems[currentItem])
+                {
+                    Unlock(currentItem);
+                }
+            }
         }
     }
 }

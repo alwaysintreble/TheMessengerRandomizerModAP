@@ -1,152 +1,148 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Archipelago.MultiClient.Net.Models;
+using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
-using MessengerRando.Utils;
-using MessengerRando.RO;
 using MessengerRando.GameOverrideManagers;
-using UnityEngine;
+using Newtonsoft.Json;
 
-namespace MessengerRando
+namespace MessengerRando.Utils
 {
     class RandomizerStateManager
     {
         public static RandomizerStateManager Instance { private set; get; }
-        public Dictionary<LocationRO, RandoItemRO> CurrentLocationToItemMapping { set; get; }
-        public Dictionary<int, List<string>> DefeatedBosses;
-
-        public bool IsRandomizedFile { set; get; }
         public int CurrentFileSlot { set; get; }
 
         public RandoPowerSealManager PowerSealManager;
         public RandoBossManager BossManager;
 
         public string Goal;
-        public bool SkipMusicBox = false;
-        public bool SkipPhantom = false;
-        public bool MegaShards = false;
+        public bool SkipMusicBox;
+        public bool SkipPhantom;
+        public bool MegaShards;
 
-        private Dictionary<int, SeedRO> seeds;
+        public Dictionary<long, NetworkItem> ScoutedLocations;
+        public Dictionary<int, ArchipelagoData> APSave;
 
-        private Dictionary<EItems, bool> noteCutsceneTriggerStates;
-        public Dictionary<string, string> CurrentLocationDialogtoRandomDialogMapping { set; get; }
-        //This overrides list will be used to track items that, during the giving of items in any particular moment, need to ignore rando logic and just hand the item over.
-        private List<EItems> temporaryRandoOverrides;
-
-        public static void Initialize()
+        public RandomizerStateManager()
         {
-            if(Instance == null)
+            try
             {
-                Instance = new RandomizerStateManager();
+                //Create initial values for the state machine
+                Instance = this;
+                APSave = new Dictionary<int, ArchipelagoData>
+                {
+                    { 1, new ArchipelagoData() },
+                    { 2, new ArchipelagoData() },
+                    { 3, new ArchipelagoData() },
+                };
+                if (ArchipelagoClient.Authenticated) InitializeMultiSeed();   
+            } catch (Exception e) {Console.WriteLine(e);}
+        }
+
+        public static void InitializeMultiSeed()
+        {
+            var slotData = ArchipelagoClient.ServerData.SlotData;
+
+            ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
+                SetupScoutedLocations,
+                ItemsAndLocationsHandler.LocationsLookup.Values
+                    .Where(loc => ArchipelagoClient.Session.Locations.AllMissingLocations.Contains(loc))
+                    .ToArray()
+                );
+
+            if (slotData.TryGetValue("deathlink", out var deathLink))
+                ArchipelagoData.DeathLink = Convert.ToInt32(deathLink) == 1;
+            else Console.WriteLine("Failed to get deathlink option");
+
+            if (slotData.TryGetValue("goal", out var gameGoal))
+            {
+                var goal = (string)gameGoal;
+                Instance.Goal = goal;
+                if (RandoPowerSealManager.Goals.Contains(goal))
+                {
+                    if (slotData.TryGetValue("required_seals", out var requiredSeals))
+                    {
+                        Instance.PowerSealManager =
+                            new RandoPowerSealManager(Convert.ToInt32(requiredSeals));
+                    }
+                }
+
+                if (slotData.TryGetValue("music_box", out var doMusicBox))
+                    Instance.SkipMusicBox = Convert.ToInt32(doMusicBox) == 0;
+                else Console.WriteLine("Failed to get music_box option");
+                
+            }
+            else Console.WriteLine("Failed to get goal option");
+
+            if (slotData.TryGetValue("bosses", out var bosses))
+            {
+                var bossMap = JsonConvert.DeserializeObject<Dictionary<string, string>>(bosses.ToString());
+                Console.WriteLine("Bosses:");
+                foreach (var bossPair in bossMap)
+                {
+                    Console.WriteLine($"{bossPair.Key}: {bossPair.Value}");
+                }
+                try
+                {
+                    Instance.BossManager =
+                        new RandoBossManager(bossMap);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            else Console.WriteLine("Failed to get bosses option");
+
+            if (slotData.TryGetValue("settings", out var genSettings))
+            {
+                var gameSettings = JsonConvert.DeserializeObject<Dictionary<string, string>>(genSettings.ToString());
+                if (gameSettings.TryGetValue("Mega Shards", out var shuffleShards))
+                    if (Convert.ToInt32(shuffleShards) == 1)
+                        Instance.MegaShards = true;
+            }
+            else if (slotData.TryGetValue("mega_shards", out var shuffleShards))
+                if (JsonConvert.DeserializeObject<int>(shuffleShards.ToString()) == 1)
+                    Instance.MegaShards = true;
+
+            if (slotData.TryGetValue("shop", out var shopSettings))
+            {
+                var shopPrices = JsonConvert.DeserializeObject<Dictionary<string, int>>(shopSettings.ToString());
+                RandoShopManager.ShopPrices = new Dictionary<EShopUpgradeID, int>();
+                foreach (var shopItem in shopPrices)
+                {
+                    RandoShopManager.ShopPrices.Add(
+                        (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopItem.Key),
+                        shopItem.Value);
+                }
+            }
+
+            if (slotData.TryGetValue("figures", out var figureSettings))
+            {
+                var figurePrices = JsonConvert.DeserializeObject<Dictionary<string, int>>(figureSettings.ToString());
+                RandoShopManager.FigurePrices = new Dictionary<EFigurine, int>();
+                foreach (var figure in figurePrices)
+                {
+                    RandoShopManager.FigurePrices.Add((EFigurine)Enum.Parse(typeof(EFigurine), figure.Key), figure.Value);
+                }
             }
         }
 
-        private RandomizerStateManager()
+        private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)
         {
-            //Create initial values for the state machine
-            seeds = new Dictionary<int, SeedRO>();
-
-            
-
-            ResetRandomizerState();
-            initializeCutsceneTriggerStates();
-            temporaryRandoOverrides = new List<EItems>();
-        }
-
-        private void initializeCutsceneTriggerStates()
-        {
-            noteCutsceneTriggerStates = new Dictionary<EItems, bool>();
-            noteCutsceneTriggerStates.Add(EItems.KEY_OF_CHAOS, false);
-            noteCutsceneTriggerStates.Add(EItems.KEY_OF_COURAGE, false);
-            noteCutsceneTriggerStates.Add(EItems.KEY_OF_HOPE, false);
-            noteCutsceneTriggerStates.Add(EItems.KEY_OF_LOVE, false);
-            noteCutsceneTriggerStates.Add(EItems.KEY_OF_STRENGTH, false);
-            noteCutsceneTriggerStates.Add(EItems.KEY_OF_SYMBIOSIS, false);
-        }
-
-        /// <summary>
-        /// Add seed to state's collection of seeds, providing all the necessary info to create the SeedRO object.
-        /// </summary>
-        public void AddSeed(int fileSlot, SeedType seedType, int seed, Dictionary<SettingType, SettingValue> settings, List<RandoItemRO> collectedItems, string mappingJson)
-        {
-            AddSeed(new SeedRO(fileSlot, seedType, seed, settings, collectedItems, mappingJson));
-        }
-
-        /// <summary>
-        /// Add seed to state's collection of seeds.
-        /// </summary>
-        public void AddSeed(SeedRO seed)
-        {
-            seeds[seed.FileSlot] = seed;
-        }
-
-        public SeedRO GetSeedForFileSlot(int fileSlot)
-        {
-            if (!seeds.ContainsKey(fileSlot))
+            Instance.ScoutedLocations = new Dictionary<long, NetworkItem>();
+            ArchipelagoClient.ServerData.RandomizedLocations = new List<long>();
+            foreach (var networkItem in scoutedLocationInfo.Locations)
             {
-                seeds[fileSlot] = new SeedRO(fileSlot, SeedType.None, 0, null, null, null);
+                Instance.ScoutedLocations.Add(networkItem.Location, networkItem);
+                ArchipelagoClient.ServerData.RandomizedLocations.Add(networkItem.Location);
             }
-            return seeds[fileSlot];
+            Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
         }
 
-        /// <summary>
-        /// Reset's the state's seed for the provided file slot. This will replace the seed with an empty seed, telling the mod this fileslot is not randomized.
-        /// </summary>
-        public void ResetSeedForFileSlot(int fileSlot)
-        {
-            //Simply keeping resetting logic here in case I want to change it i'll only do so here
-            Debug.Log($"Resetting file slot '{fileSlot}'");
-            if (seeds.ContainsKey(fileSlot))
-            {
-                seeds[fileSlot] = new SeedRO(fileSlot, SeedType.None, 0, null, null, null);
-                if (DefeatedBosses == null) DefeatedBosses = new Dictionary<int, List<string>>();
-                DefeatedBosses[fileSlot] = new List<string>();
-            }
-            Debug.Log("File slot reset complete.");
-        }
-
-        /// <summary>
-        /// Checks to see if a seed exists for the given file slot.
-        /// </summary>
-        /// <returns>true if a seed was found and that the seed has a non-zero seed number and that seed does not have a NONE seed type. False otherwise.</returns>
-        public bool HasSeedForFileSlot(int fileSlot)
-        {
-            return seeds.ContainsKey(fileSlot) &&
-                   seeds[fileSlot].Seed != 0 &&
-                   seeds[fileSlot].SeedType != SeedType.None;
-        }
-
-        public void ResetRandomizerState()
-        {
-            CurrentLocationToItemMapping = new Dictionary<LocationRO, RandoItemRO>();
-            this.IsRandomizedFile = false;
-        }
-
-        public bool IsNoteCutsceneTriggered(EItems note)
-        {
-            return this.noteCutsceneTriggerStates[note];
-        }
-
-        public void SetNoteCutsceneTriggered(EItems note)
-        {
-            this.noteCutsceneTriggerStates[note] = true;
-        }
-
-        public void AddTempRandoItemOverride(EItems randoItem)
-        {
-            temporaryRandoOverrides.Add(randoItem);
-        }
-
-        public void RemoveTempRandoItemOverride(EItems randoItem)
-        {
-            temporaryRandoOverrides.Remove(randoItem);
-        }
-
-        public bool HasTempOverrideOnRandoItem(EItems randoItem)
-        {
-            return temporaryRandoOverrides.Contains(randoItem);
-        }
-
-        public bool IsSafeTeleportState()
+        public static bool IsSafeTeleportState()
         {
             //Unsafe teleport states are shops/hq/boss fights
             return !(Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
@@ -161,55 +157,56 @@ namespace MessengerRando
         /// Check through the mappings for any location that is represented by vanilla location item(since that is the key used to uniquely identify locations).
         /// </summary>
         /// <param name="vanillaLocationItem">EItem being used to look up location.</param>
-        /// <param name="locationFromItem">Out parameter used to return the location found.</param>
+        /// <param name="locationID">Out parameter used to return the location found.</param>
         /// <returns>true if location was found, otherwise false(location item will be null in this case)</returns>
-        public bool IsLocationRandomized(EItems vanillaLocationItem, out LocationRO locationFromItem)
+        public bool IsLocationRandomized(EItems vanillaLocationItem, out long locationID)
         {
-            bool isLocationRandomized = false;
-            locationFromItem = null;
+            var isLocationRandomized = false;
+            locationID = 0;
 
             if (!ArchipelagoClient.HasConnected) return isLocationRandomized;
-            locationFromItem = ItemsAndLocationsHandler.ArchipelagoLocations.Find(location =>
-                location.PrettyLocationName.Equals(vanillaLocationItem.ToString()));
-            if (locationFromItem != null &&
-                ArchipelagoClient.ServerData.LocationToItemMapping.ContainsKey(locationFromItem))
+            try
+            {
+                Console.WriteLine($"checking for {vanillaLocationItem} id");
+                locationID =
+                    ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
+                Console.WriteLine($"checking if {locationID} is in potential checks");
+                if (locationID == 0) return isLocationRandomized;
+                if (ArchipelagoClient.ServerData.RandomizedLocations.Contains(locationID) ||
+                    ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
+                    isLocationRandomized = true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine("trying again...");
+                locationID = ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
+                Console.WriteLine("Randomized Locations: ");
+                foreach (var VARIABLE in ArchipelagoClient.ServerData.RandomizedLocations)
+                {
+                    Console.WriteLine(VARIABLE);
+                }
+                Console.WriteLine("Checked Locations: ");
+                foreach (var VARIABLE in ArchipelagoClient.ServerData.CheckedLocations)
+                {
+                    Console.WriteLine(VARIABLE);
+                }
+
                 isLocationRandomized = true;
+            }
+
             return isLocationRandomized;
         }
 
-        /// <summary>
-        /// Helper method to log out the current mappings all nicely for review
-        /// </summary>
-        public void LogCurrentMappings()
+        public static bool HasCompletedCheck(long locationID)
         {
-            if(CurrentLocationToItemMapping != null)
-            {
-                Debug.Log("----------------BEGIN Current Mappings----------------");
-                foreach (LocationRO check in this.CurrentLocationToItemMapping.Keys)
-                {
-                    Debug.Log($"Check '{check.PrettyLocationName}'({check.LocationName}) contains Item '{CurrentLocationToItemMapping[check]}' for {CurrentLocationToItemMapping[check].RecipientName}");
-                }
-                Debug.Log("----------------END Current Mappings----------------");
-            }
-            else
-            {
-                Debug.Log("Location mappings were not set for this seed.");
-            }
-
-            if (CurrentLocationDialogtoRandomDialogMapping != null)
-            {
-                Debug.Log("----------------BEGIN Current Dialog Mappings----------------");
-                foreach (KeyValuePair<string, string> KVP in CurrentLocationDialogtoRandomDialogMapping)
-                {
-                    Debug.Log($"Dialog '{KVP.Value}' is located at Check '{KVP.Key}'");
-                }
-                Debug.Log("----------------END Current Dialog Mappings----------------");
-            }
-            else
-            {
-                Debug.Log("Dialog mappings were not set for this seed.");
-            }
+            return ArchipelagoClient.ServerData.CheckedLocations != null &&
+                   ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID);
         }
 
+        public static int ReceivedItemsCount()
+        {
+            return ArchipelagoClient.ServerData.ReceivedItems.Sum(item => item.Value);
+        }
     }
 }

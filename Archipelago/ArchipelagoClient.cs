@@ -6,10 +6,10 @@ using System.Threading;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
-using MessengerRando.GameOverrideManagers;
+using MessengerRando.Utils;
 using Mod.Courier.UI;
-using Newtonsoft.Json;
 using static Mod.Courier.UI.TextEntryButtonInfo;
 using UnityEngine;
 
@@ -34,6 +34,7 @@ namespace MessengerRando.Archipelago
 
         public static void ConnectAsync()
         {
+            Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
             ThreadPool.QueueUserWorkItem(_ => Connect(OnConnected));
         }
 
@@ -41,7 +42,7 @@ namespace MessengerRando.Archipelago
         {
             if (ServerData == null)
                 ServerData = new ArchipelagoData();
-            Console.WriteLine($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
+            Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
             Connect(result => OnConnected(result, connectButton));
         }
 
@@ -110,81 +111,19 @@ namespace MessengerRando.Archipelago
                 ServerData.SeedName = Session.RoomState.Seed;
                 Authenticated = true;
 
-                if (ServerData.SlotData.TryGetValue("deathlink", out var deathLink))
-                    ArchipelagoData.DeathLink = Convert.ToInt32(deathLink) == 1;
-                else Console.WriteLine("Failed to get deathlink option");
-
-                if (ServerData.SlotData.TryGetValue("goal", out var gameGoal))
-                {
-                    var goal = (string)gameGoal;
-                    RandomizerStateManager.Instance.Goal = goal;
-                    if (RandoPowerSealManager.Goals.Contains(goal))
-                    {
-                        if (ServerData.SlotData.TryGetValue("required_seals", out var requiredSeals))
-                        {
-                            RandomizerStateManager.Instance.PowerSealManager =
-                                new RandoPowerSealManager(Convert.ToInt32(requiredSeals));
-                        }
-                    }
-
-                    if (ServerData.SlotData.TryGetValue("music_box", out var doMusicBox))
-                        RandomizerStateManager.Instance.SkipMusicBox = Convert.ToInt32(doMusicBox) == 0;
-                    else Console.WriteLine("Failed to get music_box option");
-                    
-                }
-                else Console.WriteLine("Failed to get goal option");
-
-                if (ServerData.SlotData.TryGetValue("bosses", out var bosses))
-                {
-                    var bossMap = JsonConvert.DeserializeObject<Dictionary<string, string>>(bosses.ToString());
-                    Console.WriteLine("Bosses:");
-                    foreach (var bossPair in bossMap)
-                    {
-                        Console.WriteLine($"{bossPair.Key}: {bossPair.Value}");
-                    }
-                    try
-                    {
-                        RandomizerStateManager.Instance.BossManager =
-                            new RandoBossManager(bossMap);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
-                else Console.WriteLine("Failed to get bosses option");
-
-                if (ServerData.SlotData.TryGetValue("settings", out var genSettings))
-                {
-                    var gameSettings = JsonConvert.DeserializeObject<Dictionary<string, string>>(genSettings.ToString());
-                    if (gameSettings.TryGetValue("Mega Shards", out var shuffleShards))
-                        if (Int32.TryParse(shuffleShards, out var shardsSetting) && shardsSetting == 1)
-                            RandomizerStateManager.Instance.MegaShards = true;
-                }
-
-                if (ServerData.SlotData.TryGetValue("shop", out var shopSettings))
-                {
-                    var shopPrices = JsonConvert.DeserializeObject<Dictionary<string, int>>(shopSettings.ToString());
-                    RandoShopManager.ShopPrices = new Dictionary<EShopUpgradeID, int>();
-                    foreach (var shopItem in shopPrices)
-                    {
-                        RandoShopManager.ShopPrices.Add(
-                            (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopItem.Key),
-                            shopItem.Value);
-                    }
-                }
-
+                RandomizerStateManager.InitializeMultiSeed();
+                
                 DeathLinkHandler = new DeathLinkInterface();
                 if (HasConnected)
                 {
-                    foreach (var location in ServerData.CheckedLocations.Where(location =>
-                                 !Session.Locations.AllLocationsChecked.Contains(location)))
-                        Session.Locations.CompleteLocationChecks(location);
+                    if (ServerData.CheckedLocations != null)
+                        foreach (var location in ServerData.CheckedLocations.Where(location =>
+                                     !Session.Locations.AllLocationsChecked.Contains(location)))
+                            Session.Locations.CompleteLocationChecks(location);
                     ServerData.CheckedLocations = Session.Locations.AllLocationsChecked.ToList();
                     return;
                 }
 
-                ServerData.UpdateSave();
                 HasConnected = true;
             }
             else
@@ -215,8 +154,19 @@ namespace MessengerRando.Archipelago
         {
             foreach (var checkedLocation in checkedLocations)
             {
-                if (!ServerData.CheckedLocations.Contains(checkedLocation))
-                    ServerData.CheckedLocations.Add(checkedLocation);
+                try
+                {
+                    if (!ServerData.CheckedLocations.Contains(checkedLocation))
+                        ServerData.CheckedLocations.Add(checkedLocation);
+                    var locName = Session.Locations.GetLocationNameFromId(checkedLocation);
+                    if (!locName.Contains("Seal")) continue;
+                    var roomKey =
+                        ItemsAndLocationsHandler.ArchipelagoLocations.Find(
+                            loc => loc.PrettyLocationName.Equals(locName)).LocationName;
+                    Console.WriteLine($"{locName}, {roomKey}");
+                    Manager<ProgressionManager>.Instance.SetChallengeRoomAsCompleted(roomKey);
+                }
+                catch (Exception e) {Console.WriteLine(e);}
             }
         }
 
@@ -242,28 +192,24 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateArchipelagoState()
         {
-            Console.WriteLine("Updating Archipelago State");
             HasConnected = true;
             if (!Authenticated)
             {
                 Console.WriteLine("Attempting to reconnect to Archipelago Server...");
-                ThreadPool.QueueUserWorkItem(o => ConnectAsync());
+                ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
                 return;
             }
-            if (ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
-            var currentItem = Session.Items.AllItemsReceived[Convert.ToInt32(ServerData.Index)];
+            if (ServerData.Index > RandomizerStateManager.ReceivedItemsCount())
+            {
+                ItemsAndLocationsHandler.ReSync();
+                return;
+            }
+            var currentItem = Session.Items.AllItemsReceived[ServerData.Index];
             var currentItemId = currentItem.Item;
             ++ServerData.Index;
             ItemsAndLocationsHandler.Unlock(currentItemId);
             if (!currentItem.Player.Equals(Session.ConnectionInfo.Slot))
-            {
-                DialogSequence receivedItem = ScriptableObject.CreateInstance<DialogSequence>();
-                receivedItem.dialogID = "RANDO_ITEM";
-                receivedItem.name = Session.Items.GetItemName(currentItemId);
-                receivedItem.choices = new List<DialogSequenceChoice>();
-                AwardItemPopupParams receivedItemParams = new AwardItemPopupParams(receivedItem, true);
-                Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, receivedItemParams);
-            }
+                DialogChanger.CreateDialogBox($"Received {currentItem.ColorizeItem()}!");
         }
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)
@@ -282,32 +228,28 @@ namespace MessengerRando.Archipelago
 
         public static bool CanRelease()
         {
-            if (Authenticated)
+            if (!Authenticated) return false;
+            Permissions releasePermission = Session.RoomState.ReleasePermissions;
+            switch (releasePermission)
             {
-                Permissions releasePermission = Session.RoomState.ReleasePermissions;
-                switch (releasePermission)
-                {
-                    case Permissions.Goal:
-                        return ClientFinished();
-                    case Permissions.Enabled:
-                        return true;
-                }
+                case Permissions.Goal:
+                    return ClientFinished();
+                case Permissions.Enabled:
+                    return true;
             }
             return false;
         }
 
         public static bool CanCollect()
         {
-            if (Authenticated)
+            if (!Authenticated) return false;
+            var collectPermission = Session.RoomState.CollectPermissions;
+            switch (collectPermission)
             {
-                Permissions collectPermission = Session.RoomState.CollectPermissions;
-                switch (collectPermission)
-                {
-                    case Permissions.Goal:
-                        return ClientFinished();
-                    case Permissions.Enabled:
-                        return true;
-                }
+                case Permissions.Goal:
+                    return ClientFinished();
+                case Permissions.Enabled:
+                    return true;
             }
             return false;
         }
@@ -341,25 +283,12 @@ namespace MessengerRando.Archipelago
             {
                 if (Authenticated)
                 {
-                    text = $"Connected to Archipelago server v{Session.RoomState.Version}";
+                    text = $"Connected to Archipelago v{Session.RoomState.Version}";
                     var hintCost = GetHintCost();
                     if (hintCost > 0)
                     {
                         text += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
                     }
-                    /*
-                    TimeSpan t = new TimeSpan();
-                    var playTime = ServerData.PlayTime;
-                    if (ServerData.FinishTime > 0)
-                    {
-                        t = TimeSpan.FromMilliseconds(ServerData.FinishTime);
-                    }
-                    else if (playTime > 0)
-                    {
-                        t = TimeSpan.FromMilliseconds(playTime);
-                    }
-                    text += $"\nPlayTime: " + string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}", t.Hours, t.Minutes, t.Seconds, t.Milliseconds);
-                    */
                 }
                 else if (HasConnected)
                 {

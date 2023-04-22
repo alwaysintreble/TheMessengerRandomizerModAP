@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
+using MessengerRando.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -10,8 +11,6 @@ namespace MessengerRando.GameOverrideManagers
 {
     public class RandoBossManager
     {
-        public RandoBossManager Instance;
-
         public static List<string> DefeatedBosses = new List<string>();
 
         private Dictionary<string, string> origToNewBoss;
@@ -38,9 +37,9 @@ namespace MessengerRando.GameOverrideManagers
             "EmeraldGolem",
             "QueenOfQuills",
             // "Colos_Susses",
-            "Manfred",
+            // "Manfred",
             // "TowerGolem",
-            "DemonGeneral",
+            // "DemonGeneral",
             "DemonArtificier",
             "ButterflyMatriarch",
             "ClockworkConcierge",
@@ -131,7 +130,15 @@ namespace MessengerRando.GameOverrideManagers
                 bossName = RandomizerStateManager.Instance.BossManager.origToNewBoss
                     .First(name => name.Value.Equals(bossName)).Key;
             Console.WriteLine($"Checking if {bossName} is defeated.");
-            return !vanillaBossNames.Contains(bossName) || DefeatedBosses.Contains(bossName);
+            try
+            {
+                return !vanillaBossNames.Contains(bossName) || DefeatedBosses.Contains(bossName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return true;
+            }
         }
 
         public static void SetBossAsDefeated(string bossName)
@@ -146,17 +153,6 @@ namespace MessengerRando.GameOverrideManagers
                 ArchipelagoClient.ServerData.DefeatedBosses.Add(bossName);
                 var bossLoc = new LocationRO(bossName);
                 ItemsAndLocationsHandler.SendLocationCheck(bossLoc);
-                if (ArchipelagoClient.ServerData.LocationToItemMapping.TryGetValue(bossLoc, out var bossItem))
-                {
-                    var bossSequence = ScriptableObject.CreateInstance<DialogSequence>();
-                    bossSequence.dialogID = "ARCHIPELAGO_ITEM";
-                    bossSequence.name = bossItem.RecipientName.Equals(ArchipelagoClient.ServerData.SlotName)
-                        ? $"{bossItem.Name}"
-                        : $"{bossItem.Name} for {bossItem.RecipientName}";
-                    bossSequence.choices = new List<DialogSequenceChoice>();
-                    AwardItemPopupParams challengeAwardItemParams = new AwardItemPopupParams(bossSequence, true);
-                    Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, challengeAwardItemParams);
-                }
             }
             DefeatedBosses.Add(bossName);
             if (RandomizerStateManager.Instance.BossManager != null)
@@ -166,10 +162,6 @@ namespace MessengerRando.GameOverrideManagers
                 RandoLevelManager.TeleportInArea(newPosition.BossRegion, newPosition.PlayerPosition,
                     newPosition.PlayerDimension);
             }
-            if (RandomizerStateManager.Instance.DefeatedBosses == null)
-                RandomizerStateManager.Instance.DefeatedBosses = new Dictionary<int, List<string>>();
-            RandomizerStateManager.Instance.DefeatedBosses[RandomizerStateManager.Instance.CurrentFileSlot] =
-                DefeatedBosses;
         }
 
         public static bool ShouldFightBoss(string newRoomKey)
@@ -233,7 +225,6 @@ namespace MessengerRando.GameOverrideManagers
             Manager<ProgressionManager>.Instance.bossesDefeated =
                 Manager<ProgressionManager>.Instance.allTimeBossesDefeated = new List<string>();
             origToNewBoss = bossMapping;
-            Instance = this;
         }
 
         private string GetActualBoss(string roomKey)

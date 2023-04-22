@@ -13,8 +13,6 @@ namespace MessengerRando.RO
         public int Quantity { get; }
         //player name for other players' items
         public string RecipientName { get; }
-        //shop items
-        public EShopUpgradeID ShopItem { get; }
 
         public RandoItemRO(string name, EItems item, int quantity = 1, string recipient = null)
         {
@@ -22,16 +20,6 @@ namespace MessengerRando.RO
             Item = item;
             Quantity = quantity;
             RecipientName = recipient;
-            ShopItem = EShopUpgradeID.SHURIKEN;
-        }
-
-        public RandoItemRO(string name, EShopUpgradeID shopItem, string recipient = null)
-        {
-            Name = name;
-            Item = EItems.NONE;
-            Quantity = 1;
-            RecipientName = recipient;
-            ShopItem = shopItem;
         }
 
         public override string ToString()
@@ -44,6 +32,11 @@ namespace MessengerRando.RO
             return obj is RandoItemRO rO &&
                    Name == rO.Name &&
                    Item == rO.Item;
+        }
+
+        public bool Equals(EItems item)
+        {
+            return Item == item;
         }
 
         public override int GetHashCode()

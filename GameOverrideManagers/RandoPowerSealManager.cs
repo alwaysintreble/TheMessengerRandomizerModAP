@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MessengerRando.Archipelago;
+using MessengerRando.Utils;
 using Object = UnityEngine.Object;
 
 namespace MessengerRando.GameOverrideManagers
@@ -9,11 +10,10 @@ namespace MessengerRando.GameOverrideManagers
     {
         public static readonly List<string> Goals = new List<string> { "power_seal_hunt" };
         private int amountPowerSealsCollected;
-        private readonly int requiredPowerSeals;
 
         public RandoPowerSealManager(int requiredPowerSeals)
         {
-            this.requiredPowerSeals = Manager<ProgressionManager>.Instance.powerSealTotal = requiredPowerSeals;
+            Manager<ProgressionManager>.Instance.powerSealTotal = requiredPowerSeals;
             amountPowerSealsCollected = ArchipelagoClient.ServerData.PowerSealsCollected;
         }
 
@@ -23,24 +23,26 @@ namespace MessengerRando.GameOverrideManagers
         public void OnShopChestOpen(On.ShopChestOpenCutscene.orig_OnChestOpened orig, ShopChestOpenCutscene self)
         {
             if (Goals.Contains(RandomizerStateManager.Instance.Goal) &&
-                !Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.NONE))
+                RandomizerStateManager.IsSafeTeleportState())
             {
                 //going to attempt to teleport the player to the ending sequence when they open the chest
                 OnShopChestOpen();
                 self.EndCutScene();
             }
             else orig(self);
+            self.EndCutScene();
         }
 
         public void OnShopChestOpen(On.ShopChestChangeShurikenCutscene.orig_Play orig, ShopChestChangeShurikenCutscene self)
         {
-            if (Goals.Contains(RandomizerStateManager.Instance.Goal)
-                && RandomizerStateManager.Instance.IsSafeTeleportState())
+            if (Goals.Contains(RandomizerStateManager.Instance.Goal) &&
+                RandomizerStateManager.IsSafeTeleportState())
             {
                 OnShopChestOpen();
                 self.EndCutScene();
             }
             else orig(self);
+            self.EndCutScene();
         }
 
         private void OnShopChestOpen()
@@ -62,7 +64,5 @@ namespace MessengerRando.GameOverrideManagers
         /// </summary>
         /// <returns></returns>
         public int AmountPowerSealsCollected() => amountPowerSealsCollected;
-
-        public bool CanOpenChest() => amountPowerSealsCollected >= requiredPowerSeals;
     }
 }

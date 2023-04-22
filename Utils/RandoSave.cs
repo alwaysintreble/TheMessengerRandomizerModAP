@@ -1,4 +1,5 @@
-﻿using Mod.Courier.Save;
+﻿using MessengerRando.Archipelago;
+using Mod.Courier.Save;
 
 namespace MessengerRando.Utils
 {
@@ -9,8 +10,26 @@ namespace MessengerRando.Utils
     /// </summary>
     public class RandoSave : CourierModSave
     {
+        public string APSaveData = GetSaveData();
 
-        public string seedData = "Undefined";
+        public void Update()
+        {
+            if (RandomizerStateManager.Instance.CurrentFileSlot != 0)
+                RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
+                    ArchipelagoClient.ServerData;
+            APSaveData = GetSaveData();
+        }
 
+        private static string GetSaveData()
+        {
+            var randoState = RandomizerStateManager.Instance;
+            var output = "";
+            for (int i = 1; i <= 3; i++)
+            {
+                output += $"{randoState.APSave[i]}|";
+            }
+
+            return output;
+        }
     }
 }

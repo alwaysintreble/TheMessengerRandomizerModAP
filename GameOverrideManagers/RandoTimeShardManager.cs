@@ -9,8 +9,6 @@ namespace MessengerRando.GameOverrideManagers
 {
     public class RandoTimeShardManager
     {
-
-
         public struct MegaShard
         {
             private readonly ELevel shardRegion;
@@ -88,35 +86,19 @@ namespace MessengerRando.GameOverrideManagers
         {
             var location = MegaShardLookup.First(item => item.Equals(shardToBreak)).Loc;
             Console.WriteLine($"Broke Shard {location.LocationName}");
-            if (ArchipelagoClient.HasConnected)
-            {
-                if (location.Equals(new LocationRO("Money Farm Room Mega Shard 1")) &&
-                    ArchipelagoClient.ServerData.CheckedLocations.Contains(
-                        ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Money Farm Room Mega Shard 1")]))
-                    location = new LocationRO("Money Farm Room Mega Shard 2");
-                else if (location.Equals(new LocationRO("Quick Restock Mega Shard 1")) &&
-                         ArchipelagoClient.ServerData.CheckedLocations.Contains(
-                             ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Quick Restock Mega Shard 1")]))
-                    location = new LocationRO("Quick Restock Mega Shard 2");
-                if (ArchipelagoClient.ServerData.CheckedLocations.Contains(
-                        ItemsAndLocationsHandler.LocationsLookup[location])) return;
-                ItemsAndLocationsHandler.SendLocationCheck(location);
-                if (!ArchipelagoClient.ServerData.LocationToItemMapping.TryGetValue(location, out var randoItem))
-                    return;
-                var shardSequence = ScriptableObject.CreateInstance<DialogSequence>();
-                shardSequence.dialogID = "ARCHIPELAGO_ITEM";
-                shardSequence.name = randoItem.RecipientName.Equals(ArchipelagoClient.ServerData.SlotName)
-                    ? $"{randoItem.Name}"
-                    : $"{randoItem.Name} for {randoItem.RecipientName}";
-                shardSequence.choices = new List<DialogSequenceChoice>();
-                AwardItemPopupParams challengeAwardItemParams = new AwardItemPopupParams(shardSequence, true);
-                Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, challengeAwardItemParams);
-            }
-            else
-                Manager<InventoryManager>.Instance.AddItem(
-                    RandomizerStateManager.Instance.CurrentLocationToItemMapping[location].Item,
-                    ItemsAndLocationsHandler.APQuantity
-                    );
+            if (!ArchipelagoClient.HasConnected) return;
+            
+            if (location.Equals(new LocationRO("Money Farm Room Mega Shard 1")) &&
+                ArchipelagoClient.ServerData.CheckedLocations.Contains(
+                    ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Money Farm Room Mega Shard 1")]))
+                location = new LocationRO("Money Farm Room Mega Shard 2");
+            else if (location.Equals(new LocationRO("Quick Restock Mega Shard 1")) &&
+                     ArchipelagoClient.ServerData.CheckedLocations.Contains(
+                         ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Quick Restock Mega Shard 1")]))
+                location = new LocationRO("Quick Restock Mega Shard 2");
+            if (ArchipelagoClient.ServerData.CheckedLocations.Contains(
+                    ItemsAndLocationsHandler.LocationsLookup[location])) return;
+            ItemsAndLocationsHandler.SendLocationCheck(location);
         }
     }
 }

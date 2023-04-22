@@ -24,13 +24,12 @@ namespace MessengerRando
     /// <summary>
     /// Where it all begins! This class defines and injects all the necessary for the mod.
     /// </summary>
-    public class RandomizerMain : CourierModule
+    public class APRandomizerMain : CourierModule
     {
         private float updateTimer;
         private float updateTime = 3.0f;
 
         private RandomizerStateManager randoStateManager;
-        private RandomizerSaveMethod randomizerSaveMethod;
 
         TextEntryButtonInfo resetRandoSaveFileButton;
   
@@ -69,11 +68,7 @@ namespace MessengerRando
             Console.WriteLine("Randomizer loading and ready to try things!");
           
             //Initialize the randomizer state manager
-            RandomizerStateManager.Initialize();
-            randoStateManager = RandomizerStateManager.Instance;
-
-            //Set up save data utility
-            randomizerSaveMethod = new RandomizerSaveMethod();
+            randoStateManager = new RandomizerStateManager();
 
             //Add Randomizer Version button
             versionButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
@@ -144,11 +139,16 @@ namespace MessengerRando
             On.DialogCutscene.Play += DialogCutscene_Play;
             On.CatacombLevelInitializer.OnBeforeInitDone += CatacombLevelInitializer_OnBeforeInitDone;
             On.DialogManager.LoadDialogs_ELanguage += DialogChanger.LoadDialogs_Elanguage;
-            // shop management
+            // // shop management
             On.UpgradeButtonData.GetPrice += RandoShopManager.GetPrice;
+            On.BuyMoneyWrenchCutscene.OnBuyWrenchChoice += RandoShopManager.BuyMoneyWrench;
+            On.BuyMoneyWrenchCutscene.EndCutsceneOnDialogDone += RandoShopManager.EndMoneyWrenchCutscene;
+            On.MoneySinkUnclogCutscene.OnDialogOutDone += RandoShopManager.UnclogSink;
+            On.GoToSousSolCutscene.EndCutScene += RandoShopManager.GoToSousSol;
+            On.IronHoodShopScreen.GetFigurineData += RandoShopManager.GetFigurineData;
             On.SousSol.UnlockFigurine += RandoShopManager.UnlockFigurine;
             On.Shop.Init += RandoShopManager.ShopInit;
-            On.BuyMoneyWrenchCutscene.OnBuyWrenchChoice += RandoShopManager.BuyMoneyWrench;
+            On.JukeboxTrack.IsUnlocked += (orig, self) => true;
             On.UpgradeButtonData.IsStoryUnlocked += RandoShopManager.IsStoryUnlocked;
             // boss management
             On.ProgressionManager.HasDefeatedBoss +=
@@ -170,6 +170,9 @@ namespace MessengerRando
             On.InGameHud.OnGUI += InGameHud_OnGUI;
             On.SaveManager.DoActualSaving += SaveManager_DoActualSave;
             On.Quarble.OnPlayerDied += Quarble_OnPlayerDied;
+            On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
+            On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
+            On.LevelManager.EndLevelLoading += LevelManager_EndLevelLoading;
             //temp add
             #if DEBUG
             On.Cutscene.Play += Cutscene_Play;
@@ -180,10 +183,7 @@ namespace MessengerRando
             On.LevelManager.LoadLevel += LevelManager_LoadLevel;
             On.LevelManager.OnLevelLoaded += LevelManager_onLevelLoaded;
             #endif
-            On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
-            On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
-            On.LevelManager.EndLevelLoading += LevelManager_EndLevelLoading;
-            
+
             Console.WriteLine("Randomizer finished loading!");
         }
         
@@ -208,8 +208,8 @@ namespace MessengerRando
 
             //Options I only want working while actually in the game
             windmillShurikenToggleButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<InventoryManager>.Instance.GetItemQuantity(EItems.WINDMILL_SHURIKEN) > 0);
-            teleportToHqButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && randoStateManager.IsSafeTeleportState());
-            teleportToNinjaVillage.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && randoStateManager.IsSafeTeleportState());
+            teleportToHqButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && RandomizerStateManager.IsSafeTeleportState());
+            teleportToNinjaVillage.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && RandomizerStateManager.IsSafeTeleportState());
             seedNumButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE);
 
             SceneManager.sceneLoaded += OnSceneLoadedRando;
@@ -219,9 +219,10 @@ namespace MessengerRando
             
             //Save loading
             Debug.Log("Start loading seeds from save");
-            randomizerSaveMethod.Load(Save.seedData);
-            Debug.Log($"Save data after change: '{Save.seedData}'");
+            RandomizerSaveMethod.TryLoad(Save.APSaveData);
             Debug.Log("Finished loading seeds from save");
+            Save.Update();
+            Debug.Log(Save.APSaveData);
         }
 
         //temp function for seal research
@@ -236,35 +237,29 @@ namespace MessengerRando
         {
             Console.WriteLine($"Starting dialogue {self.dialogID}");
             //Using this function to add some of my own dialog stuff to the game.
-            if (!randoStateManager.IsRandomizedFile) return orig(self);
-            if (!new[] { "RANDO_ITEM", "ARCHIPELAGO_ITEM", "DEATH_LINK"}.Contains(self.dialogID))
-                return orig(self);
-            Console.WriteLine("Trying some rando dialog stuff.");
-            List<DialogInfo> dialogInfoList = new List<DialogInfo>();
-            DialogInfo dialog = new DialogInfo();
-            switch (self.dialogID)
+            if (ArchipelagoClient.HasConnected &&
+                new[] { "ARCHIPELAGO_ITEM", "DEATH_LINK" }.Contains(self.dialogID))
             {
-                case "RANDO_ITEM":
-                    Console.WriteLine($"Item is {self.name}");
-                    dialog.text = $"You have received item: '{self.name}'";
-                    break;
-                case "ARCHIPELAGO_ITEM":
-                    Console.WriteLine($"Item is {self.name}");
-                    dialog.text = $"You have found {self.name}";
-                    break;
-                case "DEATH_LINK":
-                    dialog.text = $"Deathlink: {self.name}";
-                    break;
-                default:
-                    //dialog.text = "???";
-                    break;
+                Console.WriteLine("Trying some rando dialog stuff.");
+                var dialogInfoList = new List<DialogInfo>();
+                var dialog = new DialogInfo();
+                switch (self.dialogID)
+                {
+                    case "ARCHIPELAGO_ITEM":
+                        Console.WriteLine($"Item is {self.name}");
+                        dialog.text = self.name;
+                        break;
+                    case "DEATH_LINK":
+                        dialog.text = $"Deathlink: {self.name}";
+                        break;
+                }
+
+                dialogInfoList.Add(dialog);
+
+                return dialogInfoList;
             }
-                    
-                
-            dialogInfoList.Add(dialog);
 
-            return dialogInfoList;
-
+            return orig(self);
         }
 
         void InventoryManager_AddItem(On.InventoryManager.orig_AddItem orig, InventoryManager self, EItems itemId, int quantity)
@@ -297,90 +292,12 @@ namespace MessengerRando
         {
             Console.WriteLine($"Marking {roomKey} as completed.");
             //if this is a rando file, go ahead and give the item we expect to get
-            if (randoStateManager.IsRandomizedFile)
+            if (ArchipelagoClient.HasConnected)
             {
-                // if (!randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot)
-                //         .Settings[SettingType.Difficulty]
-                //         .Equals(SettingValue.Advanced) ||
-                //     !ArchipelagoClient.ServerData.GameSettings[SettingType.Difficulty].Equals(SettingValue.Advanced))
-                // {
-                //     Console.WriteLine("Power Seals not shuffled so calling original.");
-                //     orig(self, roomKey);
-                // }
-                LocationRO powerSealLocation = null;
-                foreach(LocationRO location in RandomizerConstants.GetAdvancedRandoLocationList())
-                {
-                    if(location.LocationName.Equals(roomKey))
-                    {
-                        powerSealLocation = location;
-                    }
-                }
-
-                if(powerSealLocation == null)
-                {
-                    throw new RandomizerException($"Challenge room with room key '{roomKey}' was not found in the list of locations. This will need to be corrected for this challenge room to work.");
-                }
-
-                RandoItemRO challengeRoomRandoItem;
-                if (RandomizerStateManager.Instance.CurrentLocationToItemMapping.TryGetValue(powerSealLocation,
-                        out challengeRoomRandoItem))
-                {
-                }
-                else if (ArchipelagoClient.HasConnected &&
-                         ArchipelagoClient.ServerData.LocationToItemMapping.TryGetValue(powerSealLocation,
-                             out challengeRoomRandoItem))
-                {
-                }
-                else
-                {
-                    orig(self, roomKey);
-                    return;
-                }
-                
-                Console.WriteLine($"Challenge room '{powerSealLocation.PrettyLocationName}' completed. Providing rando item '{challengeRoomRandoItem}'.");
-                if (ArchipelagoClient.HasConnected)
-                {
-                    ItemsAndLocationsHandler.SendLocationCheck(powerSealLocation);
-                }
-                //Handle timeshards
-                else if (EItems.TIME_SHARD.Equals(challengeRoomRandoItem.Item))
-                {
-                    Manager<InventoryManager>.Instance.CollectTimeShard(1);
-                    //Set this item to have been collected in the state manager
-                    randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Add(challengeRoomRandoItem);
-                }
-                else
-                {
-                    //Before adding the item to the inventory, add this item to the override
-                    RandomizerStateManager.Instance.AddTempRandoItemOverride(challengeRoomRandoItem.Item);
-                    Manager<InventoryManager>.Instance.AddItem(challengeRoomRandoItem.Item, 1);
-                    //Now remove the override
-                    RandomizerStateManager.Instance.RemoveTempRandoItemOverride(challengeRoomRandoItem.Item);
-                }
-                
-                //I want to try to have a dialog popup say what the player got.
-                DialogSequence challengeSequence = ScriptableObject.CreateInstance<DialogSequence>();
-                if (EItems.NONE.Equals(challengeRoomRandoItem.Item))
-                {
-                    challengeSequence.dialogID = "ARCHIPELAGO_ITEM";
-                    challengeSequence.name =
-                        challengeRoomRandoItem.RecipientName.Equals(ArchipelagoClient.ServerData.SlotName)
-                            ? $"{challengeRoomRandoItem.Name}"
-                            : $"{challengeRoomRandoItem.Name} for {challengeRoomRandoItem.RecipientName}";
-                }
-                else
-                {
-                    challengeSequence.dialogID = "RANDO_ITEM";
-                    challengeSequence.name = challengeRoomRandoItem.Item.ToString();
-                }
-                challengeSequence.choices = new List<DialogSequenceChoice>();
-                Console.WriteLine($"Adding params: {challengeSequence.name}");
-                AwardItemPopupParams challengeAwardItemParams = new AwardItemPopupParams(challengeSequence, true);
-                Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, challengeAwardItemParams, true);
-
+                var powerSealLocation =
+                    ItemsAndLocationsHandler.ArchipelagoLocations.Find(loc => loc.Equals(roomKey));
+                ItemsAndLocationsHandler.SendLocationCheck(powerSealLocation);
             }
-
-
             //For now calling the orig method once we are done so the game still things we are collecting seals. We can change this later.
             orig(self, roomKey);
         }
@@ -389,7 +306,7 @@ namespace MessengerRando
         {
             bool hasItem = false;
             //Check to make sure this is an item that was randomized and make sure we are not ignoring this specific trigger check
-            if (randoStateManager.IsRandomizedFile && randoStateManager.IsLocationRandomized(self.item, out var check) && !RandomizerConstants.GetSpecialTriggerNames().Contains(self.Owner.name))
+            if (ArchipelagoClient.HasConnected && randoStateManager.IsLocationRandomized(self.item, out var check) && !RandomizerConstants.GetSpecialTriggerNames().Contains(self.Owner.name))
             {
                 if (self.transform.parent != null && "InteractionZone".Equals(self.Owner.name) && RandomizerConstants.GetSpecialTriggerNames().Contains(self.transform.parent.name) && EItems.KEY_OF_LOVE != self.item)
                 {
@@ -405,12 +322,7 @@ namespace MessengerRando
 
                 //NEW WAY
                 //Don't actually check for the item I have, check to see if I have done this check before. We'll do this by seeing if the item at its location has been collected yet or not
-                int itemQuantity = randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Contains(randoStateManager.CurrentLocationToItemMapping[check]) ? randoStateManager.CurrentLocationToItemMapping[check].Quantity : 0;
-                if (ArchipelagoClient.HasConnected)
-                {
-                    var locationID = ItemsAndLocationsHandler.LocationsLookup.FirstOrDefault(location => location.Key.Equals(check)).Value;
-                    itemQuantity = ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID) ? 1 : 0;
-                }
+                int itemQuantity = RandomizerStateManager.HasCompletedCheck(check) ? 1 : 0;
                 
                 switch (self.conditionOperator)
                 {
@@ -430,17 +342,11 @@ namespace MessengerRando
                         hasItem = itemQuantity > self.quantityToHave;
                         break;
                 }
-
-                Console.WriteLine($"Rando inventory check complete for check '{self.Owner.name}'. Item '{self.item}' || Actual Item Check '{randoStateManager.CurrentLocationToItemMapping[check]}' || Current Check '{self.conditionOperator}' || Expected Quantity '{self.quantityToHave}' || Actual Quantity '{itemQuantity}' || Condition Result '{hasItem}'.");
-                
                 return hasItem;
             }
-            else //Call orig method
-            {
-                Console.WriteLine("HasItem check was not randomized. Doing vanilla checks.");
-                Console.WriteLine($"Is randomized file : '{randoStateManager.IsRandomizedFile}' | Is location '{self.item}' randomized: '{randoStateManager.IsLocationRandomized(self.item, out check)}' | Not in the special triggers list: '{!RandomizerConstants.GetSpecialTriggerNames().Contains(self.Owner.name)}'|");
-                return orig(self);
-            }
+            Console.WriteLine("HasItem check was not randomized. Doing vanilla checks.");
+            Console.WriteLine($"Is randomized file : '{ArchipelagoClient.HasConnected}' | Is location '{self.item}' randomized: '{randoStateManager.IsLocationRandomized(self.item, out check)}' | Not in the special triggers list: '{!RandomizerConstants.GetSpecialTriggerNames().Contains(self.Owner.name)}'|");
+            return orig(self);
             
         }
         
@@ -492,7 +398,7 @@ namespace MessengerRando
                         self.GetCurrentLevelEnum().ToString();
             }
             if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
-                randoStateManager.SkipMusicBox && randoStateManager.IsSafeTeleportState())
+                randoStateManager.SkipMusicBox && RandomizerStateManager.IsSafeTeleportState())
             {
                 RandoLevelManager.SkipMusicBox();
             }
@@ -502,117 +408,64 @@ namespace MessengerRando
         bool AwardNoteCutscene_ShouldPlay(On.AwardNoteCutscene.orig_ShouldPlay orig, AwardNoteCutscene self)
         {
             //Need to handle note cutscene triggers so they will play as long as I dont have the actual item it grants
-            LocationRO noteCheck;
-            if (randoStateManager.IsRandomizedFile && randoStateManager.IsLocationRandomized(self.noteToAward, out noteCheck)) //Double checking to prevent errors
+            if (randoStateManager.IsLocationRandomized(self.noteToAward, out var noteCheck))
             {
-                Console.WriteLine($"Note cutscene check! Handling note '{self.noteToAward}' | Linked item: '{randoStateManager.CurrentLocationToItemMapping[noteCheck]}'");
-                //bool shouldPlay = Manager<InventoryManager>.Instance.GetItemQuantity(randoStateManager.CurrentLocationToItemMapping[noteCheck].Item) <= 0 && !randoStateManager.IsNoteCutsceneTriggered(self.noteToAward);
-                bool shouldPlay = !randoStateManager.IsNoteCutsceneTriggered(self.noteToAward);
-
-                Console.WriteLine($"Should '{self.noteToAward}' cutscene play? '{shouldPlay}'");
-                
-                randoStateManager.SetNoteCutsceneTriggered(self.noteToAward);
-                return shouldPlay;
+                return !ArchipelagoClient.ServerData.CheckedLocations.Contains(noteCheck);
             }
-            else //Call orig method if for some reason the note I am checking for is not randomized
-            {
-                return orig(self);
-            }
+            return orig(self);
         }
 
         bool CutsceneHasPlayed_IsTrue(On.CutsceneHasPlayed.orig_IsTrue orig, CutsceneHasPlayed self)
         {
-            LocationRO cutsceneCheck;
-            if (randoStateManager.IsRandomizedFile && RandomizerConstants.GetCutsceneMappings().ContainsKey(self.cutsceneId) && randoStateManager.IsLocationRandomized(RandomizerConstants.GetCutsceneMappings()[self.cutsceneId], out cutsceneCheck))
+            if (RandomizerConstants.GetCutsceneMappings().ContainsKey(self.cutsceneId) &&
+                randoStateManager.IsLocationRandomized(RandomizerConstants.GetCutsceneMappings()[self.cutsceneId],
+                    out var cutsceneCheck))
             {
-
-                //Check to make sure this is a cutscene i am configured to check, then check to make sure I actually have the item that is mapped to it
-                Console.WriteLine($"Rando cutscene magic ahoy! Handling rando cutscene '{self.cutsceneId}' | Linked Item: {RandomizerConstants.GetCutsceneMappings()[self.cutsceneId]} | Rando Item: {randoStateManager.CurrentLocationToItemMapping[cutsceneCheck]}");
-                if (self.cutsceneId.Equals("RuxxtinNoteAndAwardAmuletCutscene") && ArchipelagoClient.HasConnected) return ArchipelagoClient.ServerData.RuxxCutscene;
-                
-
-                //Check to see if I have the item that is at this check.
-                //if (Manager<InventoryManager>.Instance.GetItemQuantity(randoStateManager.CurrentLocationToItemMapping[cutsceneCheck].Item) >= 1)
-                if(randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).CollectedItems.Contains(randoStateManager.CurrentLocationToItemMapping[cutsceneCheck]))
-                {
-                    //Return true, this cutscene has "been played"
-                    Console.WriteLine($"Have rando item '{randoStateManager.CurrentLocationToItemMapping[cutsceneCheck]}' for cutscene '{self.cutsceneId}'. Progress Manager on if cutscene has played: '{Manager<ProgressionManager>.Instance.HasCutscenePlayed(self.cutsceneId)}'. Returning that we have already seen cutscene.");
-                    return self.mustHavePlayed == true;
-                }
-                else
-                {
-                    //Havent seen the cutscene yet. Play it so i can get the item!
-                    Console.WriteLine($"Do not have rando item '{randoStateManager.CurrentLocationToItemMapping[cutsceneCheck]}' for cutscene '{self.cutsceneId}'. Progress Manager on if cutscene has played: '{Manager<ProgressionManager>.Instance.HasCutscenePlayed(self.cutsceneId)}'. Returning that we have not seen cutscene yet.");
-                    return self.mustHavePlayed == false;
-                }
+                return RandomizerStateManager.HasCompletedCheck(cutsceneCheck);
             }
-            else //call the orig method
-            {
-                return orig(self);
-            }
-
-            
+            return orig(self);
         }
 
         void SaveGameSelectionScreen_OnLoadGame(On.SaveGameSelectionScreen.orig_OnLoadGame orig, SaveGameSelectionScreen self, int slotIndex)
         {
             //slotIndex is 0-based, going to increment it locally to keep things simple.
-            int fileSlot = slotIndex + 1;
+            randoStateManager.CurrentFileSlot = slotIndex + 1;
 
             //This is probably a bad way to do this
             try
             {
-                if (ArchipelagoData.LoadData(fileSlot))
+                if (ArchipelagoData.LoadData(randoStateManager.CurrentFileSlot))
                 {
                     //The player is connected to an Archipelago server and trying to load a save file so check it's valid
-                    Console.WriteLine($"Successfully loaded Archipelago seed {fileSlot}");
-                    //I need to reload these after we connect so they take
-                    Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
+                    Console.WriteLine($"Successfully loaded Archipelago seed {randoStateManager.CurrentFileSlot}");
                 }
-                else if (ArchipelagoClient.Authenticated && Manager<SaveManager>.Instance.GetSaveSlot(slotIndex).SecondsPlayed <= 100)
+                else if (ArchipelagoClient.Authenticated &&
+                         string.IsNullOrEmpty(randoStateManager.APSave[randoStateManager.CurrentFileSlot].SlotName))
                 {
-                    randoStateManager.ResetRandomizerState();
-                    randoStateManager.ResetSeedForFileSlot(fileSlot);
-                    //Hopefully this ensures this is a clean rando slot so the player doesn't just connect with an invalid slot
-                    randoStateManager.AddSeed(ArchipelagoClient.ServerData.StartNewSeed(fileSlot));
-                    randoStateManager.CurrentLocationToItemMapping = ArchipelagoClient.ServerData.LocationToItemMapping;
-                }
-                else if (randoStateManager.HasSeedForFileSlot(fileSlot))
-                {
-                    //There's a valid seed and mapping available and Archipelago isn't involved
-                    randoStateManager.CurrentLocationToItemMapping =
-                        ItemRandomizerUtil.ParseLocationToItemMappings(randoStateManager.GetSeedForFileSlot(fileSlot));
-                    RandoBossManager.DefeatedBosses = randoStateManager.DefeatedBosses[fileSlot];
+                    ArchipelagoClient.ServerData.StartNewSeed(randoStateManager.CurrentFileSlot);
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
                 orig(self, slotIndex);
             }
             //Generate the mappings based on the seed for the game if a seed was generated.
-            if (randoStateManager.HasSeedForFileSlot(fileSlot) || ArchipelagoClient.HasConnected)
+            if (ArchipelagoClient.HasConnected)
             {
-                Console.WriteLine($"Seed exists for file slot {fileSlot}. Generating mappings.");
-                //Load mappings
-                randoStateManager.CurrentLocationDialogtoRandomDialogMapping = DialogChanger.GenerateDialogMappingforItems();
-
-                randoStateManager.IsRandomizedFile = true;
-                randoStateManager.CurrentFileSlot = fileSlot;
-                //Log spoiler log
-                randoStateManager.LogCurrentMappings();
 
                 //We force a reload of all dialog when loading the game
-                Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
+                try
+                {
+                    Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);   
+                } catch (Exception e){Console.WriteLine(e);}
                 Manager<ProgressionManager>.Instance.bossesDefeated =
                     Manager<ProgressionManager>.Instance.allTimeBossesDefeated = new List<string>();
             }
             else
             {
                 //This save file does not have a seed associated with it or is not a randomized file. Reset the mappings so everything is back to normal.
-                Console.WriteLine($"This file slot ({fileSlot}) has no seed generated or is not a randomized file. Resetting the mappings and putting game items back to normal.");
-                Console.WriteLine($"Seed Info: {randoStateManager.GetSeedForFileSlot(fileSlot).Seed}");
-                randoStateManager.ResetRandomizerState();
+                Console.WriteLine($"This file slot ({randoStateManager.CurrentFileSlot}) has no seed generated or is not a randomized file. Resetting the mappings and putting game items back to normal.");
             }
 
             orig(self, slotIndex);
@@ -620,11 +473,6 @@ namespace MessengerRando
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
-            //Right now I am not randomizing game slots that are brand new.
-            Console.WriteLine($"This file slot is brand new. Resetting the mappings and putting game items back to normal.");
-            randoStateManager.ResetRandomizerState();
-            randoStateManager.ResetSeedForFileSlot(slot.slotIndex + 1);
-
             orig(self, slot);
         }
 
@@ -647,8 +495,8 @@ namespace MessengerRando
             //check to see if we already have the item at Necro check
             if(ArchipelagoClient.HasConnected)
             {
-                if (!ArchipelagoClient.ServerData.CheckedLocations
-                    .Contains(ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Necro")]))
+                if (!RandomizerStateManager.HasCompletedCheck(
+                        ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Necro")]))
                     self.necrophobicWorkerCutscene.Play();
                 else self.necrophobicWorkerCutscene.phobekin.gameObject.SetActive(false);
                 //Call our overriden fixing function
@@ -685,7 +533,6 @@ namespace MessengerRando
         {
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             var currentRoom = Manager<Level>.Instance.CurrentRoom.roomKey;
-            Console.WriteLine($"Broke Mega Time shard in {currentLevel}, {currentRoom}");
             if (randoStateManager.MegaShards)
                 RandoTimeShardManager.BreakShard(new RandoTimeShardManager.MegaShard(currentLevel, currentRoom));
             orig(self);
@@ -700,7 +547,6 @@ namespace MessengerRando
         void Cutscene_Play(On.Cutscene.orig_Play orig, Cutscene self)
         {
             Console.WriteLine($"Playing cutscene: {self}");
-            // if (randoStateManager)
             orig(self);
         }
 
@@ -736,22 +582,11 @@ namespace MessengerRando
             //ruxxtin cutscene is being a bitch so just gonna hard code around it here.
             if (ArchipelagoClient.HasConnected && self.name.Equals("ReadNote"))
             {
-                if (randoStateManager.IsLocationRandomized(EItems.RUXXTIN_AMULET, out var check))
+                if (randoStateManager.IsLocationRandomized(EItems.RUXXTIN_AMULET, out var locID))
                 {
-                    var locID = ItemsAndLocationsHandler.LocationsLookup[check];
-                    if (!ArchipelagoClient.ServerData.CheckedLocations.Contains(locID))
+                    if (!RandomizerStateManager.HasCompletedCheck(locID))
                     {
-                        var sendItem = randoStateManager.CurrentLocationToItemMapping[check];
-                        ItemsAndLocationsHandler.SendLocationCheck(check);
-                        DialogSequence sendItemDialog = ScriptableObject.CreateInstance<DialogSequence>();
-                        sendItemDialog.dialogID = "ARCHIPELAGO_ITEM";
-                        sendItemDialog.name =
-                            sendItem.RecipientName.Equals(ArchipelagoClient.ServerData.SlotName)
-                                ? $"{sendItem.Name}"
-                                : $"{sendItem.Name} for {sendItem.RecipientName}";
-                        sendItemDialog.choices = new List<DialogSequenceChoice>();
-                        var sendItemParams = new AwardItemPopupParams(sendItemDialog, true);
-                        Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, sendItemParams);
+                        ItemsAndLocationsHandler.SendLocationCheck(locID);
                     }
                 }
             }
@@ -764,36 +599,6 @@ namespace MessengerRando
             orig(self);
         }
 
-
-        ///On submit of rando file location
-        bool OnEnterFileSlot(string fileSlot)
-        {
-            Console.WriteLine($"In Method: OnEnterFileSlot. Provided value: '{fileSlot}'");
-            Console.WriteLine($"Received file slot number: {fileSlot}");
-            int slot = Convert.ToInt32(fileSlot);
-            if (slot < 1 || slot > 3)
-            {
-                Console.WriteLine($"Invalid slot number provided: {slot}");
-                return false;
-            }
-
-            //Load in mappings and save them to the state
-
-            //Load encoded seed information
-            string encodedSeedInfo = ItemRandomizerUtil.LoadMappingsFromFile(slot);
-            Console.WriteLine($"File reading complete. Received the following encoded seed info: '{encodedSeedInfo}'");
-            string decodedSeedInfo = ItemRandomizerUtil.DecryptSeedInfo(encodedSeedInfo);
-            Console.WriteLine($"Decryption complete. Received the following seed info: '{decodedSeedInfo}'");
-            SeedRO seedRO = ItemRandomizerUtil.ParseSeed(slot, decodedSeedInfo);
-
-            randoStateManager.AddSeed(seedRO);
-
-            //Save
-            Save.seedData = randomizerSaveMethod.GenerateSaveData();
-
-            return true;
-        }
-
         bool OnRandoFileResetConfirmation(string answer)
         {
             Console.WriteLine($"In Method: OnResetRandoFileSlot. Provided value: '{answer}'");
@@ -804,12 +609,7 @@ namespace MessengerRando
             }
 
             ArchipelagoData.ClearData();
-            randoStateManager.ResetRandomizerState();
-            for (int i = 1; i <= 3; i++)
-            {
-                randoStateManager.ResetSeedForFileSlot(i);
-            }
-            Save.seedData = string.Empty;
+            randoStateManager = new RandomizerStateManager();
             string path = Application.persistentDataPath + "/SaveGame.txt";
             using (StreamWriter sw = File.CreateText(path))
             {
@@ -977,39 +777,16 @@ namespace MessengerRando
         /// <returns></returns>
         private EItems GetRandoItemByItem(EItems item)
         {
-            LocationRO ruxxAmuletLocation;
-            
-            if(randoStateManager.IsLocationRandomized(item, out ruxxAmuletLocation))
-            {
-                Console.WriteLine($"IL Wackiness -- Checking for Item '{item}' | Rando item to return '{randoStateManager.CurrentLocationToItemMapping[ruxxAmuletLocation]}'");
+            if (!randoStateManager.IsLocationRandomized(item, out var ruxxAmuletLocation)) return item;
+            Console.WriteLine($"IL Wackiness -- Checking for Item '{item}' | Rando item to return '{randoStateManager.ScoutedLocations[ruxxAmuletLocation].Item}'");
 
-                if (ArchipelagoClient.HasConnected) ArchipelagoClient.ServerData.RuxxCutscene = true;
-                EItems randoItem = randoStateManager.CurrentLocationToItemMapping[ruxxAmuletLocation].Item;
-                
-                if(EItems.TIME_SHARD.Equals(randoItem))
-                {
-                    /* Having a lot of problems with timeshards and the ruxxtin check due to it having some checks behind the scenes.
-                     * What I am trying is to change the item to the NONE value since that is expected to have no quantity. This will trick the cutscene into playing correctly the first time.
-                     * Checks after the first time rely on the collected items list so it shouldn't have any impact...
-                     */
-                    randoItem = EItems.NONE;
-                }
-                return randoItem;
-            }
-            else
-            {
-                return item;
-            }
+            return EItems.POTION;
         }
 
         private string GetCurrentSeedNum()
         {
             string seedNum = "Unknown";
 
-            if(randoStateManager != null && randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).Seed > 0)
-            {
-                seedNum = randoStateManager.GetSeedForFileSlot(randoStateManager.CurrentFileSlot).Seed.ToString();
-            }
             if (ArchipelagoClient.HasConnected)
             {
                 seedNum = ArchipelagoClient.ServerData.SeedName;
@@ -1027,14 +804,15 @@ namespace MessengerRando
         {
             if (!ArchipelagoClient.HasConnected) return;
             ArchipelagoClient.DeathLinkHandler.Player = controller;
-            if (randoStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
+            if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
                 ArchipelagoClient.DeathLinkHandler.KillPlayer();
             //This updates every {updateTime} seconds
             updateTimer += Time.deltaTime;
             if (!(updateTimer >= updateTime)) return;
             apMessagesDisplay16.text = apMessagesDisplay8.text = ArchipelagoClient.UpdateMessagesText();
             updateTimer = 0;
-            if (!randoStateManager.IsSafeTeleportState()) return;
+            if (Manager<PlayerManager>.Instance.Player.InputBlocked() ||
+                Manager<GameManager>.Instance.IsCutscenePlaying()) return;
             ArchipelagoClient.UpdateArchipelagoState();
         }
 
@@ -1068,7 +846,6 @@ namespace MessengerRando
 
         private void SaveManager_DoActualSave(On.SaveManager.orig_DoActualSaving orig, SaveManager self, bool applySaveDelay = true)
         {
-            Console.WriteLine($"checking if saveSlot {self.GetSaveGameSlotIndex()} name matches {randoStateManager.CurrentFileSlot} name");
             if (ArchipelagoClient.HasConnected)
             {
                 // The game calls the save method after the ending cutscene before rolling credits
@@ -1077,13 +854,11 @@ namespace MessengerRando
                 {
                     ArchipelagoClient.UpdateClientStatus(ArchipelagoClientState.ClientGoal);
                 }
-                ArchipelagoClient.ServerData.UpdateSave();
+                Save.Update();
+                if (randoStateManager.CurrentFileSlot == 0) return;
                 var saveSlot = self.GetCurrentSaveGameSlot();
                 if (!saveSlot.SlotName.Equals(ArchipelagoClient.ServerData.SlotName))
                 {
-                    // FieldInfo saveGameField = typeof(SaveManager).GetField("saveGame", BindingFlags.NonPublic | BindingFlags.Instance);
-                    // SaveGame saveGame = saveGameField.GetValue(self) as SaveGame;
-                    // saveGame.saveSlots[self.GetSaveGameSlotIndex()].SlotName = ArchipelagoClient.ServerData.SlotName;
                     saveSlot.SlotName = ArchipelagoClient.ServerData.SlotName;
                 }
             }

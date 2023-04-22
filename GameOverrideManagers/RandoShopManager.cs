@@ -1,18 +1,23 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
+using UnityEngine;
 
 namespace MessengerRando.GameOverrideManagers
 {
     public static class RandoShopManager
     {
         public static Dictionary<EShopUpgradeID, int> ShopPrices;
+        public static Dictionary<EFigurine, int> FigurePrices;
+        public static Queue FigurineQueue = new Queue();
         private static bool figurineOverride;
+        private static int wrenchPrice;
+        
         public static int GetPrice(On.UpgradeButtonData.orig_GetPrice orig, UpgradeButtonData self)
         {
-            //should be able to modify shop prices here
+            //modify shop prices here
             if (ShopPrices != null && ShopPrices.TryGetValue(self.upgradeID, out var price)) return price;
             return orig(self);
         }
@@ -41,33 +46,67 @@ namespace MessengerRando.GameOverrideManagers
         public static void UnlockFigurine(EFigurine figurine)
         {
             figurineOverride = true;
-            Manager<SousSol>.Instance.UnlockFigurine(figurine);
+            UnityEngine.Object.FindObjectOfType<SousSol>().UnlockFigurine(figurine);
+        }
+
+        public static void GoToSousSol(On.GoToSousSolCutscene.orig_EndCutScene orig, GoToSousSolCutscene self,
+            bool camera, bool borders, bool transition)
+        {
+            orig(self, camera, borders, transition);
+            
+            try
+            {
+                while (FigurineQueue.Count > 0)
+                {
+                    var figurine = (EFigurine)FigurineQueue.Dequeue();
+                    Debug.Log($"Unlocking {figurine}");
+                    UnlockFigurine(figurine);
+                }   
+            } catch (Exception e) {Console.WriteLine(e);}
+        }
+
+        public static ShopListItemData GetFigurineData(On.IronHoodShopScreen.orig_GetFigurineData orig, IronHoodShopScreen self,
+            FigurineDefinition figurineDefinition)
+        {
+            var figurine = figurineDefinition.figurineID;
+            if (FigurePrices.TryGetValue(figurine, out var cost)) figurineDefinition.cost = cost;
+            return orig(self, figurineDefinition);
         }
 
         public static void BuyMoneyWrench(On.BuyMoneyWrenchCutscene.orig_OnBuyWrenchChoice orig,
             BuyMoneyWrenchCutscene self, DialogChoice choice)
         {
+            orig(self, choice);
             if (ArchipelagoClient.HasConnected && choice.ChoiceInfo.choiceId == "Yes")
             {
-                var currentShards = Manager<InventoryManager>.Instance.ItemQuantityByItemId[EItems.TIME_SHARD];
-                orig(self, choice);
-                Manager<InventoryManager>.Instance.SetItemQuantity(EItems.TIME_SHARD, currentShards);
+                wrenchPrice = Manager<InventoryManager>.Instance.timeShardsDroppedInSink;
             }
-            else orig(self, choice);
+        }
+
+        public static void EndMoneyWrenchCutscene(On.BuyMoneyWrenchCutscene.orig_EndCutsceneOnDialogDone orig,
+            BuyMoneyWrenchCutscene self, View dialogBox)
+        {
+            orig(self, dialogBox);
+            Manager<InventoryManager>.Instance.CollectTimeShard(wrenchPrice);
+            wrenchPrice = 0;
+        }
+
+        public static void UnclogSink(On.MoneySinkUnclogCutscene.orig_OnDialogOutDone orig,
+            MoneySinkUnclogCutscene self, View dialog)
+        {
+            orig(self, dialog);
+            Debug.Log("Unclogged that dang sink");
+            var wrenchID = ItemsAndLocationsHandler.ItemFromEItem(EItems.MONEY_WRENCH);
+            if (!ArchipelagoClient.ServerData.ReceivedItems
+                    .ContainsKey(wrenchID))
+                Manager<ProgressionManager>.Instance.UnsetFlag(Flags.MoneySinkUnclogged);
         }
         
         public static bool IsStoryUnlocked(On.UpgradeButtonData.orig_IsStoryUnlocked orig, UpgradeButtonData self)
         {
-            // probably want to fully override this when doing shop rando to force people to buy upgrades in a
-            // particular order?
-            
             //Checking if this particular upgrade is the glide attack
             //Unlock the glide attack (no need to keep it hidden, player can just buy it whenever they want.
             var isUnlocked = EShopUpgradeID.GLIDE_ATTACK.Equals(self.upgradeID) || orig(self);
-
-            //I think there is where I can catch things like checks for the wingsuit attack upgrade.
-            // Console.WriteLine($"Checking upgrade '{self.upgradeID}'. Is story unlocked: {isUnlocked}");
-
             return isUnlocked;
         }
     }

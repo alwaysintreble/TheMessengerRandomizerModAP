@@ -55,22 +55,22 @@ namespace MessengerRando.Archipelago
         {
             try
             {
-                if (deathLinks.Count > 0) this.receivedDeath = true;
-                if (!this.receivedDeath) return;
+                if (deathLinks.Count > 0) receivedDeath = true;
+                if (!receivedDeath) return;
                 var cause = deathLinks[0].Cause;
                 if (cause.IsNullOrEmpty())
                 {
                     cause = deathLinks[0].Source + " sent you pain from afar.";
                 }
-                DialogSequence receivedDeath = ScriptableObject.CreateInstance<DialogSequence>();
-                receivedDeath.dialogID = "DEATH_LINK";
-                receivedDeath.name = cause;
-                receivedDeath.choices = new List<DialogSequenceChoice>();
-                AwardItemPopupParams receivedDeathParams = new AwardItemPopupParams(receivedDeath, false);
+                DialogSequence receivedDeathDialog = ScriptableObject.CreateInstance<DialogSequence>();
+                receivedDeathDialog.dialogID = "DEATH_LINK";
+                receivedDeathDialog.name = cause;
+                receivedDeathDialog.choices = new List<DialogSequenceChoice>();
+                AwardItemPopupParams receivedDeathParams = new AwardItemPopupParams(receivedDeathDialog, false);
                 Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, receivedDeathParams, true);
                 Player.Kill(EDeathType.GENERIC, null);
                 deathLinks.RemoveAt(0);
-                this.receivedDeath = false;
+                receivedDeath = false;
             }
             catch (Exception e)
             {

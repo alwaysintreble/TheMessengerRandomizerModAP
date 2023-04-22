@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
-using UnityEngine;
 
 namespace MessengerRando.GameOverrideManagers
 {

@@ -1,10 +1,8 @@
 ﻿using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using WebSocketSharp;
-using Object = UnityEngine.Object;
 
 namespace MessengerRando.Archipelago
 {

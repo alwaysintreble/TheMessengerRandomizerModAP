@@ -12,7 +12,6 @@ using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Mod.Courier.UI.TextEntryButtonInfo;
-using MessengerRando.Exceptions;
 using TMPro;
 using System.Linq;
 using Archipelago.MultiClient.Net.Enums;

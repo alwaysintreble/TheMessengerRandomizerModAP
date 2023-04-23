@@ -87,7 +87,6 @@ namespace MessengerRando.Archipelago
             Console.WriteLine($"Creating session: {uri}:{ServerData.Port}");
             var session = ArchipelagoSessionFactory.CreateSession(uri, ServerData.Port);
             session.MessageLog.OnMessageReceived += OnMessageReceived;
-            session.Locations.CheckedLocationsUpdated += RemoteLocationChecked;
             session.Items.ItemReceived += ItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
             session.Socket.SocketClosed += SessionSocketClosed;
@@ -169,22 +168,30 @@ namespace MessengerRando.Archipelago
             MessageQueue.Add(message.ToString());
         }
 
-        private static void RemoteLocationChecked(ReadOnlyCollection<long> checkedLocations)
+        public static void SyncLocations()
         {
-            if (ServerData.CheckedLocations == null) return;
-            foreach (var checkedLocation in checkedLocations)
+            var checkedLocations = Session.Locations.AllLocationsChecked;
+            if (ServerData.CheckedLocations.Count == checkedLocations.Count) return;
+            foreach (var location in checkedLocations)
             {
                 try
                 {
-                    if (!ServerData.CheckedLocations.Contains(checkedLocation))
-                        ServerData.CheckedLocations.Add(checkedLocation);
-                    var locName = Session.Locations.GetLocationNameFromId(checkedLocation);
-                    if (!locName.Contains("Seal")) continue;
-                    var roomKey =
-                        ItemsAndLocationsHandler.ArchipelagoLocations.Find(
-                            loc => loc.PrettyLocationName.Equals(locName)).LocationName;
-                    Console.WriteLine($"{locName}, {roomKey}");
-                    Manager<ProgressionManager>.Instance.SetChallengeRoomAsCompleted(roomKey);
+                    if (!ServerData.CheckedLocations.Contains(location))
+                        ServerData.CheckedLocations.Add(location);
+                    var locName = Session.Locations.GetLocationNameFromId(location);
+                    if (locName.Contains("Seal"))
+                    {
+                        var roomKey =
+                            ItemsAndLocationsHandler.ArchipelagoLocations.Find(
+                                loc => loc.PrettyLocationName.Equals(locName)).LocationName;
+                        Console.WriteLine($"{locName}, {roomKey}");
+                        Manager<ProgressionManager>.Instance.SetChallengeRoomAsCompleted(roomKey);
+                    }
+                    else if (ItemsAndLocationsHandler.ShopLocation(location, out var shopLoc))
+                    {
+                        var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.LocationName);
+                        Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                    }
                 }
                 catch (Exception e) {Console.WriteLine(e);}
             }

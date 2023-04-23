@@ -15,10 +15,11 @@ namespace MessengerRando.Utils
 
         public void Update()
         {
-            if (RandomizerStateManager.Instance.CurrentFileSlot != 0)
-                RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
-                    ArchipelagoClient.ServerData;
+            if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || !ArchipelagoClient.HasConnected) return;
+            RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
+                ArchipelagoClient.ServerData;
             APSaveData = GetSaveData();
+            ArchipelagoClient.SyncLocations();
         }
 
         private static string GetSaveData()

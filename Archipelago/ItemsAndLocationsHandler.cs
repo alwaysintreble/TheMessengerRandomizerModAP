@@ -236,25 +236,25 @@ namespace MessengerRando.Archipelago
         private static readonly List<LocationRO> ShopLocations = new List<LocationRO>
         {
             //shop items
-            new LocationRO("Karuta Plates", EItems.HEART_CONTAINER),
-            new LocationRO("Serendipitous Bodies", EItems.ENEMY_DROP_HP),
-            new LocationRO("Path of Resilience", EItems.DAMAGE_REDUCTION),
-            new LocationRO("Kusari Jacket", EItems.HEART_CONTAINER),
-            new LocationRO("Energy Shuriken", EItems.SHURIKEN),
-            new LocationRO("Serendipitous Minds", EItems.ENEMY_DROP_MANA),
-            new LocationRO("Prepared Mind", EItems.SHURIKEN_UPGRADE),
-            new LocationRO("Meditation", EItems.CHECKPOINT_UPGRADE),
-            new LocationRO("Rejuvenative Spirit", EItems.POTION_FULL_HEAL_AND_HP_UPGRADE),
-            new LocationRO("Centered Mind", EItems.SHURIKEN_UPGRADE),
-            new LocationRO("Strike of the Ninja", EItems.ATTACK_PROJECTILES),
-            new LocationRO("Second Wind", EItems.AIR_RECOVER),
-            new LocationRO("Currents Master", EItems.SWIM_DASH),
-            new LocationRO("Aerobatics Warrior", EItems.GLIDE_ATTACK),
-            new LocationRO("Demon's Bane", EItems.CHARGED_ATTACK),
-            new LocationRO("Devil's Due", EItems.QUARBLE_DISCOUNT_50),
-            new LocationRO("Time Sense", EItems.MAP_TIME_WARP),
-            new LocationRO("Power Sense", EItems.MAP_POWER_SEAL_TOTAL),
-            new LocationRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS),
+            new LocationRO("HP_UPGRADE_1", EItems.HEART_CONTAINER),
+            new LocationRO("ENEMY_DROP_HP", EItems.ENEMY_DROP_HP),
+            new LocationRO("DAMAGE_REDUCTION", EItems.DAMAGE_REDUCTION),
+            new LocationRO("HP_UPGRADE_2", EItems.HEART_CONTAINER),
+            new LocationRO("SHURIKEN", EItems.SHURIKEN),
+            new LocationRO("ENEMY_DROP_MANA", EItems.ENEMY_DROP_MANA),
+            new LocationRO("SHURIKEN_UPGRADE_1", EItems.SHURIKEN_UPGRADE),
+            new LocationRO("CHECKPOINT_FULL", EItems.CHECKPOINT_UPGRADE),
+            new LocationRO("POTION_FULL_HEAL_AND_HP", EItems.POTION_FULL_HEAL_AND_HP_UPGRADE),
+            new LocationRO("SHURIKEN_UPGRADE_2", EItems.SHURIKEN_UPGRADE),
+            new LocationRO("ATTACK_PROJECTILE", EItems.ATTACK_PROJECTILES),
+            new LocationRO("AIR_RECOVER", EItems.AIR_RECOVER),
+            new LocationRO("SWIM_DASH", EItems.SWIM_DASH),
+            new LocationRO("GLIDE_ATTACK", EItems.GLIDE_ATTACK),
+            new LocationRO("CHARGED_ATTACK", EItems.CHARGED_ATTACK),
+            new LocationRO("QUARBLE_DISCOUNT_50", EItems.QUARBLE_DISCOUNT_50),
+            new LocationRO("TIME_WARP", EItems.MAP_TIME_WARP),
+            new LocationRO("POWER_SEAL", EItems.MAP_POWER_SEAL_TOTAL),
+            new LocationRO("POWER_SEAL_WORLD_MAP", EItems.MAP_POWER_SEAL_PINS),
         };
 
         private static readonly Dictionary<string, string> SpecialNames = new Dictionary<string, string>
@@ -273,10 +273,21 @@ namespace MessengerRando.Archipelago
             return !EitemsLocationsLookup.ContainsKey(location) ? 0 : EitemsLocationsLookup[location];
         }
 
-        public static bool HasDialog(long locationID)
+        public static bool ShopLocation(long locationID, out LocationRO shopLocation)
+        {
+            shopLocation = LocationFromID(locationID);
+            return ShopLocations.Contains(shopLocation);
+        }
+
+        private static LocationRO LocationFromID(long locationID)
+        {
+            return LocationsLookup.First(x => x.Value.Equals(locationID)).Key;
+        }
+
+        private static bool HasDialog(long locationID)
         {
             Console.WriteLine($"Checking if {locationID} has associated dialog");
-            var location = LocationsLookup.First(x => x.Value.Equals(locationID)).Key.PrettyLocationName;
+            var location = LocationFromID(locationID).PrettyLocationName;
             try
             {
                 var locationEnum = (EItems)Enum.Parse(typeof(EItems), location);

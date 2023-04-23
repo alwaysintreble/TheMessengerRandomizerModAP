@@ -50,6 +50,7 @@ namespace MessengerRando.GameOverrideManagers
                 return newRoomLeftEdge.edgeIdX + newRoomRightEdge.edgeIdX
                                                + newRoomBottomEdge.edgeIdY + newRoomTopEdge.edgeIdY;
             }
+            #if DEBUG
             Console.WriteLine("new room params:" +
                               $"{newRoomLeftEdge.edgeIdX} " +
                               $"{newRoomRightEdge.edgeIdX} " +
@@ -60,11 +61,14 @@ namespace MessengerRando.GameOverrideManagers
                 ? $"currentRoom roomKey: {self.CurrentRoom.roomKey}"
                 : "currentRoom does not exist.");
             Console.WriteLine($"teleported: {teleportedInRoom}");
+            #endif
             var position = Manager<PlayerManager>.Instance.Player.transform.position;
+            #if DEBUG
             Console.WriteLine("Player position: " +
                               $"{position.x} " +
                               $"{position.y} " +
                               $"{position.z}");
+            #endif
 
 
             //This func checks if the new roomKey exists within levelRooms before changing and checks if currentRoom exists

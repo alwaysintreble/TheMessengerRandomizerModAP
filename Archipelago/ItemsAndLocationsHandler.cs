@@ -14,7 +14,7 @@ namespace MessengerRando.Archipelago
         public static Dictionary<LocationRO, long> LocationsLookup;
         public static Dictionary<EItems, long> EitemsLocationsLookup;
 
-        private static RandomizerStateManager randoStateManager;
+        public static RandomizerStateManager RandoStateManager;
 
         public const int APQuantity = 69;
 
@@ -69,8 +69,6 @@ namespace MessengerRando.Archipelago
                     EitemsLocationsLookup.Add(progLocation.VanillaItem, offset);
                 ++offset;
             }
-
-            randoStateManager = RandomizerStateManager.Instance;
         }
 
         private static readonly List<RandoItemRO> ArchipelagoItems = new List<RandoItemRO>
@@ -285,9 +283,8 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine($"{locationEnum}");
                 return DialogChanger.ItemDialogID.ContainsKey(locationEnum);
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine(e);
                 return false;
             }
         }
@@ -299,9 +296,9 @@ namespace MessengerRando.Archipelago
         /// <param name="quantity"></param>
         public static void Unlock(long itemToUnlock, int quantity = APQuantity)
         {
-            if (!ItemsLookup.TryGetValue(itemToUnlock, out var randoItem))
+            if (!ItemsLookup.TryGetValue(itemToUnlock, out var randoItem) || RandoStateManager.CurrentFileSlot == 0)
             {
-                Console.WriteLine($"Couldn't find {itemToUnlock} in items to grant it.");
+                Console.WriteLine($"Couldn't find {itemToUnlock} or not currently in game");
                 return;
             }
 
@@ -330,7 +327,7 @@ namespace MessengerRando.Archipelago
                     Manager<InventoryManager>.Instance.CollectTimeShard(quantity);
                     break;
                 case EItems.POWER_SEAL:
-                    randoStateManager.PowerSealManager.AddPowerSeal();
+                    RandoStateManager.PowerSealManager.AddPowerSeal();
                     break;
                 case EItems.NONE:
                     try
@@ -379,7 +376,7 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine("Checking if we need to draw a dialog box");
                 if (!HasDialog(locationID))
                 {
-                    if (!randoStateManager.ScoutedLocations.TryGetValue(locationID, out var locationInfo)) return;
+                    if (!RandoStateManager.ScoutedLocations.TryGetValue(locationID, out var locationInfo)) return;
                     DialogChanger.CreateDialogBox(locationInfo.ToReadableString());
                 }
             } catch {}
@@ -395,6 +392,8 @@ namespace MessengerRando.Archipelago
         public static void ReSync()
         {
             var receivedItems = new Dictionary<long, int>();
+
+            ArchipelagoClient.ServerData.Index = ArchipelagoClient.Session.Items.AllItemsReceived.Count;
             for (int i = 0; i < ArchipelagoClient.ServerData.Index; i++)
             {
                 var currentItem = ArchipelagoClient.Session.Items.AllItemsReceived[i].Item;

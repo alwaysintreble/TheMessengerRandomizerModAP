@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Utils;
@@ -22,6 +23,7 @@ namespace MessengerRando.Archipelago
         private delegate void OnConnectAttempt(LoginResult result);
         public static bool Authenticated;
         public static bool HasConnected;
+        private static bool attemptingConnection;
 
         public static bool DisplayAPMessages = true;
         public static bool DisplayStatus = true;
@@ -47,7 +49,13 @@ namespace MessengerRando.Archipelago
 
         private static void OnConnected(LoginResult connectStats)
         {
-            return;
+            if (ServerData.CheckedLocations != null)
+            {
+                Session.Locations.CompleteLocationChecksAsync(
+                    _ => ServerData.CheckedLocations = Session.Locations.AllLocationsChecked.ToList(),
+                    ServerData.CheckedLocations.ToArray());
+            }
+            attemptingConnection = false;
         }
 
         private static void OnConnected(LoginResult connectResult, SubMenuButtonInfo connectButton)
@@ -69,39 +77,62 @@ namespace MessengerRando.Archipelago
             successPopup.gameObject.SetActive(true);
             // Object.Destroy(successPopup.transform.Find("BigFrame").Find("SymbolsGrid").gameObject);
             Console.WriteLine(outputText);
+            attemptingConnection = false;
+        }
+
+        private static ArchipelagoSession CreateSession(bool secure)
+        {
+            var uri = secure ? "wss://" : "ws://";
+            uri += ServerData.Uri;
+            Console.WriteLine($"Creating session: {uri}:{ServerData.Port}");
+            var session = ArchipelagoSessionFactory.CreateSession(uri, ServerData.Port);
+            session.MessageLog.OnMessageReceived += OnMessageReceived;
+            session.Locations.CheckedLocationsUpdated += RemoteLocationChecked;
+            session.Items.ItemReceived += ItemReceived;
+            session.Socket.ErrorReceived += SessionErrorReceived;
+            session.Socket.SocketClosed += SessionSocketClosed;
+            return session;
         }
 
         private static void Connect(OnConnectAttempt attempt)
         {
             if (Authenticated) return;
             if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
+            if (attemptingConnection) return;
+            attemptingConnection = true;
 
             LoginResult result;
 
-            Session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
-            Session.MessageLog.OnMessageReceived += OnMessageReceived;
-            Session.Locations.CheckedLocationsUpdated += RemoteLocationChecked;
-            Session.Socket.ErrorReceived += SessionErrorReceived;
-            Session.Socket.SocketClosed += SessionSocketClosed;
-
             try
             {
-                Console.WriteLine("Attempting Connection...");
+                Console.WriteLine("Attempting wss Connection...");
+                Session = CreateSession(true);
                 result = Session.TryConnectAndLogin(
                     "The Messenger",
                     ServerData.SlotName,
                     ItemsHandlingFlags.AllItems,
                     new Version(ApVersion),
-                    null,
-                    "",
-                    ServerData.Password == "" ? null : ServerData.Password
+                    password: ServerData.Password == "" ? null : ServerData.Password
                 );
+                if (!result.Successful)
+                {
+                    Console.WriteLine("Attempting ws Connection...");
+                    Session = CreateSession(false);
+                    result = Session.TryConnectAndLogin(
+                        "The Messenger",
+                        ServerData.SlotName,
+                        ItemsHandlingFlags.AllItems,
+                        new Version(ApVersion),
+                        password: ServerData.Password == "" ? null : ServerData.Password
+                    );
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {e.GetBaseException().Message}");
+                Console.WriteLine($"Error: {e}");
                 result = new LoginFailure(e.GetBaseException().Message);
             }
+            
 
             if (result.Successful)
             {
@@ -113,15 +144,6 @@ namespace MessengerRando.Archipelago
                 RandomizerStateManager.InitializeMultiSeed();
                 
                 DeathLinkHandler = new DeathLinkInterface();
-                if (HasConnected)
-                {
-                    if (ServerData.CheckedLocations != null)
-                        foreach (var location in ServerData.CheckedLocations.Where(location =>
-                                     !Session.Locations.AllLocationsChecked.Contains(location)))
-                            Session.Locations.CompleteLocationChecks(location);
-                    ServerData.CheckedLocations = Session.Locations.AllLocationsChecked.ToList();
-                    return;
-                }
 
                 HasConnected = true;
             }
@@ -131,8 +153,6 @@ namespace MessengerRando.Archipelago
                 string errorMessage = $"Failed to connect to {ServerData.Uri} as {ServerData.SlotName}:";
                 errorMessage +=
                     failure.Errors.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
-                errorMessage +=
-                    failure.ErrorCodes.Aggregate(errorMessage, (current, error) => current + $"\n   {error}");
 
                 Console.WriteLine($"Failed to connect: {errorMessage}");
 
@@ -151,6 +171,7 @@ namespace MessengerRando.Archipelago
 
         private static void RemoteLocationChecked(ReadOnlyCollection<long> checkedLocations)
         {
+            if (ServerData.CheckedLocations == null) return;
             foreach (var checkedLocation in checkedLocations)
             {
                 try
@@ -167,6 +188,14 @@ namespace MessengerRando.Archipelago
                 }
                 catch (Exception e) {Console.WriteLine(e);}
             }
+        }
+
+        private static void ItemReceived(ReceivedItemsHelper helper)
+        {
+            if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
+            Console.WriteLine("ItemReceived called");
+            ItemsAndLocationsHandler.Unlock(helper.DequeueItem().Item);
+            ServerData.Index++;
         }
 
         private static void SessionErrorReceived(Exception e, string message)
@@ -191,7 +220,6 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateArchipelagoState()
         {
-            HasConnected = true;
             if (!Authenticated)
             {
                 Console.WriteLine("Attempting to reconnect to Archipelago Server...");
@@ -203,6 +231,7 @@ namespace MessengerRando.Archipelago
                 ItemsAndLocationsHandler.ReSync();
                 return;
             }
+            if (ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
             var currentItem = Session.Items.AllItemsReceived[ServerData.Index];
             var currentItemId = currentItem.Item;
             ++ServerData.Index;

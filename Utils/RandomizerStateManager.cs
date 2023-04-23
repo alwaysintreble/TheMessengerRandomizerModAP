@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace MessengerRando.Utils
 {
-    class RandomizerStateManager
+    public class RandomizerStateManager
     {
         public static RandomizerStateManager Instance { private set; get; }
         public int CurrentFileSlot { set; get; }
@@ -30,7 +30,7 @@ namespace MessengerRando.Utils
             try
             {
                 //Create initial values for the state machine
-                Instance = this;
+                ItemsAndLocationsHandler.RandoStateManager = Instance = this;
                 APSave = new Dictionary<int, ArchipelagoData>
                 {
                     { 1, new ArchipelagoData() },
@@ -132,12 +132,11 @@ namespace MessengerRando.Utils
 
         private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)
         {
+            Console.WriteLine("Setting up scouts");
             Instance.ScoutedLocations = new Dictionary<long, NetworkItem>();
-            ArchipelagoClient.ServerData.RandomizedLocations = new List<long>();
             foreach (var networkItem in scoutedLocationInfo.Locations)
             {
                 Instance.ScoutedLocations.Add(networkItem.Location, networkItem);
-                ArchipelagoClient.ServerData.RandomizedLocations.Add(networkItem.Location);
             }
             Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
         }
@@ -167,33 +166,18 @@ namespace MessengerRando.Utils
             if (!ArchipelagoClient.HasConnected) return isLocationRandomized;
             try
             {
-                Console.WriteLine($"checking for {vanillaLocationItem} id");
                 locationID =
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
-                Console.WriteLine($"checking if {locationID} is in potential checks");
                 if (locationID == 0) return isLocationRandomized;
-                if (ArchipelagoClient.ServerData.RandomizedLocations.Contains(locationID) ||
-                    ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
+                Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
+                if (ScoutedLocations != null && ScoutedLocations.ContainsKey(locationID))
                     isLocationRandomized = true;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Console.WriteLine("trying again...");
-                locationID = ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
-                Console.WriteLine("Randomized Locations: ");
-                foreach (var VARIABLE in ArchipelagoClient.ServerData.RandomizedLocations)
-                {
-                    Console.WriteLine(VARIABLE);
-                }
-                Console.WriteLine("Checked Locations: ");
-                foreach (var VARIABLE in ArchipelagoClient.ServerData.CheckedLocations)
-                {
-                    Console.WriteLine(VARIABLE);
-                }
-
-                isLocationRandomized = true;
             }
+            Console.WriteLine($"Result: {isLocationRandomized}");
 
             return isLocationRandomized;
         }

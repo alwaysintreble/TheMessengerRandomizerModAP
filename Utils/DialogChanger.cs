@@ -42,23 +42,6 @@ namespace MessengerRando.Utils
             { EItems.CLAUSTROPHOBIC_WORKER, "FIND_CLAUSTRO" },
         };
 
-        /// <summary>
-        /// The initial generation of the dictionary of dialog replacement based on the currently randomized item locations
-        /// </summary>
-        /// <returns>A Dictionary containing keys of locationdialogID and values of replacementdialogID</returns>
-        /// 
-        public static Dictionary<string, string> GenerateDialogMappingforItems()
-        {
-            Dictionary<string, string> dialogmap = new Dictionary<string, string>();
-
-            foreach (var pair in ItemDialogID)
-            {
-                dialogmap[pair.Value] = "ARCHIPELAGO_ITEM";
-            }
-
-            return dialogmap;
-        }
-
         public static void CreateDialogBox(string text)
         {
             Console.WriteLine($"Drawing text box for {text}");
@@ -92,80 +75,29 @@ namespace MessengerRando.Utils
                 Dictionary<string, List<DialogInfo>> Loc = dialogByLocIDField.GetValue(self) as Dictionary<string, List<DialogInfo>>;
                 Dictionary<string, List<DialogInfo>> LocCopy = new Dictionary<string, List<DialogInfo>>(Loc);
 
-
-                //Before we randomize get some fixed GOT ITEM text to replace text for Phoebekins
-                // List<DialogInfo> awardTextDialogList = Manager<DialogManager>.Instance.GetDialog("AWARD_GRIMPLOU");
-                // string awardText = awardTextDialogList[0].text;
-                // int replaceindexstart = awardText.IndexOf(">", 1);
-                // int replaceindexend = awardText.IndexOf("<", replaceindexstart);
-                // string toreplace = awardText.Substring(replaceindexstart + 1, replaceindexend - replaceindexstart - 1);
-                //
-                // //Phobekin text
-                // string phobeText = Manager<LocalizationManager>.Instance.GetText("UI_PHOBEKINS_TITLE").ToLower();
-                // phobeText = char.ToUpper(phobeText[0]) + phobeText.Substring(1); //Ugly way to uppercase the first letter.
-
-
-                //Load the randomized mappings for an IF check so it doesn't run randomizer logic and replace itself with itself.
-
                 //Loop through each dialog replacement - Will output the replacements to log for debugging
-                foreach (KeyValuePair<string, List<DialogInfo>> KVP in Loc)
+                foreach (var replaceableKey in Loc.Select(kvp => kvp.Key).Where(toBeReplaced => ItemDialogID.ContainsValue(toBeReplaced)))
                 {
-                    string tobereplacedKey = KVP.Key;
-                    string replacewithKey = "ARCHIPELAGO_ITEM";
-
-
-                    if (ItemDialogID.ContainsValue(tobereplacedKey))
+                    //Sets them to be all center and no portrait (This really only applies to phobekins but was 
+                    LocCopy[replaceableKey][0].autoClose = false;
+                    LocCopy[replaceableKey][0].autoCloseDelay = 0;
+                    LocCopy[replaceableKey][0].characterDefinition = null;
+                    LocCopy[replaceableKey][0].forcedPortraitOrientation = 0;
+                    LocCopy[replaceableKey][0].position = EDialogPosition.CENTER;
+                    LocCopy[replaceableKey][0].skippable = true;
+                    if (RandomizerStateManager.Instance.ScoutedLocations != null &&
+                        RandomizerStateManager.Instance.IsLocationRandomized(
+                            ItemDialogID.First(x => x.Value.Equals(replaceableKey)).Key,
+                            out var locationID))
                     {
-                        //Sets them to be all center and no portrait (This really only applies to phobekins but was 
-                        LocCopy[tobereplacedKey][0].autoClose = false;
-                        LocCopy[tobereplacedKey][0].autoCloseDelay = 0;
-                        LocCopy[tobereplacedKey][0].characterDefinition = null;
-                        LocCopy[tobereplacedKey][0].forcedPortraitOrientation = 0;
-                        LocCopy[tobereplacedKey][0].position = EDialogPosition.CENTER;
-                        LocCopy[tobereplacedKey][0].skippable = true;
-                        if (RandomizerStateManager.Instance.ScoutedLocations != null &&
-                            RandomizerStateManager.Instance.IsLocationRandomized(
-                                ItemDialogID.First(x => x.Value.Equals(tobereplacedKey)).Key,
-                                out var locationID))
-                        {
-                            LocCopy[tobereplacedKey][0].text =
-                                RandomizerStateManager.Instance.ScoutedLocations[locationID].ToReadableString();
-                        }
+                        LocCopy[replaceableKey][0].text =
+                            RandomizerStateManager.Instance.ScoutedLocations[locationID].ToReadableString();
+                    }
 
-                        //This will replace the dialog for a phobekin to be its name in an award text
-                        // switch (replacewithKey)
-                        // {
-                        //     case "FIND_ACRO":
-                        //         string acro = Manager<LocalizationManager>.Instance.GetText("PHOBEKIN_ACRO_NAME");
-                        //         acro = acro.Replace("<color=#00fcfc>", "");
-                        //         acro = acro.Replace("</color>", "");
-                        //         LocCopy[tobereplacedKey][0].text = awardText.Replace(toreplace, acro + " " + phobeText);
-                        //         break;
-                        //     case "FIND_PYRO":
-                        //         string pyro = Manager<LocalizationManager>.Instance.GetText("PHOBEKIN_PYRO_NAME");
-                        //         pyro = pyro.Replace("<color=#00fcfc>", "");
-                        //         pyro = pyro.Replace("</color>", "");
-                        //         LocCopy[tobereplacedKey][0].text = awardText.Replace(toreplace, pyro + " " + phobeText);
-                        //         break;
-                        //     case "FIND_CLAUSTRO":
-                        //         string claustro = Manager<LocalizationManager>.Instance.GetText("PHOBEKIN_CLAUSTRO_NAME");
-                        //         claustro = claustro.Replace("<color=#00fcfc>", "");
-                        //         claustro = claustro.Replace("</color>", "");
-                        //         LocCopy[tobereplacedKey][0].text = awardText.Replace(toreplace, claustro + " " + phobeText);
-                        //         break;
-                        //     case "NECRO_PHOBEKIN_DIALOG":
-                        //         string necro = Manager<LocalizationManager>.Instance.GetText("PHOBEKIN_NECRO_NAME");
-                        //         necro = necro.Replace("<color=#00fcfc>", "");
-                        //         necro = necro.Replace("</color>", "");
-                        //         LocCopy[tobereplacedKey][0].text = awardText.Replace(toreplace, necro + " " + phobeText);
-                        //         break;
-                        // }
-
-                        //This will remove all additional dialog that comes after the initial reward text
-                        for (int i = LocCopy[tobereplacedKey].Count - 1; i > 0; i--)
-                        {
-                            LocCopy[tobereplacedKey].RemoveAt(i);
-                        }
+                    //This will remove all additional dialog that comes after the initial reward text
+                    for (int i = LocCopy[replaceableKey].Count - 1; i > 0; i--)
+                    {
+                        LocCopy[replaceableKey].RemoveAt(i);
                     }
                 }
                 //Sets the replacements

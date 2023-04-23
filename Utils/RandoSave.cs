@@ -1,4 +1,5 @@
-﻿using MessengerRando.Archipelago;
+﻿using System;
+using MessengerRando.Archipelago;
 using Mod.Courier.Save;
 
 namespace MessengerRando.Utils
@@ -28,6 +29,7 @@ namespace MessengerRando.Utils
             {
                 output += $"{randoState.APSave[i]}|";
             }
+            Console.WriteLine($"Saving {output}");
 
             return output;
         }

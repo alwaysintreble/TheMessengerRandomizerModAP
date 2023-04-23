@@ -441,7 +441,14 @@ namespace MessengerRando
                 else if (ArchipelagoClient.Authenticated &&
                          string.IsNullOrEmpty(randoStateManager.APSave[randoStateManager.CurrentFileSlot].SlotName))
                 {
-                    ArchipelagoClient.ServerData.StartNewSeed(randoStateManager.CurrentFileSlot);
+                    ArchipelagoClient.ServerData.StartNewSeed();
+                    //We force a reload of all dialog when loading the game
+                    try
+                    {
+                        Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);   
+                    } catch (Exception e){Console.WriteLine(e);}
+                    Manager<ProgressionManager>.Instance.bossesDefeated =
+                        Manager<ProgressionManager>.Instance.allTimeBossesDefeated = new List<string>();
                 }
             }
             catch (Exception e)
@@ -450,21 +457,11 @@ namespace MessengerRando
                 orig(self, slotIndex);
             }
             //Generate the mappings based on the seed for the game if a seed was generated.
-            if (ArchipelagoClient.HasConnected)
+            if (!ArchipelagoClient.HasConnected)
             {
-
-                //We force a reload of all dialog when loading the game
-                try
-                {
-                    Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);   
-                } catch (Exception e){Console.WriteLine(e);}
-                Manager<ProgressionManager>.Instance.bossesDefeated =
-                    Manager<ProgressionManager>.Instance.allTimeBossesDefeated = new List<string>();
-            }
-            else
-            {
-                //This save file does not have a seed associated with it or is not a randomized file. Reset the mappings so everything is back to normal.
-                Console.WriteLine($"This file slot ({randoStateManager.CurrentFileSlot}) has no seed generated or is not a randomized file. Resetting the mappings and putting game items back to normal.");
+                Console.WriteLine(
+                    $"This file slot ({randoStateManager.CurrentFileSlot}) has no seed generated or is not " +
+                    "a randomized file. Resetting the mappings and putting game items back to normal.");
             }
 
             orig(self, slotIndex);
@@ -801,7 +798,7 @@ namespace MessengerRando
 
         private void PlayerController_OnUpdate(PlayerController controller)
         {
-            if (!ArchipelagoClient.HasConnected) return;
+            if (!ArchipelagoClient.HasConnected || randoStateManager.CurrentFileSlot == 0) return;
             ArchipelagoClient.DeathLinkHandler.Player = controller;
             if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
                 ArchipelagoClient.DeathLinkHandler.KillPlayer();

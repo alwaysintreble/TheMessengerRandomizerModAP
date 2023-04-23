@@ -206,10 +206,16 @@ namespace MessengerRando
             archipelagoMessageTimerButton.IsEnabled = () => ArchipelagoClient.DisplayStatus;
 
             //Options I only want working while actually in the game
-            windmillShurikenToggleButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<InventoryManager>.Instance.GetItemQuantity(EItems.WINDMILL_SHURIKEN) > 0);
-            teleportToHqButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && RandomizerStateManager.IsSafeTeleportState());
-            teleportToNinjaVillage.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && RandomizerStateManager.IsSafeTeleportState());
-            seedNumButton.IsEnabled = () => (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE);
+            windmillShurikenToggleButton.IsEnabled = () => ArchipelagoClient.ServerData?.ReceivedItems != null &&
+                                                           ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(
+                                                               ItemsAndLocationsHandler.ItemFromEItem(
+                                                                   EItems.WINDMILL_SHURIKEN));
+            teleportToHqButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
+                                                 RandomizerStateManager.IsSafeTeleportState();
+            teleportToNinjaVillage.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != 
+                ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && 
+                RandomizerStateManager.IsSafeTeleportState();
+            seedNumButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
 
             SceneManager.sceneLoaded += OnSceneLoadedRando;
 

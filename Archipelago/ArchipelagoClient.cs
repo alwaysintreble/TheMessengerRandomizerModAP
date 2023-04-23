@@ -87,7 +87,7 @@ namespace MessengerRando.Archipelago
             Console.WriteLine($"Creating session: {uri}:{ServerData.Port}");
             var session = ArchipelagoSessionFactory.CreateSession(uri, ServerData.Port);
             session.MessageLog.OnMessageReceived += OnMessageReceived;
-            session.Items.ItemReceived += ItemReceived;
+            // session.Items.ItemReceived += ItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
             session.Socket.SocketClosed += SessionSocketClosed;
             return session;
@@ -170,6 +170,7 @@ namespace MessengerRando.Archipelago
 
         public static void SyncLocations()
         {
+            if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
             var checkedLocations = Session.Locations.AllLocationsChecked;
             if (ServerData.CheckedLocations.Count == checkedLocations.Count) return;
             foreach (var location in checkedLocations)
@@ -199,7 +200,8 @@ namespace MessengerRando.Archipelago
 
         private static void ItemReceived(ReceivedItemsHelper helper)
         {
-            if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
+            if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || 
+                ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
             Console.WriteLine("ItemReceived called");
             ItemsAndLocationsHandler.Unlock(helper.DequeueItem().Item);
             ServerData.Index++;

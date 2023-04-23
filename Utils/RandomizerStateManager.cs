@@ -170,7 +170,8 @@ namespace MessengerRando.Utils
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
                 if (locationID == 0) return isLocationRandomized;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
-                if (ScoutedLocations != null && ScoutedLocations.ContainsKey(locationID))
+                if (ScoutedLocations.ContainsKey(locationID) ||
+                     ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
                     isLocationRandomized = true;
             }
             catch (Exception e)

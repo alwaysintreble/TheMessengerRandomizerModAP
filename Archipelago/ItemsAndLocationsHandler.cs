@@ -263,6 +263,23 @@ namespace MessengerRando.Archipelago
             { "Prepared Mind", "Centered Mind" },
         };
 
+        private static bool ShopItem(EItems item)
+        {
+            var shopItems = new List<EItems>
+            {
+                EItems.HEART_CONTAINER,
+                EItems.SHURIKEN,
+                EItems.SHURIKEN_UPGRADE,
+                EItems.CHECKPOINT_UPGRADE,
+                EItems.POTION_FULL_HEAL_AND_HP_UPGRADE,
+                EItems.SHURIKEN_UPGRADE,
+                EItems.MAP_TIME_WARP,
+                EItems.MAP_POWER_SEAL_TOTAL,
+                EItems.MAP_POWER_SEAL_PINS,
+            };
+            return shopItems.Contains(item);
+        }
+
         public static long ItemFromEItem(EItems item)
         {
             return ItemsLookup.First(x => x.Value.Equals(item)).Key;
@@ -312,14 +329,20 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine($"Couldn't find {itemToUnlock} or not currently in game");
                 return;
             }
+            Console.WriteLine($"Unlocking {itemToUnlock}, {randoItem.Item}");
 
             switch (randoItem.Item)
             {
                 case EItems.WINDMILL_SHURIKEN:
+                    var shurikenID = ItemFromEItem(EItems.SHURIKEN);
+                    if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(shurikenID))
+                    {
+                        Manager<InventoryManager>.Instance.AddItem(EItems.SHURIKEN, quantity);
+                        Manager<UIManager>.Instance.GetView<InGameHud>().UpdateShurikenVisibility();
+                    }
                     APRandomizerMain.OnToggleWindmillShuriken();
                     break;
                 case EItems.TIME_SHARD:
-                    Console.WriteLine("Unlocking time shards...");
                     switch (randoItem.Name)
                     {
                         case "Timeshard": quantity = 1;
@@ -335,6 +358,7 @@ namespace MessengerRando.Archipelago
                         case "Timeshard (500)": quantity = 500;
                             break;
                     }
+                    Console.WriteLine($"Unlocking time shards... {quantity}");
                     Manager<InventoryManager>.Instance.CollectTimeShard(quantity);
                     break;
                 case EItems.POWER_SEAL:
@@ -352,6 +376,14 @@ namespace MessengerRando.Archipelago
                     }
                     break;
                 default:
+                    Console.WriteLine($"Checking if {randoItem.Item} is a shop item: {ShopItem(randoItem.Item)}");
+                    if (ShopItem(randoItem.Item))
+                    {
+                        var view = Manager<UIManager>.Instance.GetView<InGameHud>();
+                        view.UpdateMaxHeart();
+                        view.UpdateMaxMana();
+                        view.UpdateShurikenVisibility();
+                    }
                     Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);
                     break;
             }

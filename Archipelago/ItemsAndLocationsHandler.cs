@@ -405,11 +405,11 @@ namespace MessengerRando.Archipelago
             Console.WriteLine($"Checking if we need to modify the location {locationID} before sending");
             if (ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
             {
-                var locName = LocationsLookup.First(x => x.Value.Equals(locationID)).Key;
-                if (SpecialNames.TryGetValue(locName.LocationName, out var name))
+                var loc = LocationFromID(locationID);
+                if (SpecialNames.TryGetValue(loc.LocationName, out var name))
                 {
                     LocationsLookup.TryGetValue(new LocationRO(name,
-                        (EItems)Enum.Parse(typeof(EItems), locName.PrettyLocationName)), out locationID);
+                        (EItems)Enum.Parse(typeof(EItems), loc.PrettyLocationName)), out locationID);
                 }
                 else return;
             }

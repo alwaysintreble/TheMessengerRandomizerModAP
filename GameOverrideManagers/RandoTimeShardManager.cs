@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
+using MessengerRando.Utils;
 
 namespace MessengerRando.GameOverrideManagers
 {
@@ -81,9 +82,14 @@ namespace MessengerRando.GameOverrideManagers
             new MegaShard(ELevel.Level_09_B_ElementalSkylands, "18361868388404", new LocationRO("Water Mega Shard")),
         };
 
+        private static LocationRO ShardLocation(MegaShard shard)
+        {
+            return MegaShardLookup.First(loc => loc.Equals(shard)).Loc;
+        }
+
         public static void BreakShard(MegaShard shardToBreak)
         {
-            var location = MegaShardLookup.First(item => item.Equals(shardToBreak)).Loc;
+            var location = ShardLocation(shardToBreak);
             Console.WriteLine($"Broke Shard {location.LocationName}");
             if (!ArchipelagoClient.HasConnected) return;
             
@@ -98,6 +104,32 @@ namespace MessengerRando.GameOverrideManagers
             if (ArchipelagoClient.ServerData.CheckedLocations.Contains(
                     ItemsAndLocationsHandler.LocationsLookup[location])) return;
             ItemsAndLocationsHandler.SendLocationCheck(location);
+        }
+
+        public static void NextState(On.MegaTimeShard.orig_NextState orig, MegaTimeShard self, HitData hitData)
+        {
+            var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
+            var currentRoom = Manager<Level>.Instance.CurrentRoom.roomKey;
+            if (RandomizerStateManager.Instance.MegaShards)
+            {
+                var location = ShardLocation(new MegaShard(currentLevel, currentRoom));
+                if (!location.Equals(new LocationRO("Money Farm Room Mega Shard 1")) &&
+                    !location.Equals(new LocationRO("Quick Restock Mega Shard 1")) &&
+                    ArchipelagoClient.ServerData.CheckedLocations.
+                        Contains(ItemsAndLocationsHandler.LocationsLookup[location]))
+                {
+                    self.SetHP(self.maxHP);
+                    return;
+                }
+            }
+            orig(self, hitData);
+        }
+
+        public static bool ReceiveHit(On.MegaTimeShard.orig_ReceiveHit orig, MegaTimeShard self, HitData hitData)
+        {
+            self.shardsPerHit = 50;
+            
+            return orig(self, hitData);
         }
     }
 }

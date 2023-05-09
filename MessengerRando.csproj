@@ -35,8 +35,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Archipelago.MultiClient.Net, Version=4.2.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Archipelago.MultiClient.Net.4.2.5-betav5\lib\net35\Archipelago.MultiClient.Net.dll</HintPath>
+    <Reference Include="Archipelago.MultiClient.Net, Version=5.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Archipelago.MultiClient.Net.5.0.3\lib\net35\Archipelago.MultiClient.Net.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Messenger\TheMessenger_Data\Managed\Assembly-CSharp.dll</HintPath>
@@ -59,7 +59,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Archipelago.MultiClient.Net.4.2.5-betav5\lib\net35\Newtonsoft.Json.dll</HintPath>
+      <HintPath>packages\Archipelago.MultiClient.Net.5.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Messenger\TheMessenger_Data\Managed\UnityEngine.dll</HintPath>
@@ -82,7 +82,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="websocket-sharp, Version=1.0.2.34775, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
-      <HintPath>packages\Archipelago.MultiClient.Net.4.2.5-betav5\lib\net35\websocket-sharp.dll</HintPath>
+      <HintPath>packages\Archipelago.MultiClient.Net.5.0.3\lib\net35\websocket-sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -94,11 +94,15 @@
     <Compile Include="GameOverrideManagers\RandoBossManager.cs" />
     <Compile Include="GameOverrideManagers\RandoPowerSealManager.cs" />
     <Compile Include="GameOverrideManagers\RandoLevelManager.cs" />
+    <Compile Include="GameOverrideManagers\RandoRoomManager.cs" />
     <Compile Include="GameOverrideManagers\RandoShopManager.cs" />
     <Compile Include="GameOverrideManagers\RandoTimeShardManager.cs" />
     <Compile Include="Overrides\RandoCatacombLevelInitializer.cs" />
     <Compile Include="RO\RandoItemRO.cs" />
     <Compile Include="RO\LocationRO.cs" />
+    <Compile Include="Utils\Constants\BossConstants.cs" />
+    <Compile Include="Utils\Constants\LevelConstants.cs" />
+    <Compile Include="Utils\Constants\RoomConstants.cs" />
     <Compile Include="Utils\RandoSave.cs" />
     <Compile Include="Utils\LocationInfo.cs" />
     <Compile Include="Utils\DialogChanger.cs" />
@@ -112,9 +116,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utils\Constants" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

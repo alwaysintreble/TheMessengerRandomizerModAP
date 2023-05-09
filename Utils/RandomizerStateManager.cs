@@ -160,27 +160,25 @@ namespace MessengerRando.Utils
         /// <returns>true if location was found, otherwise false(location item will be null in this case)</returns>
         public bool IsLocationRandomized(EItems vanillaLocationItem, out long locationID)
         {
-            var isLocationRandomized = false;
             locationID = 0;
 
-            if (!ArchipelagoClient.HasConnected) return isLocationRandomized;
+            if (!ArchipelagoClient.HasConnected) return false;
             try
             {
                 locationID =
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
-                if (locationID == 0) return isLocationRandomized;
+                if (locationID == 0) return false;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
                 if (ScoutedLocations.ContainsKey(locationID) ||
                      ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
-                    isLocationRandomized = true;
+                    return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
-            Console.WriteLine($"Result: {isLocationRandomized}");
 
-            return isLocationRandomized;
+            return false;
         }
 
         public static bool HasCompletedCheck(long locationID)

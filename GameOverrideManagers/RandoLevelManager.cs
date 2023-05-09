@@ -11,7 +11,6 @@ namespace MessengerRando.GameOverrideManagers
     public static class RandoLevelManager
     {
         private static bool teleporting;
-        private static bool teleportOverride;
         private static ELevel lastLevel;
         private static ELevel currentLevel;
         public static readonly List<string> PlayedSpecialCutscenes = new List<string>();
@@ -26,7 +25,7 @@ namespace MessengerRando.GameOverrideManagers
             Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}");
             #endif
             orig(self, levelInfo);
-            if (teleportOverride || RandoLevelMapping == null) teleportOverride = false;
+            if (RandoLevelMapping == null || teleporting) teleporting = false;
             else
             {
                 lastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
@@ -146,14 +145,10 @@ namespace MessengerRando.GameOverrideManagers
             //         return;
             //     }
             // }
-            if (teleportOverride || RandoLevelMapping == null)
-            {
-                teleportOverride = false;
-                return;
-            }
+            if (teleporting) teleporting = false;
 
             var oldLevel = FindEntrance(out var entrance);
-            if (!RandoLevelMapping.TryGetValue(oldLevel, out var newLevel)) return;
+            if (RandoLevelMapping == null || !RandoLevelMapping.TryGetValue(oldLevel, out var newLevel)) return;
             var actualEntrance = LevelConstants.EntranceNameToRandoLevel
                 .First(ret => ret.Value.Equals(newLevel)).Key;
             EBits newDimension;
@@ -176,10 +171,8 @@ namespace MessengerRando.GameOverrideManagers
         public static void SkipMusicBox()
         {
             if (teleporting)
-            if (teleportOverride)
             {
                 teleporting = false;
-                teleportOverride = false;
                 return;
             }
             Manager<AudioManager>.Instance.StopMusic();
@@ -193,10 +186,8 @@ namespace MessengerRando.GameOverrideManagers
         public static void TeleportInArea(ELevel area, Vector2 position, EBits dimension = EBits.NONE)
         {
             if (teleporting)
-            if (teleportOverride)
             {
                 teleporting = false;
-                teleportOverride = false;
                 return;
             }
             Console.WriteLine($"Attempting to teleport to {area}, ({position.x}, {position.y}), {dimension}");
@@ -207,7 +198,6 @@ namespace MessengerRando.GameOverrideManagers
                 true, true, LoadSceneMode.Single,
                 ELevelEntranceID.NONE, dimension);
             teleporting = true;
-            teleportOverride = true;
             Manager<LevelManager>.Instance.LoadLevel(levelLoadingInfo);
         }
 

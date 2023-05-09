@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using Archipelago.MultiClient.Net;
@@ -35,12 +34,16 @@ namespace MessengerRando.Archipelago
 
         public static void ConnectAsync()
         {
+            if (attemptingConnection) return;
+            attemptingConnection = true;
             Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
             ThreadPool.QueueUserWorkItem(_ => Connect(OnConnected));
         }
 
         public static void ConnectAsync(SubMenuButtonInfo connectButton)
         {
+            if (attemptingConnection) return;
+            attemptingConnection = true;
             if (ServerData == null)
                 ServerData = new ArchipelagoData();
             Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
@@ -80,12 +83,9 @@ namespace MessengerRando.Archipelago
             attemptingConnection = false;
         }
 
-        private static ArchipelagoSession CreateSession(bool secure)
+        private static ArchipelagoSession CreateSession()
         {
-            var uri = secure ? "wss://" : "ws://";
-            uri += ServerData.Uri;
-            Console.WriteLine($"Creating session: {uri}:{ServerData.Port}");
-            var session = ArchipelagoSessionFactory.CreateSession(uri, ServerData.Port);
+            var session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
             session.MessageLog.OnMessageReceived += OnMessageReceived;
             // session.Items.ItemReceived += ItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
@@ -97,15 +97,13 @@ namespace MessengerRando.Archipelago
         {
             if (Authenticated) return;
             if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
-            if (attemptingConnection) return;
-            attemptingConnection = true;
 
             LoginResult result;
 
             try
             {
                 Console.WriteLine("Attempting wss Connection...");
-                Session = CreateSession(true);
+                Session = CreateSession();
                 result = Session.TryConnectAndLogin(
                     "The Messenger",
                     ServerData.SlotName,
@@ -113,18 +111,6 @@ namespace MessengerRando.Archipelago
                     new Version(ApVersion),
                     password: ServerData.Password == "" ? null : ServerData.Password
                 );
-                if (!result.Successful)
-                {
-                    Console.WriteLine("Attempting ws Connection...");
-                    Session = CreateSession(false);
-                    result = Session.TryConnectAndLogin(
-                        "The Messenger",
-                        ServerData.SlotName,
-                        ItemsHandlingFlags.AllItems,
-                        new Version(ApVersion),
-                        password: ServerData.Password == "" ? null : ServerData.Password
-                    );
-                }
             }
             catch (Exception e)
             {
@@ -222,7 +208,7 @@ namespace MessengerRando.Archipelago
         public static void Disconnect()
         {
             Console.WriteLine("Disconnecting from server...");
-            Session?.Socket.DisconnectAsync();
+            Session?.Socket.Disconnect();
             Session = null;
             Authenticated = false;
         }

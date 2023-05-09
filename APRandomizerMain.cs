@@ -169,6 +169,8 @@ namespace MessengerRando
             On.InGameHud.OnGUI += InGameHud_OnGUI;
             On.SaveManager.DoActualSaving += SaveManager_DoActualSave;
             On.Quarble.OnPlayerDied += Quarble_OnPlayerDied;
+            // On.MegaTimeShard.NextState += RandoTimeShardManager.NextState;
+            // On.MegaTimeShard.ReceiveHit += RandoTimeShardManager.ReceiveHit;
             On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
             On.LevelManager.EndLevelLoading += LevelManager_EndLevelLoading;
@@ -279,6 +281,12 @@ namespace MessengerRando
                 }
                 if (randoStateManager.IsLocationRandomized(itemId, out var randoItemCheck))
                 {
+                    if (itemId.Equals(EItems.CANDLE) &&
+                        randoStateManager.IsLocationRandomized(EItems.TEA_SEED, out var seedCheck) &&
+                        !RandomizerStateManager.HasCompletedCheck(seedCheck))
+                    {
+                        ItemsAndLocationsHandler.SendLocationCheck(seedCheck);
+                    }
                     ItemsAndLocationsHandler.SendLocationCheck(randoItemCheck);
                     return;
                 }
@@ -323,11 +331,19 @@ namespace MessengerRando
                 //OLD WAY
                 //Don't actually check for the item i have, check to see if I have the item that was at it's location.
                 //int itemQuantity = Manager<InventoryManager>.Instance.GetItemQuantity(randoStateManager.CurrentLocationToItemMapping[check].Item);
-
-
+                
                 //NEW WAY
                 //Don't actually check for the item I have, check to see if I have done this check before. We'll do this by seeing if the item at its location has been collected yet or not
                 int itemQuantity = RandomizerStateManager.HasCompletedCheck(check) ? 1 : 0;
+                if (self.item.Equals(EItems.CANDLE) && itemQuantity == 1)
+                {
+                    var seed = ItemsAndLocationsHandler.LocationFromEItem(EItems.TEA_SEED);
+                    var leaves = ItemsAndLocationsHandler.LocationFromEItem(EItems.TEA_LEAVES);
+                    itemQuantity = RandomizerStateManager.HasCompletedCheck(seed) &&
+                                   RandomizerStateManager.HasCompletedCheck(leaves)
+                        ? 1
+                        : 0;
+                }
                 
                 switch (self.conditionOperator)
                 {
@@ -460,14 +476,13 @@ namespace MessengerRando
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                orig(self, slotIndex);
             }
-            //Generate the mappings based on the seed for the game if a seed was generated.
             if (!ArchipelagoClient.HasConnected)
             {
                 Console.WriteLine(
                     $"This file slot ({randoStateManager.CurrentFileSlot}) has no seed generated or is not " +
                     "a randomized file. Resetting the mappings and putting game items back to normal.");
+                ArchipelagoClient.ServerData = new ArchipelagoData();
             }
 
             orig(self, slotIndex);
@@ -536,7 +551,10 @@ namespace MessengerRando
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             var currentRoom = Manager<Level>.Instance.CurrentRoom.roomKey;
             if (randoStateManager.MegaShards)
+            {
                 RandoTimeShardManager.BreakShard(new RandoTimeShardManager.MegaShard(currentLevel, currentRoom));
+                // self.shardsPerHit = 50;
+            }
             orig(self);
         }
 
@@ -721,9 +739,11 @@ namespace MessengerRando
         {
             if (ArchipelagoClient.ServerData == null) return;
             if (ArchipelagoClient.ServerData.SlotName == null) return;
-            if (ArchipelagoClient.ServerData.Uri == null) ArchipelagoClient.ServerData.Uri = "archipelago.gg";
-            if (ArchipelagoClient.ServerData.Port == 0) ArchipelagoClient.ServerData.Port = 38281;
-
+            if (ArchipelagoClient.ServerData.Uri == null)
+                ArchipelagoClient.ServerData.Uri = "archipelago.gg";
+            if (ArchipelagoClient.ServerData.Port == 0)
+                ArchipelagoClient.ServerData.Port = 38281;
+            
             ArchipelagoClient.ConnectAsync(archipelagoConnectButton);
         }
 
@@ -856,7 +876,6 @@ namespace MessengerRando
                 {
                     ArchipelagoClient.UpdateClientStatus(ArchipelagoClientState.ClientGoal);
                 }
-                Save.Update();
                 if (randoStateManager.CurrentFileSlot == 0) return;
                 var saveSlot = self.GetCurrentSaveGameSlot();
                 if (!saveSlot.SlotName.Equals(ArchipelagoClient.ServerData.SlotName))
@@ -864,6 +883,7 @@ namespace MessengerRando
                     saveSlot.SlotName = ArchipelagoClient.ServerData.SlotName;
                 }
             }
+            Save.Update();
             orig(self, applySaveDelay);
         }
 

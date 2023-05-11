@@ -211,6 +211,7 @@ namespace MessengerRando.Archipelago
             Session?.Socket.Disconnect();
             Session = null;
             Authenticated = false;
+            attemptingConnection = false;
         }
 
         public static void UpdateArchipelagoState()

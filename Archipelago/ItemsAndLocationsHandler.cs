@@ -259,8 +259,8 @@ namespace MessengerRando.Archipelago
 
         private static readonly Dictionary<string, string> SpecialNames = new Dictionary<string, string>
         {
-            { "Karuta Plates", "Kusari Jacket" },
-            { "Prepared Mind", "Centered Mind" },
+            { "HP_UPGRADE_1", "HP_UPGRADE_2" },
+            { "SHURIKEN_UPGRADE_1", "SHURIKEN_UPGRADE_2" },
         };
 
         private static bool ShopItem(EItems item)

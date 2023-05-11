@@ -143,6 +143,8 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void SetBossAsDefeated(string bossName)
         {
+            if (bossName.Equals("Phantom"))
+                return;
             if (BossOverride)
             {
                 bossName = RandomizerStateManager.Instance.BossManager.origToNewBoss[bossName];

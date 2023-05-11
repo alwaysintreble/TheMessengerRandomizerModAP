@@ -30,7 +30,6 @@ namespace MessengerRando.GameOverrideManagers
                 self.EndCutScene();
             }
             else orig(self);
-            self.EndCutScene();
         }
 
         public void OnShopChestOpen(On.ShopChestChangeShurikenCutscene.orig_Play orig, ShopChestChangeShurikenCutscene self)
@@ -42,7 +41,6 @@ namespace MessengerRando.GameOverrideManagers
                 self.EndCutScene();
             }
             else orig(self);
-            self.EndCutScene();
         }
 
         private void OnShopChestOpen()

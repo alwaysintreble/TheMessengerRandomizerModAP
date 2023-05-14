@@ -429,11 +429,12 @@ namespace MessengerRando
         bool AwardNoteCutscene_ShouldPlay(On.AwardNoteCutscene.orig_ShouldPlay orig, AwardNoteCutscene self)
         {
             //Need to handle note cutscene triggers so they will play as long as I dont have the actual item it grants
-            if (randoStateManager.IsLocationRandomized(self.noteToAward, out var noteCheck))
-            {
-                return !ArchipelagoClient.ServerData.CheckedLocations.Contains(noteCheck);
-            }
-            return orig(self);
+            if (!randoStateManager.IsLocationRandomized(self.noteToAward, out var noteCheck))
+                return orig(self);
+            var shouldPlay = !ArchipelagoClient.ServerData.CheckedLocations.Contains(noteCheck);
+            if (shouldPlay)
+                ItemsAndLocationsHandler.SendLocationCheck(noteCheck);
+            return shouldPlay;
         }
 
         bool CutsceneHasPlayed_IsTrue(On.CutsceneHasPlayed.orig_IsTrue orig, CutsceneHasPlayed self)

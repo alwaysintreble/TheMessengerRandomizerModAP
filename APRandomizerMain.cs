@@ -499,7 +499,10 @@ namespace MessengerRando
             if (ArchipelagoClient.HasConnected)
             {
                 if (ArchipelagoClient.Authenticated)
+                {
                     ArchipelagoClient.Disconnect();
+                    randoStateManager = new RandomizerStateManager();
+                }
                 ArchipelagoClient.HasConnected = false;
                 ArchipelagoClient.ServerData = null;
             }

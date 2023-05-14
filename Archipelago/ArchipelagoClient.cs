@@ -238,7 +238,8 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)
         {
-            if (newState == ArchipelagoClientState.ClientGoal) Session.DataStorage[Scope.Slot, "HasFinished"] = true;
+            if (newState == ArchipelagoClientState.ClientGoal)
+                Session.DataStorage[Scope.Slot, "HasFinished"] = true;
             Console.WriteLine($"Updating client status to {newState}");
             var statusUpdatePacket = new StatusUpdatePacket { Status = newState };
             Session.Socket.SendPacket(statusUpdatePacket);

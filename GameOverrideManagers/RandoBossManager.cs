@@ -143,7 +143,7 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void SetBossAsDefeated(string bossName)
         {
-            if (bossName.Equals("Phantom"))
+            if (DefeatedBosses.Contains(bossName))
                 return;
             if (BossOverride)
             {
@@ -153,8 +153,11 @@ namespace MessengerRando.GameOverrideManagers
             if (ArchipelagoClient.HasConnected)
             {
                 ArchipelagoClient.ServerData.DefeatedBosses.Add(bossName);
-                var bossLoc = new LocationRO(bossName);
-                ItemsAndLocationsHandler.SendLocationCheck(bossLoc);
+                if (bossLocations.ContainsKey(bossName))
+                {
+                    var bossLoc = new LocationRO(bossName);
+                    ItemsAndLocationsHandler.SendLocationCheck(bossLoc);
+                }
             }
             DefeatedBosses.Add(bossName);
             if (RandomizerStateManager.Instance.BossManager != null)

@@ -27,6 +27,9 @@ namespace MessengerRando.Utils
 
         public RandomizerStateManager()
         {
+            #if DEBUG
+            SkipPhantom = true;
+            #endif
             try
             {
                 //Create initial values for the state machine

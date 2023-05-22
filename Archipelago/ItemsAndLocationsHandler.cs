@@ -345,7 +345,8 @@ namespace MessengerRando.Archipelago
                 case EItems.TIME_SHARD:
                     switch (randoItem.Name)
                     {
-                        case "Timeshard": quantity = 1;
+                        case "Timeshard":
+                            quantity = ArchipelagoClient.ServerData.SlotData.ContainsKey("shop") ? 1 : 100;
                             break;
                         case "Timeshard (10)": quantity = 10;
                             break;

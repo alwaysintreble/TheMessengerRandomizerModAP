@@ -456,6 +456,7 @@ namespace MessengerRando
             //This is probably a bad way to do this
             try
             {
+                RandomizerSaveMethod.TryLoad(Save.APSaveData);
                 if (ArchipelagoData.LoadData(randoStateManager.CurrentFileSlot))
                 {
                     //The player is connected to an Archipelago server and trying to load a save file so check it's valid

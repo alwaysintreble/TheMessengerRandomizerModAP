@@ -102,7 +102,6 @@ namespace MessengerRando.Archipelago
 
             try
             {
-                Console.WriteLine("Attempting wss Connection...");
                 Session = CreateSession();
                 result = Session.TryConnectAndLogin(
                     "The Messenger",

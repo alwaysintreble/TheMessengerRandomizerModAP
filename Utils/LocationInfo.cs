@@ -16,17 +16,17 @@ namespace MessengerRando.Utils
         }
         public static string ColorizeItem(this NetworkItem item)
         {
-            var color = "00EEEE";
+            var color = UserConfig.FillerColor;
             switch (item.Flags)
             {
                 case ItemFlags.Advancement:
-                    color = "AF99EF";
+                    color = UserConfig.AdvancementColor;
                     break;
                 case ItemFlags.NeverExclude:
-                    color = "6D8BE8";
+                    color = UserConfig.UsefulColor;
                     break;
                 case ItemFlags.Trap:
-                    color = "FA8072";
+                    color = UserConfig.TrapColor;
                     break;
             }
             var itemName = ArchipelagoClient.Session.Items.GetItemName(item.Item);

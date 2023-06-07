@@ -7,6 +7,8 @@ namespace MessengerRando.Utils
     //This class will be responsible for handling the randomization of items to locations and generating the mapping dictionary.
     public class ItemRandomizerUtil
     {
+        public static string ModName = "TheMessengerRandomizerAP";
+        
         /// <summary>
         /// Gets the current version number for the mod.
         /// </summary>
@@ -17,7 +19,7 @@ namespace MessengerRando.Utils
 
             foreach (CourierModuleMetadata modMetadata in Courier.Mods)
             {
-                if ("TheMessengerRandomizerAP".Equals(modMetadata.Name))
+                if (ModName.Equals(modMetadata.Name))
                 {
                     version = modMetadata.VersionString;
                 }

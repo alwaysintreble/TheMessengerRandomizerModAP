@@ -17,6 +17,7 @@ using System.Linq;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.GameOverrideManagers;
+using WebSocketSharp;
 
 namespace MessengerRando 
 {
@@ -227,10 +228,15 @@ namespace MessengerRando
             
             //Save loading
             Debug.Log("Start loading seeds from save");
-            RandomizerSaveMethod.TryLoad(Save.APSaveData);
-            Debug.Log("Finished loading seeds from save");
-            Save.Update();
-            Debug.Log(Save.APSaveData);
+            RandomizerSaveMethod.TryLoad(Save?.APSaveData);
+            //load config
+            Debug.Log("Loading config from APConfig.toml");
+            try
+            {
+                var path = Courier.ModsFolder.Replace("/Mods", "");
+                UserConfig.ReadConfig(path);
+            }
+            catch (Exception e) {Console.Write(e);}
         }
 
         //temp function for seal research
@@ -297,11 +303,6 @@ namespace MessengerRando
             
         }
 
-        public void SaveModData(RandoSave randoSave)
-        {
-            
-        }
-        
         void ProgressionManager_SetChallengeRoomAsCompleted(On.ProgressionManager.orig_SetChallengeRoomAsCompleted orig, ProgressionManager self, string roomKey)
         {
             Console.WriteLine($"Marking {roomKey} as completed.");
@@ -743,12 +744,18 @@ namespace MessengerRando
 
         void OnSelectArchipelagoConnect()
         {
-            if (ArchipelagoClient.ServerData == null) return;
-            if (ArchipelagoClient.ServerData.SlotName == null) return;
-            if (ArchipelagoClient.ServerData.Uri == null)
-                ArchipelagoClient.ServerData.Uri = "archipelago.gg";
-            if (ArchipelagoClient.ServerData.Port == 0)
-                ArchipelagoClient.ServerData.Port = 38281;
+            if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
+            if (ArchipelagoClient.ServerData.SlotName.IsNullOrEmpty())
+            {
+                if (!UserConfig.SlotName.IsNullOrEmpty())
+                {
+                    ArchipelagoClient.ServerData.Uri = UserConfig.HostName;
+                    ArchipelagoClient.ServerData.Port = UserConfig.Port;
+                    ArchipelagoClient.ServerData.SlotName = UserConfig.SlotName;
+                    ArchipelagoClient.ServerData.Password = UserConfig.Password;
+                }
+                return;
+            }
             
             ArchipelagoClient.ConnectAsync(archipelagoConnectButton);
         }
@@ -853,7 +860,7 @@ namespace MessengerRando
                 apTextDisplay16 = UnityEngine.Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
                 apTextDisplay8.transform.Translate(0f, -110f, 0f);
                 apTextDisplay16.transform.Translate(0f, -110f, 0f);
-                apTextDisplay16.fontSize = apTextDisplay8.fontSize = 4f;
+                apTextDisplay16.fontSize = apTextDisplay8.fontSize = UserConfig.StatusTextSize;
                 apTextDisplay16.alignment = apTextDisplay8.alignment = TextAlignmentOptions.TopRight;
                 apTextDisplay16.enableWordWrapping = apTextDisplay8.enableWordWrapping = true;
                 apTextDisplay16.color = apTextDisplay8.color = Color.white;
@@ -862,13 +869,15 @@ namespace MessengerRando
                 apMessagesDisplay16 = UnityEngine.Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
                 apMessagesDisplay8.transform.Translate(0f, -200f, 0f);
                 apMessagesDisplay16.transform.Translate(0f, -200f, 0f);
-                apMessagesDisplay16.fontSize = apMessagesDisplay8.fontSize = 4.2f;
+                apMessagesDisplay16.fontSize = apMessagesDisplay8.fontSize = UserConfig.MessageTextSize;
                 apMessagesDisplay16.alignment = apMessagesDisplay8.alignment = TextAlignmentOptions.BottomRight;
                 apMessagesDisplay16.enableWordWrapping = apMessagesDisplay16.enableWordWrapping = true;
                 apMessagesDisplay16.color = apMessagesDisplay8.color = Color.green;
                 apMessagesDisplay16.text = apMessagesDisplay8.text = string.Empty;
             }
             //This updates every frame
+            apTextDisplay16.fontSize = apTextDisplay8.fontSize = UserConfig.StatusTextSize;
+            apMessagesDisplay16.fontSize = apMessagesDisplay8.fontSize = UserConfig.MessageTextSize;
             apTextDisplay16.text = apTextDisplay8.text = ArchipelagoClient.UpdateStatusText();
         }
 

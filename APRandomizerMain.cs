@@ -102,15 +102,6 @@ namespace MessengerRando
             //Add Archipelago connection button
             archipelagoConnectButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Connect to Archipelago", OnSelectArchipelagoConnect);
 
-            //Add Archipelago release button
-            archipelagoReleaseButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Release remaining items", OnSelectArchipelagoRelease);
-
-            //Add Archipelago collect button
-            archipelagoCollectButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Collect remaining items", OnSelectArchipelagoCollect);
-
-            //Add Archipelago hint button
-            archipelagoHintButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Hint for an item", (entry) => OnSelectArchipelagoHint(entry), 30, () => "Enter item name:");
-
             //Add Archipelago status button
             archipelagoStatusButton = Courier.UI.RegisterSubMenuModOptionButton(() => ArchipelagoClient.DisplayStatus ? "Hide status information" : "Display status information", OnToggleAPStatus);
             
@@ -122,6 +113,15 @@ namespace MessengerRando
 
             //Add Archipelago death link button
             archipelagoDeathLinkButton = Courier.UI.RegisterSubMenuModOptionButton(() => ArchipelagoData.DeathLink ? "Disable Death Link" : "Enable Death Link", OnToggleDeathLink);
+
+            //Add Archipelago hint button
+            archipelagoHintButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Hint for an item", (entry) => OnSelectArchipelagoHint(entry), 30, () => "Enter item name:");
+
+            //Add Archipelago release button
+            archipelagoReleaseButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Release remaining items", OnSelectArchipelagoRelease);
+
+            //Add Archipelago collect button
+            archipelagoCollectButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Collect remaining items", OnSelectArchipelagoCollect);
 
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
@@ -198,16 +198,9 @@ namespace MessengerRando
             archipelagoNameButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
             archipelagoPassButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
             archipelagoConnectButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
-            //These AP buttons can exist in or out of game
-            archipelagoReleaseButton.IsEnabled = () => ArchipelagoClient.CanRelease();
-            archipelagoCollectButton.IsEnabled = () => ArchipelagoClient.CanCollect();
-            archipelagoHintButton.IsEnabled = () => ArchipelagoClient.CanHint();
-            archipelagoToggleMessagesButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-            archipelagoStatusButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-            archipelagoDeathLinkButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-            archipelagoMessageTimerButton.IsEnabled = () => ArchipelagoClient.DisplayStatus;
 
             //Options I only want working while actually in the game
+            seedNumButton.IsEnabled = () => ArchipelagoClient.HasConnected && randoStateManager.CurrentFileSlot != 0;
             windmillShurikenToggleButton.IsEnabled = () => ArchipelagoClient.ServerData?.ReceivedItems != null &&
                                                            ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(
                                                                ItemsAndLocationsHandler.ItemFromEItem(
@@ -217,7 +210,15 @@ namespace MessengerRando
             teleportToNinjaVillage.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != 
                 ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && 
                 RandomizerStateManager.IsSafeTeleportState();
-            seedNumButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
+            
+            //These AP buttons can exist in or out of game
+            archipelagoStatusButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+            archipelagoToggleMessagesButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+            archipelagoDeathLinkButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+            archipelagoMessageTimerButton.IsEnabled = () => ArchipelagoClient.DisplayStatus;
+            archipelagoHintButton.IsEnabled = () => ArchipelagoClient.CanHint();
+            archipelagoReleaseButton.IsEnabled = () => ArchipelagoClient.CanRelease();
+            archipelagoCollectButton.IsEnabled = () => ArchipelagoClient.CanCollect();
 
             SceneManager.sceneLoaded += OnSceneLoadedRando;
 

@@ -22,7 +22,6 @@ namespace MessengerRando.Utils
         public static void ReadConfig(string path)
         {
             path += "\\" + configFileName;
-            Debug.Log(path);
             if (!File.Exists(path))
             {
                 GenerateConfig(path);
@@ -39,11 +38,6 @@ namespace MessengerRando.Utils
             UsefulColor = table.get_Item("useful_color") ?? UsefulColor;
             TrapColor = table.get_Item("trap_color") ?? TrapColor;
             FillerColor = table.get_Item("filler_color") ?? FillerColor;
-            Console.WriteLine("Read File Successfully!");
-            Debug.Log(HostName);
-            Debug.Log(Port);
-            Debug.Log(SlotName);
-            Debug.Log(Password);
         }
 
         public static void GenerateConfig(string path)

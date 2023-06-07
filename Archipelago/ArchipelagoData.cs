@@ -51,16 +51,6 @@ namespace MessengerRando.Archipelago
             if (!RandomizerStateManager.Instance.APSave.TryGetValue(slot, out var tempServerData) ||
                 string.IsNullOrEmpty(tempServerData.SlotName))
                 return false;
-            Console.WriteLine($"Server data exists.\nIndex: {tempServerData.Index}\nChecked Locations:");
-            foreach (var VARIABLE in tempServerData.CheckedLocations)
-            {
-                Console.WriteLine($"\n{VARIABLE}");
-            }
-            Console.WriteLine("\nReceived Items:");
-            foreach (var VARIABLE in tempServerData.ReceivedItems)
-            {
-                Console.WriteLine($"\n{VARIABLE.Key}: {VARIABLE.Value}");
-            }
             try
             {
                 if (ArchipelagoClient.Authenticated)
@@ -102,7 +92,6 @@ namespace MessengerRando.Archipelago
             }
             catch (Exception ex) 
             {
-                Console.WriteLine("Something failed when copying over data");
                 Console.WriteLine(ex.ToString());
                 return false; 
             }

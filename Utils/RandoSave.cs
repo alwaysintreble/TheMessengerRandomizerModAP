@@ -34,7 +34,6 @@ namespace MessengerRando.Utils
             {
                 output += $"{RandomizerStateManager.Instance.APSave[i]}|";
             }
-            Console.WriteLine($"Saving {output}");
 
             return output;
         }

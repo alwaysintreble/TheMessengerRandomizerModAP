@@ -423,7 +423,10 @@ namespace MessengerRando.Archipelago
                     if (!RandoStateManager.ScoutedLocations.TryGetValue(locationID, out var locationInfo)) return;
                     DialogChanger.CreateDialogBox(locationInfo.ToReadableString());
                 }
-            } catch {}
+            } catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             
             Console.WriteLine("Sending location checks");
             if (ArchipelagoClient.Authenticated)

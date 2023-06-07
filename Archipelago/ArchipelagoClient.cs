@@ -170,7 +170,6 @@ namespace MessengerRando.Archipelago
                         var roomKey =
                             ItemsAndLocationsHandler.ArchipelagoLocations.Find(
                                 loc => loc.PrettyLocationName.Equals(locName)).LocationName;
-                        Console.WriteLine($"{locName}, {roomKey}");
                         Manager<ProgressionManager>.Instance.SetChallengeRoomAsCompleted(roomKey);
                     }
                     else if (ItemsAndLocationsHandler.ShopLocation(location, out var shopLoc))

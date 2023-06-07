@@ -126,7 +126,6 @@ namespace MessengerRando
 
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
-            On.InventoryManager.GetItemQuantity += InventoryManager_GetItemQuantity;
             On.ProgressionManager.SetChallengeRoomAsCompleted += ProgressionManager_SetChallengeRoomAsCompleted;
             On.HasItem.IsTrue += HasItem_IsTrue;
             On.AwardNoteCutscene.ShouldPlay += AwardNoteCutscene_ShouldPlay;
@@ -177,6 +176,7 @@ namespace MessengerRando
             On.LevelManager.EndLevelLoading += LevelManager_EndLevelLoading;
             //temp add
             #if DEBUG
+            On.InventoryManager.GetItemQuantity += InventoryManager_GetItemQuantity;
             On.Cutscene.Play += Cutscene_Play;
             On.PhantomIntroCutscene.OnEnterRoom += PhantomIntro_OnEnterRoom; //this lets us skip the phantom fight
             On.UIManager.ShowView += UIManager_ShowView;
@@ -221,8 +221,10 @@ namespace MessengerRando
             archipelagoReleaseButton.IsEnabled = () => ArchipelagoClient.CanRelease();
             archipelagoCollectButton.IsEnabled = () => ArchipelagoClient.CanCollect();
 
+            #if DEBUG
             SceneManager.sceneLoaded += OnSceneLoadedRando;
-
+            #endif
+            
             //Options always available
             versionButton.IsEnabled = () => true;
             
@@ -249,18 +251,15 @@ namespace MessengerRando
 
         List<DialogInfo> DialogSequence_GetDialogList(On.DialogSequence.orig_GetDialogList orig, DialogSequence self)
         {
-            Console.WriteLine($"Starting dialogue {self.dialogID}");
             //Using this function to add some of my own dialog stuff to the game.
             if (ArchipelagoClient.HasConnected &&
                 new[] { "ARCHIPELAGO_ITEM", "DEATH_LINK" }.Contains(self.dialogID))
             {
-                Console.WriteLine("Trying some rando dialog stuff.");
                 var dialogInfoList = new List<DialogInfo>();
                 var dialog = new DialogInfo();
                 switch (self.dialogID)
                 {
                     case "ARCHIPELAGO_ITEM":
-                        Console.WriteLine($"Item is {self.name}");
                         dialog.text = self.name;
                         break;
                     case "DEATH_LINK":
@@ -305,7 +304,6 @@ namespace MessengerRando
 
         void ProgressionManager_SetChallengeRoomAsCompleted(On.ProgressionManager.orig_SetChallengeRoomAsCompleted orig, ProgressionManager self, string roomKey)
         {
-            Console.WriteLine($"Marking {roomKey} as completed.");
             //if this is a rando file, go ahead and give the item we expect to get
             if (ArchipelagoClient.HasConnected)
             {
@@ -368,7 +366,7 @@ namespace MessengerRando
                 return hasItem;
             }
             Console.WriteLine("HasItem check was not randomized. Doing vanilla checks.");
-            Console.WriteLine($"Is randomized file : '{ArchipelagoClient.HasConnected}' | Is location '{self.item}' randomized: '{randoStateManager.IsLocationRandomized(self.item, out check)}' | Not in the special triggers list: '{!RandomizerConstants.GetSpecialTriggerNames().Contains(self.Owner.name)}'|");
+            Debug.Log($"Is randomized file : '{ArchipelagoClient.HasConnected}' | Is location '{self.item}' randomized: '{randoStateManager.IsLocationRandomized(self.item, out check)}' | Not in the special triggers list: '{!RandomizerConstants.GetSpecialTriggerNames().Contains(self.Owner.name)}'|");
             return orig(self);
             
         }
@@ -628,7 +626,6 @@ namespace MessengerRando
 
         bool OnRandoFileResetConfirmation(string answer)
         {
-            Console.WriteLine($"In Method: OnResetRandoFileSlot. Provided value: '{answer}'");
             
             if(!"y".Equals(answer.ToLowerInvariant()))
             {
@@ -643,7 +640,6 @@ namespace MessengerRando
                 sw.WriteLine(RandomizerConstants.SAVE_FILE_STRING);
             }
             
-            Console.WriteLine("Save file written. Now loading file.");
             Manager<SaveManager>.Instance.LoadSaveGame();
             //Delete the existing save file selection ui since it really wants to hold on to the previous saves data.
             GameObject.Destroy(Manager<UIManager>.Instance.GetView<SaveGameSelectionScreen>().gameObject);
@@ -699,8 +695,6 @@ namespace MessengerRando
             Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition = new Vector2(-153.3f, -56.5f);
             LevelLoadingInfo levelLoadingInfo = new LevelLoadingInfo("Level_01_NinjaVillage_Build", false, true, LoadSceneMode.Single, ELevelEntranceID.NONE, dimension);
             Manager<LevelManager>.Instance.LoadLevel(levelLoadingInfo);
-            
-            Console.WriteLine("Teleport to Ninja Village complete.");
         }
 
         bool OnSelectArchipelagoHost(string answer)

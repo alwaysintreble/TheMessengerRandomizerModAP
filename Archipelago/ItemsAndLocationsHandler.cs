@@ -403,6 +403,7 @@ namespace MessengerRando.Archipelago
 
         public static void SendLocationCheck(long locationID)
         {
+            if (!LocationsLookup.Values.Contains(locationID)) return;
             Console.WriteLine($"Checking if we need to modify the location {locationID} before sending");
             if (ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
             {

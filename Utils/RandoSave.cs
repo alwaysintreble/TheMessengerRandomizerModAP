@@ -1,5 +1,4 @@
-﻿using System;
-using MessengerRando.Archipelago;
+﻿using MessengerRando.Archipelago;
 using Mod.Courier.Save;
 
 namespace MessengerRando.Utils
@@ -15,10 +14,6 @@ namespace MessengerRando.Utils
 
         public void Update()
         {
-            if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
-            if (!ArchipelagoClient.HasConnected)
-                ArchipelagoClient.ServerData = new ArchipelagoData();
-            
             RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
                 ArchipelagoClient.ServerData;
             APSaveData = GetSaveData();
@@ -27,7 +22,7 @@ namespace MessengerRando.Utils
                 ArchipelagoClient.SyncLocations();
         }
 
-        private static string GetSaveData()
+        public static string GetSaveData()
         {
             var output = "";
             for (int i = 1; i <= 3; i++)

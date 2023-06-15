@@ -28,6 +28,7 @@ namespace MessengerRando
     {
         private float updateTimer;
         private float updateTime = 3.0f;
+        private bool clearedData = false;
 
         private RandomizerStateManager randoStateManager;
 
@@ -228,9 +229,6 @@ namespace MessengerRando
             //Options always available
             versionButton.IsEnabled = () => true;
             
-            //Save loading
-            Debug.Log("Start loading seeds from save");
-            RandomizerSaveMethod.TryLoad(Save?.APSaveData);
             //load config
             Debug.Log("Loading config from APConfig.toml");
             try
@@ -456,7 +454,8 @@ namespace MessengerRando
             //This is probably a bad way to do this
             try
             {
-                RandomizerSaveMethod.TryLoad(Save.APSaveData);
+                if (!clearedData)
+                    RandomizerSaveMethod.TryLoad(Save.APSaveData);
                 if (ArchipelagoData.LoadData(randoStateManager.CurrentFileSlot))
                 {
                     //The player is connected to an Archipelago server and trying to load a save file so check it's valid
@@ -508,6 +507,7 @@ namespace MessengerRando
                 ArchipelagoClient.ServerData = null;
             }
 
+            clearedData = false;
             orig();
         }
 
@@ -634,6 +634,7 @@ namespace MessengerRando
 
             ArchipelagoData.ClearData();
             randoStateManager = new RandomizerStateManager();
+            clearedData = true;
             Save.APSaveData = RandoSave.GetSaveData();
             string path = Application.persistentDataPath + "/SaveGame.txt";
             using (StreamWriter sw = File.CreateText(path))
@@ -887,12 +888,12 @@ namespace MessengerRando
                     ArchipelagoClient.UpdateClientStatus(ArchipelagoClientState.ClientGoal);
                 }
                 if (randoStateManager.CurrentFileSlot == 0) return;
-                Save.Update();
                 var saveSlot = self.GetCurrentSaveGameSlot();
                 var playerAlias =
                     ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
                 saveSlot.SlotName = playerAlias;
             }
+            Save.Update();
             orig(self, applySaveDelay);
         }
 

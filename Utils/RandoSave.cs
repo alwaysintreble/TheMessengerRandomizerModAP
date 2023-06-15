@@ -14,12 +14,16 @@ namespace MessengerRando.Utils
 
         public void Update()
         {
-            RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
-                ArchipelagoClient.ServerData;
+            if (ArchipelagoClient.HasConnected)
+            {
+                RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
+                    ArchipelagoClient.ServerData;
+                
+                if (ArchipelagoClient.Authenticated)
+                    ArchipelagoClient.SyncLocations();
+            }
             APSaveData = GetSaveData();
             
-            if (ArchipelagoClient.Authenticated)
-                ArchipelagoClient.SyncLocations();
         }
 
         public static string GetSaveData()

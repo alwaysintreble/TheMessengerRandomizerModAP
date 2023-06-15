@@ -22,8 +22,7 @@ namespace MessengerRando.GameOverrideManagers
 
         public void OnShopChestOpen(On.ShopChestOpenCutscene.orig_OnChestOpened orig, ShopChestOpenCutscene self)
         {
-            if (Goals.Contains(RandomizerStateManager.Instance.Goal) &&
-                RandomizerStateManager.IsSafeTeleportState())
+            if (Goals.Contains(RandomizerStateManager.Instance.Goal))
             {
                 //going to attempt to teleport the player to the ending sequence when they open the chest
                 OnShopChestOpen();
@@ -34,8 +33,7 @@ namespace MessengerRando.GameOverrideManagers
 
         public void OnShopChestOpen(On.ShopChestChangeShurikenCutscene.orig_Play orig, ShopChestChangeShurikenCutscene self)
         {
-            if (Goals.Contains(RandomizerStateManager.Instance.Goal) &&
-                RandomizerStateManager.IsSafeTeleportState())
+            if (Goals.Contains(RandomizerStateManager.Instance.Goal))
             {
                 OnShopChestOpen();
                 self.EndCutScene();

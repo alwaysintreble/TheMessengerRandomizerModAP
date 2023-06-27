@@ -470,8 +470,6 @@ namespace MessengerRando
                     {
                         Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);   
                     } catch (Exception e){Console.WriteLine(e);}
-                    Manager<ProgressionManager>.Instance.bossesDefeated =
-                        Manager<ProgressionManager>.Instance.allTimeBossesDefeated = new List<string>();
                 }
             }
             catch (Exception e)
@@ -505,6 +503,7 @@ namespace MessengerRando
                 }
                 ArchipelagoClient.HasConnected = false;
                 ArchipelagoClient.ServerData = null;
+                RandoBossManager.DefeatedBosses = new List<string>();
             }
 
             clearedData = false;

@@ -78,7 +78,7 @@ namespace MessengerRando
             seedNumButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Current seed number: " + GetCurrentSeedNum(), null);
 
             //Add Reset rando mod button
-            resetRandoSaveFileButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Reset Randomizer File Slot", (entry) => OnRandoFileResetConfirmation(entry), 1, () => "Are you sure you wish to reset your save file for randomizer play?(y/n)", () => "n", CharsetFlags.Letter);
+            resetRandoSaveFileButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Reset Randomizer File Slot", OnRandoFileResetConfirmation, 1, () => "Are you sure you wish to reset your save file for randomizer play?(y/n)", () => "n", CharsetFlags.Letter);
 
             //Add windmill shuriken toggle button
             windmillShurikenToggleButton = Courier.UI.RegisterSubMenuModOptionButton(() => Manager<ProgressionManager>.Instance.useWindmillShuriken ? "Active Regular Shurikens" : "Active Windmill Shurikens", OnToggleWindmillShuriken);
@@ -90,16 +90,16 @@ namespace MessengerRando
             teleportToNinjaVillage = Courier.UI.RegisterSubMenuModOptionButton(() => "Teleport to Ninja Village", OnSelectTeleportToNinjaVillage);
 
             //Add Archipelago host button
-            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Host Name", (entry) => OnSelectArchipelagoHost(entry), 30, () => "Enter the Archipelago host name. Use spaces for periods", () => "archipelago.gg");
+            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Host Name", OnSelectArchipelagoHost, 30, () => "Enter the Archipelago host name. Use spaces for periods", () => "archipelago.gg", CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
 
             //Add Archipelago port button
-            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Port", (entry) => OnSelectArchipelagoPort(entry), 5, () => "Enter the port for the Archipelago session", () => "38281", CharsetFlags.Number);
+            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Port", OnSelectArchipelagoPort, 5, () => "Enter the port for the Archipelago session", () => "38281", CharsetFlags.Number);
 
             //Add archipelago name button
-            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Slot Name", (entry) => OnSelectArchipelagoName(entry), 16, () => "Enter player name:");
+            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Slot Name", OnSelectArchipelagoName, 16, () => "Enter player name:", charset:CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
 
             //Add archipelago password button
-            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Password", (entry) => OnSelectArchipelagoPass(entry), 30, () => "Enter session password:");
+            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Password", OnSelectArchipelagoPass, 30, () => "Enter session password:");
 
             //Add Archipelago connection button
             archipelagoConnectButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Connect to Archipelago", OnSelectArchipelagoConnect);
@@ -703,11 +703,6 @@ namespace MessengerRando
             if (answer == null) return true;
             if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
             var uri = answer;
-            if (answer.Contains(" "))
-            {
-                var splits = answer.Split(' ');
-                uri = String.Join(".", splits.ToArray());
-            }
             ArchipelagoClient.ServerData.Uri = uri;
             return true;
         }

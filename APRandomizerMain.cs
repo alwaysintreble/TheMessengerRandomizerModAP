@@ -887,7 +887,7 @@ namespace MessengerRando
                     ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
                 saveSlot.SlotName = playerAlias;
             }
-            Save.Update();
+            Save?.Update();
             orig(self, applySaveDelay);
         }
 

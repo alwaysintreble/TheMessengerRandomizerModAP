@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Archipelago.MultiClient.Net.Models;
 using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils;
 using Newtonsoft.Json;
@@ -22,6 +23,7 @@ namespace MessengerRando.Archipelago
         public List<string> DefeatedBosses;
         public List<long> CheckedLocations;
         public Dictionary<long, int> ReceivedItems;
+        public Dictionary<long, NetworkItem> ScoutedLocations;
 
         public void StartNewSeed()
         {
@@ -62,8 +64,11 @@ namespace MessengerRando.Archipelago
                         Index = tempServerData.Index;
                         PowerSealsCollected = tempServerData.PowerSealsCollected;
                         CheckedLocations = tempServerData.CheckedLocations ?? new List<long>();
-                        RandoBossManager.DefeatedBosses = DefeatedBosses = tempServerData.DefeatedBosses ?? new List<string>();
+                        RandoBossManager.DefeatedBosses = DefeatedBosses = 
+                            tempServerData.DefeatedBosses ?? new List<string>();
                         ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
+                        RandomizerStateManager.Instance.ScoutedLocations = 
+                            ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
 
                         return true;
                     }
@@ -83,6 +88,8 @@ namespace MessengerRando.Archipelago
                 CheckedLocations = tempServerData.CheckedLocations ?? new List<long>();
                 RandoBossManager.DefeatedBosses = DefeatedBosses = tempServerData.DefeatedBosses ?? new List<string>();
                 ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
+                RandomizerStateManager.Instance.ScoutedLocations = 
+                    ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
                 
                 //Attempt to connect to the server and save the new data
                 Debug.Log("Attempting to connect");

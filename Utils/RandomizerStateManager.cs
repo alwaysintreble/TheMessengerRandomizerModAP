@@ -47,13 +47,14 @@ namespace MessengerRando.Utils
         public static void InitializeMultiSeed()
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
-
-            ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
-                SetupScoutedLocations,
-                ItemsAndLocationsHandler.LocationsLookup.Values
-                    .Where(loc => ArchipelagoClient.Session.Locations.AllMissingLocations.Contains(loc))
-                    .ToArray()
-                );
+            
+            if (Instance.ScoutedLocations == null)
+                ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
+                    SetupScoutedLocations,
+                    ItemsAndLocationsHandler.DialogLocations.ToArray()
+                    );
+            else
+                Console.WriteLine(Instance.ScoutedLocations.Values);
 
             if (slotData.TryGetValue("deathlink", out var deathLink))
                 ArchipelagoData.DeathLink = Convert.ToInt32(deathLink) == 1;
@@ -141,7 +142,8 @@ namespace MessengerRando.Utils
             {
                 Instance.ScoutedLocations.Add(networkItem.Location, networkItem);
             }
-            Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
+
+            ArchipelagoClient.ServerData.ScoutedLocations = Instance.ScoutedLocations;
         }
 
         public static bool IsSafeTeleportState()

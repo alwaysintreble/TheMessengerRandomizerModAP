@@ -13,6 +13,7 @@ namespace MessengerRando.Archipelago
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
         public static Dictionary<EItems, long> EitemsLocationsLookup;
+        public static List<long> DialogLocations;
 
         public static RandomizerStateManager RandoStateManager;
 
@@ -69,6 +70,8 @@ namespace MessengerRando.Archipelago
                     EitemsLocationsLookup.Add(progLocation.VanillaItem, offset);
                 ++offset;
             }
+
+            DialogLocations = LocationsLookup.Values.Where(HasDialog).ToList();
         }
 
         private static readonly List<RandoItemRO> ArchipelagoItems = new List<RandoItemRO>

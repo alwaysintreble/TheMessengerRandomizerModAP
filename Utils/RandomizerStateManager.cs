@@ -47,14 +47,13 @@ namespace MessengerRando.Utils
         public static void InitializeMultiSeed()
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
-            
-            if (Instance.ScoutedLocations == null)
+
+            if (Instance.ScoutedLocations?.Count < 1)
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
                     ItemsAndLocationsHandler.DialogLocations.ToArray()
                     );
-            else
-                Console.WriteLine(Instance.ScoutedLocations.Values);
+            Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
 
             if (slotData.TryGetValue("deathlink", out var deathLink))
                 ArchipelagoData.DeathLink = Convert.ToInt32(deathLink) == 1;
@@ -174,9 +173,7 @@ namespace MessengerRando.Utils
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
                 if (locationID == 0) return false;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
-                if (ScoutedLocations.ContainsKey(locationID) ||
-                     ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
-                    return true;
+                return ArchipelagoClient.Session.Locations.AllLocations.Contains(locationID);
             }
             catch (Exception e)
             {

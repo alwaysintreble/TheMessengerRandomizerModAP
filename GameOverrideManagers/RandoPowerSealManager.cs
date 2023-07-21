@@ -22,23 +22,40 @@ namespace MessengerRando.GameOverrideManagers
 
         public void OnShopChestOpen(On.ShopChestOpenCutscene.orig_OnChestOpened orig, ShopChestOpenCutscene self)
         {
-            if (Goals.Contains(RandomizerStateManager.Instance.Goal))
+            try
             {
-                //going to attempt to teleport the player to the ending sequence when they open the chest
-                OnShopChestOpen();
-                self.EndCutScene();
+                if (Goals.Contains(RandomizerStateManager.Instance.Goal))
+                {
+                    //going to attempt to teleport the player to the ending sequence when they open the chest
+                    OnShopChestOpen();
+                    self.EndCutScene();
+                }
+                else orig(self);
             }
-            else orig(self);
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                orig(self);
+            }
         }
 
         public void OnShopChestOpen(On.ShopChestChangeShurikenCutscene.orig_Play orig, ShopChestChangeShurikenCutscene self)
         {
-            if (Goals.Contains(RandomizerStateManager.Instance.Goal))
+            try
             {
-                OnShopChestOpen();
-                self.EndCutScene();
+                if (Goals.Contains(RandomizerStateManager.Instance.Goal))
+                {
+                    //going to attempt to teleport the player to the ending sequence when they open the chest
+                    OnShopChestOpen();
+                    self.EndCutScene();
+                }
+                else orig(self);
             }
-            else orig(self);
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                orig(self);
+            }
         }
 
         private void OnShopChestOpen()

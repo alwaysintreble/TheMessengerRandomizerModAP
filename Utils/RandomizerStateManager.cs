@@ -48,10 +48,10 @@ namespace MessengerRando.Utils
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
 
-            if (Instance.ScoutedLocations?.Count < 1)
+            if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
-                    ItemsAndLocationsHandler.DialogLocations.ToArray()
+                    ArchipelagoClient.Session.Locations.AllMissingLocations.ToArray()
                     );
             Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
 

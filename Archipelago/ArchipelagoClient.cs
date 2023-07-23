@@ -128,6 +128,10 @@ namespace MessengerRando.Archipelago
                 RandomizerStateManager.InitializeMultiSeed();
                 
                 DeathLinkHandler = new DeathLinkInterface();
+                
+                ThreadPool.QueueUserWorkItem(o =>
+                    Session.Locations.CompleteLocationChecksAsync(null,
+                        ServerData.CheckedLocations.ToArray()));
 
                 HasConnected = true;
             }

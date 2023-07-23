@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Archipelago.MultiClient.Net.Models;
 using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils;
@@ -70,6 +71,9 @@ namespace MessengerRando.Archipelago
                         RandomizerStateManager.Instance.ScoutedLocations = 
                             ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
 
+                        ThreadPool.QueueUserWorkItem(o =>
+                            ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
+                                CheckedLocations.ToArray()));
                         return true;
                     }
                     //There was archipelago save data and it doesn't match our current connection so abort.

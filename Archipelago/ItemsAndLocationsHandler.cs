@@ -13,7 +13,6 @@ namespace MessengerRando.Archipelago
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
         public static Dictionary<EItems, long> EitemsLocationsLookup;
-        public static List<long> DialogLocations;
 
         public static RandomizerStateManager RandoStateManager;
 
@@ -70,8 +69,6 @@ namespace MessengerRando.Archipelago
                     EitemsLocationsLookup.Add(progLocation.VanillaItem, offset);
                 ++offset;
             }
-
-            DialogLocations = LocationsLookup.Values.Where(HasDialog).ToList();
         }
 
         private static readonly List<RandoItemRO> ArchipelagoItems = new List<RandoItemRO>
@@ -275,7 +272,6 @@ namespace MessengerRando.Archipelago
                 EItems.SHURIKEN_UPGRADE,
                 EItems.CHECKPOINT_UPGRADE,
                 EItems.POTION_FULL_HEAL_AND_HP_UPGRADE,
-                EItems.SHURIKEN_UPGRADE,
                 EItems.MAP_TIME_WARP,
                 EItems.MAP_POWER_SEAL_TOTAL,
                 EItems.MAP_POWER_SEAL_PINS,
@@ -340,7 +336,7 @@ namespace MessengerRando.Archipelago
                     var shurikenID = ItemFromEItem(EItems.SHURIKEN);
                     if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(shurikenID))
                     {
-                        Manager<InventoryManager>.Instance.AddItem(EItems.SHURIKEN, quantity);
+                        Manager<InventoryManager>.Instance.AddItem(EItems.SHURIKEN, 1);
                         Manager<UIManager>.Instance.GetView<InGameHud>().UpdateShurikenVisibility();
                     }
                     APRandomizerMain.OnToggleWindmillShuriken();

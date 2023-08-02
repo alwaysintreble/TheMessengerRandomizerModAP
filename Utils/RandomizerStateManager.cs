@@ -71,6 +71,10 @@ namespace MessengerRando.Utils
                             new RandoPowerSealManager(Convert.ToInt32(requiredSeals));
                     }
                 }
+                else
+                {
+                    Instance.PowerSealManager = new RandoPowerSealManager(45);
+                }
 
                 if (slotData.TryGetValue("music_box", out var doMusicBox))
                     Instance.SkipMusicBox = Convert.ToInt32(doMusicBox) == 0;

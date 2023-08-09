@@ -1,11 +1,10 @@
 ﻿using System;
 using MessengerRando.Archipelago;
-using MessengerRando.Utils;
 using Newtonsoft.Json;
 
-namespace MessengerRando
+namespace MessengerRando.Utils
 {
-    public class RandomizerSaveMethod
+    public static class RandomizerSaveMethod
     {
         private const char SplitConst = '|';
 

@@ -87,7 +87,7 @@ namespace MessengerRando.Archipelago
         {
             var session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
             session.MessageLog.OnMessageReceived += OnMessageReceived;
-            // session.Items.ItemReceived += ItemReceived;
+            session.Items.ItemReceived += ItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
             session.Socket.SocketClosed += SessionSocketClosed;
             return session;
@@ -188,10 +188,18 @@ namespace MessengerRando.Archipelago
 
         private static void ItemReceived(ReceivedItemsHelper helper)
         {
-            if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || 
-                ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
+            if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
             Console.WriteLine("ItemReceived called");
-            ItemsAndLocationsHandler.Unlock(helper.DequeueItem().Item);
+            if (ServerData.Index > helper.Index)
+            {
+                helper.DequeueItem();
+                return;
+            }
+
+            var currentItem = helper.DequeueItem();
+            ItemsAndLocationsHandler.Unlock(currentItem.Item);
+            if (!currentItem.Player.Equals(Session.ConnectionInfo.Slot))
+                DialogChanger.CreateDialogBox($"Received {currentItem.ColorizeItem()}!");
             ServerData.Index++;
         }
 

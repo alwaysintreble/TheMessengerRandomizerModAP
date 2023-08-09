@@ -166,8 +166,7 @@ namespace MessengerRando.Archipelago
             {
                 try
                 {
-                    if (!ServerData.CheckedLocations.Contains(location))
-                        ServerData.CheckedLocations.Add(location);
+                    if (ServerData.CheckedLocations.Contains(location)) continue;
                     var locName = Session.Locations.GetLocationNameFromId(location);
                     if (locName.Contains("Seal"))
                     {
@@ -181,6 +180,7 @@ namespace MessengerRando.Archipelago
                         var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.LocationName);
                         Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
                     }
+                    ServerData.CheckedLocations.Add(location);
                 }
                 catch (Exception e) {Console.WriteLine(e);}
             }

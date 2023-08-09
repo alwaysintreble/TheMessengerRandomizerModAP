@@ -305,7 +305,7 @@ namespace MessengerRando.Archipelago
         }
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
-            Console.WriteLine("OnItemReceived called");
+            // Console.WriteLine("OnItemReceived called");
             var itemToUnlock = helper.DequeueItem();
             if (helper.Index < ServerData.Index) return;
 

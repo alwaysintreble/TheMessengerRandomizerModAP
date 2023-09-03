@@ -103,6 +103,7 @@
     <Compile Include="Utils\Constants\BossConstants.cs" />
     <Compile Include="Utils\Constants\LevelConstants.cs" />
     <Compile Include="Utils\Constants\RoomConstants.cs" />
+    <Compile Include="Utils\RandoMenu.cs" />
     <Compile Include="Utils\RandoSave.cs" />
     <Compile Include="Utils\LocationInfo.cs" />
     <Compile Include="Utils\DialogChanger.cs" />

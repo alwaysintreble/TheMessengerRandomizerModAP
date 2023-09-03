@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace MessengerRando.Utils.Constants
 {
-    public class RoomConstants
+    public static class RoomConstants
     {
         public struct RoomTransition: IEquatable<RoomTransition>
         {

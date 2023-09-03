@@ -213,6 +213,20 @@ namespace MessengerRando
                     : "Enable Music Shuffle",
                 () => RandoMusicManager.ShuffleMusic = !RandoMusicManager.ShuffleMusic);
 
+            RandoMenu.ArchipelagoMenuButton = Courier.UI.RegisterSubMenuOptionButton(() => "Randomizer", RandoMenu.DisplayRandoMenu);
+            
+            PopulateRandoButtons();
+            
+            void PopulateRandoButtons()
+            {
+                RandoMenu.versionButton =
+                    RandoMenu.RegisterSubRandoButton(
+                        () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
+                RandoMenu.connectMenuButton = RandoMenu.RegisterSubRandoButton(() => "Connect to Archipelago", null);
+                RandoMenu.resetSaveButton = RandoMenu.RegisterMultipleRandoButton(() => "Reset Randomizer File Slot", null,
+                    ResetSaves, null, RandoMenu.GetTextForResetIndex);
+            }
+
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
             On.ProgressionManager.SetChallengeRoomAsCompleted += ProgressionManager_SetChallengeRoomAsCompleted;
@@ -698,6 +712,12 @@ namespace MessengerRando
                 return true;
             }
 
+            ConfirmFileReset();
+            return true;
+        }
+        
+        void ConfirmFileReset()
+        {
             ArchipelagoData.ClearData();
             randoStateManager = new RandomizerStateManager();
             clearedData = true;
@@ -714,15 +734,16 @@ namespace MessengerRando
             {
                 sw.WriteLine(RandomizerConstants.SAVE_FILE_STRING);
             }
-            
+
             Manager<SaveManager>.Instance.LoadSaveGame();
             //Delete the existing save file selection ui since it really wants to hold on to the previous saves data.
             GameObject.Destroy(Manager<UIManager>.Instance.GetView<SaveGameSelectionScreen>().gameObject);
             //Reinit the save file selection ui.
-            SaveGameSelectionScreen selectionScreen = Manager<UIManager>.Instance.ShowView<SaveGameSelectionScreen>(EScreenLayers.MAIN, null, false, AnimatorUpdateMode.Normal);
+            SaveGameSelectionScreen selectionScreen =
+                Manager<UIManager>.Instance.ShowView<SaveGameSelectionScreen>(EScreenLayers.MAIN, null, false,
+                    AnimatorUpdateMode.Normal);
             selectionScreen.GoOffscreenInstant();
 
-            return true;
         }
 
         public static void OnToggleWindmillShuriken()

@@ -634,7 +634,14 @@ namespace MessengerRando
             ArchipelagoData.ClearData();
             randoStateManager = new RandomizerStateManager();
             clearedData = true;
-            Save.APSaveData = RandoSave.GetSaveData();
+            try
+            {
+                Save.APSaveData = RandoSave.GetSaveData();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             string path = Application.persistentDataPath + "/SaveGame.txt";
             using (StreamWriter sw = File.CreateText(path))
             {

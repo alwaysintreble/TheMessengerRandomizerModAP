@@ -411,10 +411,10 @@ namespace MessengerRando.Archipelago
                 {
                     LocationsLookup.TryGetValue(new LocationRO(name,
                         (EItems)Enum.Parse(typeof(EItems), loc.PrettyLocationName)), out locationID);
+                    ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
                 }
-                else return;
             }
-            ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
+            else ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
             try
             {
                 Console.WriteLine("Checking if we need to draw a dialog box");

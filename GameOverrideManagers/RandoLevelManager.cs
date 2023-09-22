@@ -2,6 +2,8 @@
 using MessengerRando.Utils;
 using System.Collections.Generic;
 using System.Linq;
+using Archipelago.MultiClient.Net.Enums;
+using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -32,7 +34,7 @@ namespace MessengerRando.GameOverrideManagers
                 currentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelInfo.levelName);
             }
         }
-        
+
         static bool WithinRange(float pos1, float pos2)
         {
             var comparison = pos2 - pos1;
@@ -40,14 +42,14 @@ namespace MessengerRando.GameOverrideManagers
             return comparison <= 10;
         }
 
-        private static LevelConstants.RandoLevel FindEntrance(out string entrance)
+        private static LevelConstants.RandoLevel FindEntrance()
         {
             try
             {
                 currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
                 var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
                 if (!LevelConstants.TransitionToEntranceName.TryGetValue(
-                        new LevelConstants.Transition(lastLevel, currentLevel), out entrance))
+                        new LevelConstants.Transition(lastLevel, currentLevel), out var entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
                 LevelConstants.RandoLevel oldLevel = default;
                 if (LevelConstants.SpecialEntranceNames.Contains(entrance))
@@ -118,8 +120,6 @@ namespace MessengerRando.GameOverrideManagers
                 
                 return oldLevel;
             } catch (Exception e){ Console.WriteLine(e);}
-
-            entrance = string.Empty;
             return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
         }
 
@@ -147,18 +147,36 @@ namespace MessengerRando.GameOverrideManagers
             // }
             if (teleporting) teleporting = false;
 
-            var oldLevel = FindEntrance(out var entrance);
-            if (RandoLevelMapping == null || !RandoLevelMapping.TryGetValue(oldLevel, out var newLevel)) return;
-            var actualEntrance = LevelConstants.EntranceNameToRandoLevel
-                .First(ret => ret.Value.Equals(newLevel)).Key;
-            EBits newDimension;
-            if (LevelConstants.Force16.Contains(actualEntrance)) newDimension = EBits.BITS_16;
-            else if (LevelConstants.Force8.Contains(actualEntrance)) newDimension = EBits.BITS_8;
-            else newDimension = Manager<DimensionManager>.Instance.currentDimension;
+            var oldLevel = FindEntrance();
+            if (RandoLevelMapping == null || !RandoLevelMapping.TryGetValue(oldLevel, out var newLevel))
+            {
+                if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
+                    RandomizerStateManager.Instance.SkipMusicBox && RandomizerStateManager.IsSafeTeleportState())
+                {
+                    SkipMusicBox();
+                }
+            }
+            else
+            {
+                var actualEntrance = LevelConstants.EntranceNameToRandoLevel
+                    .First(ret => ret.Value.Equals(newLevel)).Key;
+                var newDimension = Manager<DimensionManager>.Instance.currentDimension;
+                if (LevelConstants.Force16.Contains(actualEntrance)) newDimension = EBits.BITS_16;
+                else if (LevelConstants.Force8.Contains(actualEntrance)) newDimension = EBits.BITS_8;
             
-            if (newLevel.LevelName.Equals(ELevel.Level_11_B_MusicBox) && RandomizerStateManager.Instance.SkipMusicBox)
-                SkipMusicBox();
-            else TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newDimension);
+                if (newLevel.LevelName.Equals(ELevel.Level_11_B_MusicBox) &&
+                    RandomizerStateManager.Instance.SkipMusicBox)
+                    SkipMusicBox();
+                else TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newDimension);
+            }
+            // put the region we just loaded into in AP data storage for tracking
+            if (!ArchipelagoClient.Authenticated) return;
+            if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
+                ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
+                    ELevel.Level_13_TowerOfTimeHQ.ToString();
+            else
+                ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
+                    self.GetCurrentLevelEnum().ToString();
         }
 
         public static void PortalIntoArea(On.TotHQLevelInitializer.orig_InitLevel orig, TotHQLevelInitializer self,

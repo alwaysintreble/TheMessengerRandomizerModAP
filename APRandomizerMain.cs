@@ -174,7 +174,7 @@ namespace MessengerRando
             // On.MegaTimeShard.ReceiveHit += RandoTimeShardManager.ReceiveHit;
             On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
-            On.LevelManager.EndLevelLoading += LevelManager_EndLevelLoading;
+            On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
             //temp add
             #if DEBUG
             On.InventoryManager.GetItemQuantity += InventoryManager_GetItemQuantity;
@@ -183,8 +183,7 @@ namespace MessengerRando
             On.UIManager.ShowView += UIManager_ShowView;
             On.MusicBox.SetNotesState += MusicBox_SetNotesState;
             On.PowerSeal.OnEnterRoom += PowerSeal_OnEnterRoom;
-            On.LevelManager.LoadLevel += LevelManager_LoadLevel;
-            On.LevelManager.OnLevelLoaded += LevelManager_onLevelLoaded;
+            On.LevelManager.LoadLevel += RandoLevelManager.LoadLevel;
             #endif
 
             Console.WriteLine("Randomizer finished loading!");
@@ -379,50 +378,6 @@ namespace MessengerRando
             //Manager<LevelManager>.Instance.onLevelLoaded
             return orig(self, item);
         }
-
-        void LevelManager_LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
-        {
-            Console.WriteLine($"Loading Level: {levelInfo.levelName}");
-            Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}, Scene Mode: {levelInfo.loadSceneMode}");
-            Console.WriteLine($"Position Player: {levelInfo.positionPlayer}, Show Transition: {levelInfo.showTransition}, Transition Type: {levelInfo.transitionType}");
-            Console.WriteLine($"Pooled Level Instance: {levelInfo.pooledLevelInstance}, Show Intro: {levelInfo.showLevelIntro}, Close Transition On Level Loaded: {levelInfo.closeTransitionOnLevelLoaded}");
-            Console.WriteLine($"Set Scene as Active Scene: {levelInfo.setSceneAsActiveScene}");
-            orig(self, levelInfo);
-        }
-
-        System.Collections.IEnumerator LevelManager_onLevelLoaded(On.LevelManager.orig_OnLevelLoaded orig,
-            LevelManager self, Scene scene)
-        {
-            return orig(self, scene);
-        }
-
-        void LevelManager_EndLevelLoading(On.LevelManager.orig_EndLevelLoading orig, LevelManager self)
-        {
-            #if DEBUG
-            Console.WriteLine($"Finished loading into {self.GetCurrentLevelEnum()}. " +
-                              $"player position: {Manager<PlayerManager>.Instance.Player.transform.position.x}, " +
-                              $"{Manager<PlayerManager>.Instance.Player.transform.position.y}, " +
-                              $"last level: {self.lastLevelLoaded}, " +
-                              $"scene: {self.CurrentSceneName}");
-            #endif
-            orig(self);
-            // put the region we just loaded into in AP data storage for tracking
-            if (ArchipelagoClient.Authenticated)
-            {
-                if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
-                    ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
-                        ELevel.Level_13_TowerOfTimeHQ.ToString();
-                else
-                    ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
-                        self.GetCurrentLevelEnum().ToString();
-            }
-            if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
-                randoStateManager.SkipMusicBox && RandomizerStateManager.IsSafeTeleportState())
-            {
-                RandoLevelManager.SkipMusicBox();
-            }
-        }
-
 
         bool AwardNoteCutscene_ShouldPlay(On.AwardNoteCutscene.orig_ShouldPlay orig, AwardNoteCutscene self)
         {

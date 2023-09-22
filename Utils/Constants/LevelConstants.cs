@@ -479,7 +479,6 @@ namespace MessengerRando.Utils.Constants
             "Searing Crags - Bottom Left",
             "Underworld - Bottom Left",
             "Elemental Skylands - Left",
-
             "Autumn Hills - Portal",
             "Riviere Turquoise - Portal",
             "Howling Grotto - Portal",

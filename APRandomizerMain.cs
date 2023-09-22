@@ -169,6 +169,7 @@ namespace MessengerRando
             Courier.Events.PlayerController.OnUpdate += PlayerController_OnUpdate;
             On.InGameHud.OnGUI += InGameHud_OnGUI;
             On.SaveManager.DoActualSaving += SaveManager_DoActualSave;
+            On.PlayerController.Die += OnPlayerDie;
             On.Quarble.OnPlayerDied += Quarble_OnPlayerDied;
             // On.MegaTimeShard.NextState += RandoTimeShardManager.NextState;
             // On.MegaTimeShard.ReceiveHit += RandoTimeShardManager.ReceiveHit;
@@ -188,7 +189,7 @@ namespace MessengerRando
 
             Console.WriteLine("Randomizer finished loading!");
         }
-        
+
         public override void Initialize()
         {
             //I only want the generate seed/enter seed mod options available when not in the game.
@@ -853,7 +854,15 @@ namespace MessengerRando
             orig(self, applySaveDelay);
         }
 
-        private void Quarble_OnPlayerDied(On.Quarble.orig_OnPlayerDied orig, Quarble self, EDeathType deathType, bool fastReload)
+        private void OnPlayerDie(On.PlayerController.orig_Die orig, PlayerController self, EDeathType deathtype,
+            Transform killedby)
+        {
+            Manager<UIManager>.Instance.CloseAllScreensOfType<AwardItemPopup>(false);
+            orig(self, deathtype, killedby);
+        }
+
+        private void Quarble_OnPlayerDied(On.Quarble.orig_OnPlayerDied orig, Quarble self, EDeathType deathType,
+            bool fastReload)
         {
             orig(self, deathType, fastReload);
             ArchipelagoClient.DeathLinkHandler.SendDeathLink(deathType);

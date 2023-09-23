@@ -108,7 +108,7 @@ namespace MessengerRando.Archipelago
                     ServerData.SlotName,
                     ItemsHandlingFlags.AllItems,
                     new Version(ApVersion),
-                    password: ServerData.Password == "" ? null : ServerData.Password
+                    password: ServerData.Password
                 );
             }
             catch (Exception e)

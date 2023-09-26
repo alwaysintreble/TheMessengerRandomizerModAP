@@ -145,7 +145,11 @@ namespace MessengerRando.GameOverrideManagers
             //         return;
             //     }
             // }
-            if (teleporting) teleporting = false;
+            if (teleporting)
+            {
+                teleporting = false;
+                return;
+            }
 
             var oldLevel = FindEntrance();
             if (RandoLevelMapping == null || !RandoLevelMapping.TryGetValue(oldLevel, out var newLevel))
@@ -241,9 +245,7 @@ namespace MessengerRando.GameOverrideManagers
                 ? $"currentRoom roomKey: {self.CurrentRoom.roomKey}"
                 : "currentRoom does not exist.");
             Console.WriteLine($"teleported: {teleportedInRoom}");
-            #endif
             var position = Manager<PlayerManager>.Instance.Player.transform.position;
-            #if DEBUG
             Console.WriteLine("Player position: " +
                               $"{position.x} " +
                               $"{position.y} " +

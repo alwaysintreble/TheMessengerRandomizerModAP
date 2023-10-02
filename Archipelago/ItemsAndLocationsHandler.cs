@@ -336,8 +336,8 @@ namespace MessengerRando.Archipelago
                     var shurikenID = ItemFromEItem(EItems.SHURIKEN);
                     if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(shurikenID))
                     {
-                        Manager<InventoryManager>.Instance.AddItem(EItems.SHURIKEN, 1);
-                        Manager<UIManager>.Instance.GetView<InGameHud>().UpdateShurikenVisibility();
+                        Manager<InventoryManager>.Instance.AddItem(EItems.SHURIKEN, APQuantity);
+                        ArchipelagoClient.ServerData.ReceivedItems.Add(shurikenID, 1);
                     }
                     APRandomizerMain.OnToggleWindmillShuriken();
                     break;
@@ -376,15 +376,18 @@ namespace MessengerRando.Archipelago
                     }
                     break;
                 default:
+                    Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);
                     Console.WriteLine($"Checking if {randoItem.Item} is a shop item: {ShopItem(randoItem.Item)}");
                     if (ShopItem(randoItem.Item))
                     {
+                        // don't award shuriken twice if we already got it from windmill shuriken
+                        if (randoItem.Item.Equals(EItems.SHURIKEN) &
+                            ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(itemToUnlock)) return;
                         var view = Manager<UIManager>.Instance.GetView<InGameHud>();
                         view.UpdateMaxHeart();
                         view.UpdateMaxMana();
                         view.UpdateShurikenVisibility();
                     }
-                    Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);
                     break;
             }
 
@@ -449,6 +452,7 @@ namespace MessengerRando.Archipelago
                 if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(currentItem) ||
                     ArchipelagoClient.ServerData.ReceivedItems[currentItem] < receivedItems[currentItem])
                 {
+                    Console.WriteLine($"Determined {currentItem} missing while resyncing.");
                     Unlock(currentItem);
                 }
             }

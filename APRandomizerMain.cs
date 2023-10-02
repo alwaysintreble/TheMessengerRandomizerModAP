@@ -416,6 +416,11 @@ namespace MessengerRando
                 {
                     //The player is connected to an Archipelago server and trying to load a save file so check it's valid
                     Console.WriteLine($"Successfully loaded Archipelago seed {randoStateManager.CurrentFileSlot}");
+                    Console.WriteLine("Current Inventory:");
+                    foreach (var item in randoStateManager.APSave[randoStateManager.CurrentFileSlot].ReceivedItems.Keys)
+                    {
+                        Console.WriteLine($"{item}: {randoStateManager.APSave[randoStateManager.CurrentFileSlot].ReceivedItems[item]}");
+                    }
                 }
                 else if (ArchipelagoClient.Authenticated &&
                          string.IsNullOrEmpty(randoStateManager.APSave[randoStateManager.CurrentFileSlot].SlotName))

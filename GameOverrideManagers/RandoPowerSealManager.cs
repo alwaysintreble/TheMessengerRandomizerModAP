@@ -8,11 +8,12 @@ namespace MessengerRando.GameOverrideManagers
 {
     public class RandoPowerSealManager
     {
-        public static readonly List<string> Goals = new List<string> { "power_seal_hunt" };
         private int amountPowerSealsCollected;
 
         public RandoPowerSealManager(int requiredPowerSeals)
         {
+            if (requiredPowerSeals == 0)
+                requiredPowerSeals = 45;
             Manager<ProgressionManager>.Instance.powerSealTotal = requiredPowerSeals;
             amountPowerSealsCollected = ArchipelagoClient.ServerData.PowerSealsCollected;
         }
@@ -24,13 +25,9 @@ namespace MessengerRando.GameOverrideManagers
         {
             try
             {
-                if (Goals.Contains(RandomizerStateManager.Instance.Goal))
-                {
-                    //going to attempt to teleport the player to the ending sequence when they open the chest
-                    OnShopChestOpen();
-                    self.EndCutScene();
-                }
-                else orig(self);
+                //going to attempt to teleport the player to the ending sequence when they open the chest
+                OnShopChestOpen();
+                self.EndCutScene();
             }
             catch (Exception e)
             {
@@ -43,13 +40,9 @@ namespace MessengerRando.GameOverrideManagers
         {
             try
             {
-                if (Goals.Contains(RandomizerStateManager.Instance.Goal))
-                {
-                    //going to attempt to teleport the player to the ending sequence when they open the chest
-                    OnShopChestOpen();
-                    self.EndCutScene();
-                }
-                else orig(self);
+                //going to attempt to teleport the player to the ending sequence when they open the chest
+                OnShopChestOpen();
+                self.EndCutScene();
             }
             catch (Exception e)
             {

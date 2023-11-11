@@ -19,11 +19,10 @@ namespace MessengerRando.Utils
                 RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
                     ArchipelagoClient.ServerData;
                 
-                if (ArchipelagoClient.Authenticated)
+                if (ArchipelagoClient.Authenticated && RandomizerStateManager.IsSafeTeleportState())
                     ArchipelagoClient.SyncLocations();
             }
             APSaveData = GetSaveData();
-            
         }
 
         public static string GetSaveData()

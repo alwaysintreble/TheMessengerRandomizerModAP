@@ -6,6 +6,7 @@ using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MessengerRando.Utils
 {
@@ -17,7 +18,6 @@ namespace MessengerRando.Utils
         public RandoPowerSealManager PowerSealManager;
         public RandoBossManager BossManager;
 
-        public string Goal;
         public bool SkipMusicBox;
         public bool SkipPhantom;
         public bool MegaShards;
@@ -55,86 +55,13 @@ namespace MessengerRando.Utils
                     );
             Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
 
-            if (slotData.TryGetValue("deathlink", out var deathLink))
-                ArchipelagoData.DeathLink = Convert.ToInt32(deathLink) == 1;
-            else Console.WriteLine("Failed to get deathlink option");
+            ArchipelagoData.DeathLink = Convert.ToBoolean(slotData.TryGetValue("deathlink", out var deathLink)
+                ? deathLink : slotData["death_link"]);
 
-            if (slotData.TryGetValue("goal", out var gameGoal))
-            {
-                var goal = (string)gameGoal;
-                Instance.Goal = goal;
-                if (RandoPowerSealManager.Goals.Contains(goal))
-                {
-                    if (slotData.TryGetValue("required_seals", out var requiredSeals))
-                    {
-                        Instance.PowerSealManager =
-                            new RandoPowerSealManager(Convert.ToInt32(requiredSeals));
-                    }
-                }
-                else
-                {
-                    Instance.PowerSealManager = new RandoPowerSealManager(45);
-                }
-
-                if (slotData.TryGetValue("music_box", out var doMusicBox))
-                    Instance.SkipMusicBox = Convert.ToInt32(doMusicBox) == 0;
-                else Console.WriteLine("Failed to get music_box option");
-                
-            }
-            else Console.WriteLine("Failed to get goal option");
-
-            if (slotData.TryGetValue("bosses", out var bosses))
-            {
-                var bossMap = JsonConvert.DeserializeObject<Dictionary<string, string>>(bosses.ToString());
-                Console.WriteLine("Bosses:");
-                foreach (var bossPair in bossMap)
-                {
-                    Console.WriteLine($"{bossPair.Key}: {bossPair.Value}");
-                }
-                try
-                {
-                    Instance.BossManager =
-                        new RandoBossManager(bossMap);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
-            else Console.WriteLine("Failed to get bosses option");
-
-            if (slotData.TryGetValue("settings", out var genSettings))
-            {
-                var gameSettings = JsonConvert.DeserializeObject<Dictionary<string, string>>(genSettings.ToString());
-                if (gameSettings.TryGetValue("Mega Shards", out var shuffleShards))
-                    if (Convert.ToInt32(shuffleShards) == 1)
-                        Instance.MegaShards = true;
-            }
-            else if (slotData.TryGetValue("mega_shards", out var shuffleShards))
-                if (JsonConvert.DeserializeObject<int>(shuffleShards.ToString()) == 1)
-                    Instance.MegaShards = true;
-
-            if (slotData.TryGetValue("shop", out var shopSettings))
-            {
-                var shopPrices = JsonConvert.DeserializeObject<Dictionary<string, int>>(shopSettings.ToString());
-                RandoShopManager.ShopPrices = new Dictionary<EShopUpgradeID, int>();
-                foreach (var shopItem in shopPrices)
-                {
-                    RandoShopManager.ShopPrices.Add(
-                        (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopItem.Key),
-                        shopItem.Value);
-                }
-            }
-
-            if (slotData.TryGetValue("figures", out var figureSettings))
-            {
-                var figurePrices = JsonConvert.DeserializeObject<Dictionary<string, int>>(figureSettings.ToString());
-                RandoShopManager.FigurePrices = new Dictionary<EFigurine, int>();
-                foreach (var figure in figurePrices)
-                {
-                    RandoShopManager.FigurePrices.Add((EFigurine)Enum.Parse(typeof(EFigurine), figure.Key), figure.Value);
-                }
-            }
+            Instance.PowerSealManager = new RandoPowerSealManager(Convert.ToInt32(slotData["required_seals"]));
+            Instance.SkipMusicBox = Convert.ToBoolean(slotData["music_box"]);
+            RandoShopManager.ShopPrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EShopUpgradeID, int>>();
+            RandoShopManager.FigurePrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EFigurine, int>>();
         }
 
         private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)

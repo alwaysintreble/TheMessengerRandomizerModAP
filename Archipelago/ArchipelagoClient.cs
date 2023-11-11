@@ -16,7 +16,7 @@ namespace MessengerRando.Archipelago
 {
     public static class ArchipelagoClient
     {
-        private const string ApVersion = "0.4.0";
+        private const string ApVersion = "0.4.1";
         public static ArchipelagoData ServerData;
 
         private delegate void OnConnectAttempt(LoginResult result);
@@ -97,6 +97,7 @@ namespace MessengerRando.Archipelago
         {
             if (Authenticated) return;
             if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
+            var needSlotData = ServerData.SlotData == null;
 
             LoginResult result;
 
@@ -108,7 +109,8 @@ namespace MessengerRando.Archipelago
                     ServerData.SlotName,
                     ItemsHandlingFlags.AllItems,
                     new Version(ApVersion),
-                    password: ServerData.Password
+                    password: ServerData.Password,
+                    requestSlotData: needSlotData
                 );
             }
             catch (Exception e)
@@ -121,7 +123,8 @@ namespace MessengerRando.Archipelago
             if (result.Successful)
             {
                 var success = (LoginSuccessful)result;
-                ServerData.SlotData = success.SlotData;
+                if (needSlotData)
+                    ServerData.SlotData = success.SlotData;
                 ServerData.SeedName = Session.RoomState.Seed;
                 Authenticated = true;
 

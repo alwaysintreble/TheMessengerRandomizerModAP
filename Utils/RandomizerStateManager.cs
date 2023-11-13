@@ -60,7 +60,7 @@ namespace MessengerRando.Utils
 
             Instance.PowerSealManager = new RandoPowerSealManager(Convert.ToInt32(slotData["required_seals"]));
             Instance.SkipMusicBox = Convert.ToBoolean(slotData["music_box"]);
-            RandoShopManager.ShopPrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EShopUpgradeID, int>>();
+            RandoShopManager.ShopPrices = ((JObject)slotData["shop"]).ToObject<Dictionary<EShopUpgradeID, int>>();
             RandoShopManager.FigurePrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EFigurine, int>>();
         }
 

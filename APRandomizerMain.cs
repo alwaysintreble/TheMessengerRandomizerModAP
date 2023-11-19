@@ -460,13 +460,13 @@ namespace MessengerRando
                 if (ArchipelagoClient.Authenticated)
                 {
                     ArchipelagoClient.Disconnect();
-                    randoStateManager = new RandomizerStateManager();
                 }
                 ArchipelagoClient.HasConnected = false;
-                ArchipelagoClient.ServerData = null;
                 RandoBossManager.DefeatedBosses = new List<string>();
             }
-
+            randoStateManager = new RandomizerStateManager();
+            ArchipelagoClient.ServerData = null;
+            
             clearedData = false;
             orig();
         }

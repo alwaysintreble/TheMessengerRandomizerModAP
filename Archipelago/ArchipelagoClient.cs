@@ -34,7 +34,7 @@ namespace MessengerRando.Archipelago
 
         public static void ConnectAsync()
         {
-            if (attemptingConnection) return;
+            if (attemptingConnection || Authenticated) return;
             attemptingConnection = true;
             Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
             ThreadPool.QueueUserWorkItem(_ => Connect(OnConnected));

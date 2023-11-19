@@ -42,7 +42,7 @@ namespace MessengerRando.Archipelago
 
         public static void ConnectAsync(SubMenuButtonInfo connectButton)
         {
-            if (attemptingConnection) return;
+            if (attemptingConnection || Authenticated) return;
             attemptingConnection = true;
             if (ServerData == null)
                 ServerData = new ArchipelagoData();

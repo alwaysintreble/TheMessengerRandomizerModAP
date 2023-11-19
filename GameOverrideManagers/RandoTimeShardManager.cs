@@ -110,17 +110,14 @@ namespace MessengerRando.GameOverrideManagers
         {
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             var currentRoom = Manager<Level>.Instance.CurrentRoom.roomKey;
-            if (RandomizerStateManager.Instance.MegaShards)
+            var location = ShardLocation(new MegaShard(currentLevel, currentRoom));
+            if (!location.Equals(new LocationRO("Money Farm Room Mega Shard 1")) &&
+                !location.Equals(new LocationRO("Quick Restock Mega Shard 1")) &&
+                ArchipelagoClient.ServerData.CheckedLocations.
+                    Contains(ItemsAndLocationsHandler.LocationsLookup[location]))
             {
-                var location = ShardLocation(new MegaShard(currentLevel, currentRoom));
-                if (!location.Equals(new LocationRO("Money Farm Room Mega Shard 1")) &&
-                    !location.Equals(new LocationRO("Quick Restock Mega Shard 1")) &&
-                    ArchipelagoClient.ServerData.CheckedLocations.
-                        Contains(ItemsAndLocationsHandler.LocationsLookup[location]))
-                {
-                    self.SetHP(self.maxHP);
-                    return;
-                }
+                self.SetHP(self.maxHP);
+                return;
             }
             orig(self, hitData);
         }

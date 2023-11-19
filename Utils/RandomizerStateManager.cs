@@ -20,7 +20,6 @@ namespace MessengerRando.Utils
 
         public bool SkipMusicBox;
         public bool SkipPhantom;
-        public bool MegaShards;
 
         public Dictionary<long, NetworkItem> ScoutedLocations;
         public Dictionary<int, ArchipelagoData> APSave;

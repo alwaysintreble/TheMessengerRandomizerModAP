@@ -515,11 +515,7 @@ namespace MessengerRando
         {
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             var currentRoom = Manager<Level>.Instance.CurrentRoom.roomKey;
-            if (randoStateManager.MegaShards)
-            {
-                RandoTimeShardManager.BreakShard(new RandoTimeShardManager.MegaShard(currentLevel, currentRoom));
-                // self.shardsPerHit = 50;
-            }
+            RandoTimeShardManager.BreakShard(new RandoTimeShardManager.MegaShard(currentLevel, currentRoom));
             orig(self);
         }
 

@@ -6,7 +6,6 @@ using Archipelago.MultiClient.Net.Models;
 using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace MessengerRando.Archipelago
@@ -17,7 +16,7 @@ namespace MessengerRando.Archipelago
         public int Port = 38281;
         public string SlotName = "";
         public string Password = "";
-        public int Index = 0;
+        public int Index;
         public string SeedName = "Unknown";
         public Dictionary<string, object> SlotData;
         public static bool DeathLink = false;

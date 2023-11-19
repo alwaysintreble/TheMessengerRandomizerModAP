@@ -5,7 +5,6 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MessengerRando.Utils

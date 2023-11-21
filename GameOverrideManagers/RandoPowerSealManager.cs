@@ -8,17 +8,14 @@ namespace MessengerRando.GameOverrideManagers
 {
     public class RandoPowerSealManager
     {
-        private int amountPowerSealsCollected;
-
         public RandoPowerSealManager(int requiredPowerSeals)
         {
             if (requiredPowerSeals == 0)
                 requiredPowerSeals = 45;
             Manager<ProgressionManager>.Instance.powerSealTotal = requiredPowerSeals;
-            amountPowerSealsCollected = ArchipelagoClient.ServerData.PowerSealsCollected;
         }
 
-        public void AddPowerSeal() => ArchipelagoClient.ServerData.PowerSealsCollected = ++amountPowerSealsCollected;
+        public void AddPowerSeal() => ArchipelagoClient.ServerData.PowerSealsCollected++;
 
 
         public void OnShopChestOpen(On.ShopChestOpenCutscene.orig_OnChestOpened orig, ShopChestOpenCutscene self)
@@ -69,6 +66,6 @@ namespace MessengerRando.GameOverrideManagers
         /// here, but trying it so it'll show the required count in the dialog.
         /// </summary>
         /// <returns></returns>
-        public int AmountPowerSealsCollected() => amountPowerSealsCollected;
+        public int AmountPowerSealsCollected() => ArchipelagoClient.ServerData.PowerSealsCollected;
     }
 }

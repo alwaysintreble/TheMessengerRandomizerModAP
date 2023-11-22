@@ -49,7 +49,7 @@ namespace MessengerRando.Utils
             if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
-                    ItemsAndLocationsHandler.ItemsLookup.Keys.ToArray()
+                    ArchipelagoClient.Session.Locations.AllMissingLocations.ToArray()
                     );
             Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
 

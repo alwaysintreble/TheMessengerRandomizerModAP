@@ -183,9 +183,14 @@ namespace MessengerRando.Archipelago
                         var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.LocationName);
                         Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
                     }
+
                     ServerData.CheckedLocations.Add(location);
                 }
-                catch (Exception e) {Console.WriteLine(e);}
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    Console.WriteLine($"{Session.Locations.GetLocationNameFromId(location)} {location}");
+                }
             }
         }
 

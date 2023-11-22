@@ -49,7 +49,7 @@ namespace MessengerRando.Utils
             if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
-                    ArchipelagoClient.Session.Locations.AllMissingLocations.ToArray()
+                    ItemsAndLocationsHandler.ItemsLookup.Keys.ToArray()
                     );
             Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
 
@@ -57,14 +57,13 @@ namespace MessengerRando.Utils
                 ? deathLink : slotData["death_link"]);
 
             Instance.PowerSealManager = new RandoPowerSealManager(Convert.ToInt32(slotData["required_seals"]));
-            Instance.SkipMusicBox = Convert.ToBoolean(slotData["music_box"]);
+            Instance.SkipMusicBox = !Convert.ToBoolean(slotData["music_box"]);
             RandoShopManager.ShopPrices = ((JObject)slotData["shop"]).ToObject<Dictionary<EShopUpgradeID, int>>();
             RandoShopManager.FigurePrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EFigurine, int>>();
         }
 
         private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)
         {
-            Console.WriteLine("Setting up scouts");
             Instance.ScoutedLocations = new Dictionary<long, NetworkItem>();
             foreach (var networkItem in scoutedLocationInfo.Locations)
             {
@@ -72,6 +71,7 @@ namespace MessengerRando.Utils
             }
 
             ArchipelagoClient.ServerData.ScoutedLocations = Instance.ScoutedLocations;
+            Console.WriteLine("Scouting done");
         }
 
         public static bool IsSafeTeleportState()

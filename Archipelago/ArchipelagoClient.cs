@@ -180,7 +180,7 @@ namespace MessengerRando.Archipelago
                     }
                     else if (ItemsAndLocationsHandler.ShopLocation(location, out var shopLoc))
                     {
-                        var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.LocationName);
+                        var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.PrettyLocationName);
                         Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
                     }
 

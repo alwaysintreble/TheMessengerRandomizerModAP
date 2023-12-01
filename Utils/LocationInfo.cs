@@ -1,28 +1,34 @@
 ﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using MessengerRando.Archipelago;
+using WebSocketSharp;
 
 namespace MessengerRando.Utils
 {
     public static class NetworkItemExtensions
     {
-        public static string ToReadableString(this NetworkItem item)
+        public static string ToReadableString(this NetworkItem item, string otherPlayer = "")
         {
             string text;
             if (item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
-                text = $"Found {ColorizeItem(item)}";
+                text = item.Location.Equals(-1) ? $"Cheated {item.Colorize()}" : $"Found {item.Colorize()}";
             else
             {
-                text = $"Received {ColorizeItem(item)}!";
+                text = $"Received {item.Colorize()}!";
                 return text;
             }
-            text += item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot)
+            text += otherPlayer.IsNullOrEmpty()
                 ? "!"
-                : $" for <color=#{UserConfig.OtherPlayerColor}>{ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player)}</color>";
+                : $" for <color=#{UserConfig.OtherPlayerColor}>{otherPlayer}</color>";
             return text;
         }
 
-        public static string ColorizeItem(this NetworkItem item)
+        public static string Name(this NetworkItem item)
+        {
+            return ArchipelagoClient.Session.Items.GetItemName(item.Item);
+        }
+
+        public static string Colorize(this NetworkItem item)
         {
             var color = UserConfig.FillerColor;
             switch (item.Flags)
@@ -37,8 +43,7 @@ namespace MessengerRando.Utils
                     color = UserConfig.TrapColor;
                     break;
             }
-            var itemName = ArchipelagoClient.Session.Items.GetItemName(item.Item);
-            var text = string.IsNullOrEmpty(color) ? itemName : $"<color=#{color}>{itemName}</color>";
+            var text = string.IsNullOrEmpty(color) ? item.Name() : $"<color=#{color}>{item.Name()}</color>";
 
             return text;
         }

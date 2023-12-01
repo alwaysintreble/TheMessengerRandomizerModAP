@@ -182,7 +182,7 @@ namespace MessengerRando.Archipelago
                 Session.Locations.GetLocationNameFromId(hintMessage.Item.Location),
                 ColorizeLocation(hintMessage.Item.Location));
             colorizedMessage = colorizedMessage.Replace(Session.Items.GetItemName(hintMessage.Item.Item),
-                hintMessage.Item.ColorizeItem());
+                hintMessage.Item.Colorize());
             Console.WriteLine(colorizedMessage);
             return colorizedMessage;
         }
@@ -208,7 +208,7 @@ namespace MessengerRando.Archipelago
                             if (!itemSendMessage.IsReceiverTheActivePlayer && !ItemsAndLocationsHandler.HasDialog(itemSendMessage.Item.Location))
                             {
                                 Console.WriteLine($"adding {itemSendMessage.Item.ToReadableString()} to dialog queue.");
-                                DialogQueue.Enqueue(itemSendMessage.Item.ToReadableString());
+                                DialogQueue.Enqueue(itemSendMessage.Item.ToReadableString(itemSendMessage.Receiver.Alias));
                             }
                             MessageQueue.Enqueue(itemSendMessage.ToString());
                         }

@@ -432,18 +432,6 @@ namespace MessengerRando.Archipelago
                 }
             }
             else ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
-            try
-            {
-                Console.WriteLine("Checking if we need to draw a dialog box");
-                if (!HasDialog(locationID))
-                {
-                    if (!RandoStateManager.ScoutedLocations.TryGetValue(locationID, out var locationInfo)) return;
-                    DialogChanger.CreateDialogBox(locationInfo.ToReadableString());
-                }
-            } catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
             
             Console.WriteLine("Sending location checks");
             if (ArchipelagoClient.Authenticated)

@@ -92,7 +92,7 @@ namespace MessengerRando.Archipelago
         {
             var session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
             session.MessageLog.OnMessageReceived += OnMessageReceived;
-            session.Items.ItemReceived += ItemReceived;
+            session.Items.ItemReceived += OnItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
             session.Socket.SocketClosed += SessionSocketClosed;
             return session;
@@ -184,6 +184,7 @@ namespace MessengerRando.Archipelago
                 ColorizeLocation(hintMessage.Item.Location));
             colorizedMessage = colorizedMessage.Replace(hintMessage.Item.ToString(),
                 hintMessage.Item.ColorizeItem());
+            Console.WriteLine(colorizedMessage);
             return colorizedMessage;
         }
 
@@ -204,7 +205,14 @@ namespace MessengerRando.Archipelago
                         break;
                     case ItemSendLogMessage itemSendMessage:
                         if (itemSendMessage.IsRelatedToActivePlayer)
+                        {
+                            if (!itemSendMessage.IsReceiverTheActivePlayer && !ItemsAndLocationsHandler.HasDialog(itemSendMessage.Item.Location))
+                            {
+                                Console.WriteLine($"adding {itemSendMessage.Item.ToReadableString()} to dialog queue.");
+                                DialogQueue.Enqueue(itemSendMessage.Item.ToReadableString());
+                            }
                             MessageQueue.Enqueue(itemSendMessage.ToString());
+                        }
                         break;
                 }
             }
@@ -250,7 +258,7 @@ namespace MessengerRando.Archipelago
             }
         }
 
-        private static void ItemReceived(ReceivedItemsHelper helper)
+        private static void OnItemReceived(ReceivedItemsHelper helper)
         {
             if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || 
                 ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
@@ -263,9 +271,10 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine($"Skipped {skippedItem.ToString()}");
             }
 
-            while (ServerData.Index <= helper.Index)
+            while (ServerData.Index < helper.Index)
             {
                 var itemToUnlock = helper.DequeueItem();
+                Console.WriteLine();
                 if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
                     ItemsAndLocationsHandler.Unlock(itemToUnlock.Item);
                 else
@@ -307,7 +316,9 @@ namespace MessengerRando.Archipelago
 
             if (DialogQueue.Count > 0)
             {
-                DialogChanger.CreateDialogBox((string)DialogQueue.Dequeue());
+                var message = (string)DialogQueue.Dequeue();
+                Console.WriteLine(message);
+                DialogChanger.CreateDialogBox(message);
             }
             if (!Authenticated)
             {

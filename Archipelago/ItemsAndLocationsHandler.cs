@@ -400,7 +400,7 @@ namespace MessengerRando.Archipelago
                         view.UpdateMaxMana();
                         view.UpdateShurikenVisibility();
                     }
-                    else 
+                    else if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(itemToUnlock))
                         Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);
                     break;
             }

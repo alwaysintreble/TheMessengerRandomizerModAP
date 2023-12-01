@@ -47,10 +47,12 @@ namespace MessengerRando.Utils
             var slotData = ArchipelagoClient.ServerData.SlotData;
 
             if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
+            {
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
-                    ArchipelagoClient.Session.Locations.AllMissingLocations.ToArray()
-                    );
+                    ItemsAndLocationsHandler.ItemsLookup.Keys.ToArray()
+                );
+            }
 
             ArchipelagoData.DeathLink = Convert.ToBoolean(slotData.TryGetValue("deathlink", out var deathLink)
                 ? deathLink : slotData["death_link"]);

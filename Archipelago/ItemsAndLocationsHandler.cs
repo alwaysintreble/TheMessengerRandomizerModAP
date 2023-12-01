@@ -400,6 +400,8 @@ namespace MessengerRando.Archipelago
                         view.UpdateMaxMana();
                         view.UpdateShurikenVisibility();
                     }
+                    else 
+                        Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);
                     break;
             }
 

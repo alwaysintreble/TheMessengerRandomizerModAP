@@ -13,6 +13,7 @@ namespace MessengerRando.Archipelago
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
         public static Dictionary<EItems, long> EitemsLocationsLookup;
+        public static Dictionary<long, LocationRO> IDtoLocationsLookup;
 
         public static RandomizerStateManager RandoStateManager;
 
@@ -51,6 +52,7 @@ namespace MessengerRando.Archipelago
             Console.WriteLine("Building LocationsLookup...");
             LocationsLookup = new Dictionary<LocationRO, long>();
             EitemsLocationsLookup = new Dictionary<EItems, long>();
+            IDtoLocationsLookup = new Dictionary<long, LocationRO>();
             
             var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
             ArchipelagoLocations.AddRange(megaShards);
@@ -63,6 +65,7 @@ namespace MessengerRando.Archipelago
             foreach (var progLocation in ArchipelagoLocations)
             {
                 LocationsLookup.Add(progLocation, offset);
+                IDtoLocationsLookup.Add(offset, progLocation);
                 // Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
                 if (progLocation.VanillaItem != EItems.NONE &&
                     !EitemsLocationsLookup.ContainsKey(progLocation.VanillaItem))
@@ -297,12 +300,13 @@ namespace MessengerRando.Archipelago
 
         private static LocationRO LocationFromID(long locationID)
         {
-            return LocationsLookup.First(x => x.Value.Equals(locationID)).Key;
+            return IDtoLocationsLookup[locationID];
         }
 
         public static bool HasDialog(long locationID)
         {
             Console.WriteLine($"Checking if {locationID} has associated dialog");
+            if (!IDtoLocationsLookup.ContainsKey(locationID)) return false;
             var location = LocationFromID(locationID).PrettyLocationName;
             try
             {

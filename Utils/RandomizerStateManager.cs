@@ -78,12 +78,13 @@ namespace MessengerRando.Utils
         public static bool IsSafeTeleportState()
         {
             //Unsafe teleport states are shops/hq/boss fights
-            return !(Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
-                     Manager<Shop>.Instance.gameObject.activeInHierarchy ||
-                     Manager<GameManager>.Instance.IsCutscenePlaying() ||
-                     Manager<PlayerManager>.Instance.Player.IsInvincible() ||
-                     Manager<PlayerManager>.Instance.Player.InputBlocked() || 
-                     Manager<PlayerManager>.Instance.Player.IsKnockedBack);
+            return !(Manager<GameManager>.Instance.isActiveAndEnabled &&
+                     (Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
+                      Manager<Shop>.Instance.gameObject.activeInHierarchy ||
+                      Manager<GameManager>.Instance.IsCutscenePlaying() ||
+                      Manager<PlayerManager>.Instance.Player.IsInvincible() ||
+                      Manager<PlayerManager>.Instance.Player.InputBlocked() ||
+                      Manager<PlayerManager>.Instance.Player.IsKnockedBack));
         }
 
         /// <summary>

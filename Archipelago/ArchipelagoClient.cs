@@ -261,7 +261,7 @@ namespace MessengerRando.Archipelago
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
             if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || 
-                ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
+                ServerData.Index > Session.Items.AllItemsReceived.Count) return;
             Console.WriteLine("ItemReceived called");
             Console.WriteLine("Removing previously unlocked items from queue");
             while (helper.Index < ServerData.Index)
@@ -271,17 +271,28 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine($"Skipped {skippedItem.ToString()}");
             }
 
-            while (ServerData.Index < helper.Index)
+            while (ServerData.Index <= helper.Index)
             {
                 var itemToUnlock = helper.DequeueItem();
-                Console.WriteLine();
                 if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
-                    ItemsAndLocationsHandler.Unlock(itemToUnlock.Item);
+                {
+                    try
+                    {
+                        ItemsAndLocationsHandler.Unlock(itemToUnlock.Item);
+                    }
+                    catch (Exception e)
+                    {
+                        ItemQueue.Enqueue(itemToUnlock.Item);
+                    }
+                }
                 else
                     ItemQueue.Enqueue(itemToUnlock.Item);
-                if (!ItemsAndLocationsHandler.HasDialog(itemToUnlock.Item))
-                    DialogQueue.Enqueue(itemToUnlock.ToReadableString());
                 ServerData.Index++;
+                if (itemToUnlock.Player.Equals(Session.ConnectionInfo.Slot) &&
+                    ItemsAndLocationsHandler.HasDialog(itemToUnlock.Location))
+                    continue;
+                Console.WriteLine($"adding {itemToUnlock.ToReadableString()} to dialog queue");
+                DialogQueue.Enqueue(itemToUnlock.ToReadableString());
             }
         }
 

@@ -181,7 +181,7 @@ namespace MessengerRando.Archipelago
             colorizedMessage = colorizedMessage.Replace(
                 Session.Locations.GetLocationNameFromId(hintMessage.Item.Location),
                 ColorizeLocation(hintMessage.Item.Location));
-            colorizedMessage = colorizedMessage.Replace(Session.Items.GetItemName(hintMessage.Item.Item),
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Item.Name(),
                 hintMessage.Item.Colorize());
             Console.WriteLine(colorizedMessage);
             return colorizedMessage;

@@ -376,13 +376,25 @@ namespace MessengerRando.Archipelago
                     }
                     break;
                 default:
-                    Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);
                     Console.WriteLine($"Checking if {randoItem.Item} is a shop item: {ShopItem(randoItem.Item)}");
                     if (ShopItem(randoItem.Item))
                     {
                         // don't award shuriken twice if we already got it from windmill shuriken
                         if (randoItem.Item.Equals(EItems.SHURIKEN) &
                             ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(itemToUnlock)) return;
+                        if (!new List<EItems> { EItems.HEART_CONTAINER, EItems.SHURIKEN_UPGRADE }.Contains(
+                                randoItem.Item))
+                        {
+                            Console.WriteLine($"checking if {itemToUnlock} has been received already");
+                            if (ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(itemToUnlock))
+                            {
+                                Console.WriteLine("bailing");
+                                return;
+                            }
+                        }
+                        else if (ArchipelagoClient.ServerData.ReceivedItems.TryGetValue(itemToUnlock, out var count) &&
+                                 count > 1) return;
+                        Manager<InventoryManager>.Instance.AddItem(randoItem.Item, quantity);
                         var view = Manager<UIManager>.Instance.GetView<InGameHud>();
                         view.UpdateMaxHeart();
                         view.UpdateMaxMana();

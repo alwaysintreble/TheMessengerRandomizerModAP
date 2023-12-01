@@ -189,7 +189,7 @@ namespace MessengerRando.Archipelago
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    Console.WriteLine($"{Session.Locations.GetLocationNameFromId(location)} {location}");
+                    Console.WriteLine($"{Session.Locations.GetLocationNameFromId(location)}: {location}");
                 }
             }
         }

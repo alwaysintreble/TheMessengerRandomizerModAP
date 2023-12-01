@@ -16,7 +16,7 @@ namespace MessengerRando.Archipelago
 {
     public static class ArchipelagoClient
     {
-        private const string ApVersion = "0.4.1";
+        private const string ApVersion = "0.4.2";
         public static ArchipelagoData ServerData = new ArchipelagoData();
 
         private delegate void OnConnectAttempt(LoginResult result);

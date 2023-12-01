@@ -451,15 +451,18 @@ namespace MessengerRando.Archipelago
             ArchipelagoClient.ServerData.Index = ArchipelagoClient.Session.Items.AllItemsReceived.Count;
             for (int i = 0; i < ArchipelagoClient.ServerData.Index; i++)
             {
-                var currentItem = ArchipelagoClient.Session.Items.AllItemsReceived[i].Item;
+                var itemToUnlock = ArchipelagoClient.Session.Items.AllItemsReceived[i];
+                var currentItem = itemToUnlock.Item;
                 if (!receivedItems.ContainsKey(currentItem)) receivedItems.Add(currentItem, 1);
                 else receivedItems[currentItem] += 1;
-                if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(currentItem) ||
-                    ArchipelagoClient.ServerData.ReceivedItems[currentItem] < receivedItems[currentItem])
-                {
-                    Console.WriteLine($"Determined {currentItem} missing while resyncing.");
-                    Unlock(currentItem);
-                }
+                if (ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(currentItem) &&
+                    ArchipelagoClient.ServerData.ReceivedItems[currentItem] >= receivedItems[currentItem]) continue;
+                Console.WriteLine($"Determined {currentItem} missing while resyncing.");
+                Unlock(currentItem);
+                if (itemToUnlock.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot) &&
+                    HasDialog(itemToUnlock.Location))
+                    continue;
+                ArchipelagoClient.DialogQueue.Enqueue(itemToUnlock.ToReadableString());
             }
         }
     }

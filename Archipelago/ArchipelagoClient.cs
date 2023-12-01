@@ -6,7 +6,6 @@ using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
-using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Utils;
 using Mod.Courier.UI;
@@ -34,7 +33,7 @@ namespace MessengerRando.Archipelago
         public static DeathLinkInterface DeathLinkHandler;
 
         private static readonly Queue ItemQueue = new Queue();
-        private static readonly Queue DialogQueue = new Queue();
+        public static readonly Queue DialogQueue = new Queue();
         private static readonly Queue MessageQueue = new Queue();
 
         public static void ConnectAsync()
@@ -260,6 +259,7 @@ namespace MessengerRando.Archipelago
 
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
+            if (!RandomizerStateManager.Instance.InGame) return;
             Console.WriteLine("ItemReceived called");
             if (helper.Index < ServerData.Index)
             {
@@ -269,8 +269,7 @@ namespace MessengerRando.Archipelago
             }
 
             var itemToUnlock = helper.DequeueItem();
-            if (RandomizerStateManager.Instance.InGame &&
-                RandomizerStateManager.IsSafeTeleportState() &&
+            if (RandomizerStateManager.IsSafeTeleportState() &&
                 !Manager<PauseManager>.Instance.IsPaused)
             {
                 try

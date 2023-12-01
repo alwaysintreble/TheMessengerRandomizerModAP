@@ -51,7 +51,6 @@ namespace MessengerRando.Utils
                     SetupScoutedLocations,
                     ArchipelagoClient.Session.Locations.AllMissingLocations.ToArray()
                     );
-            Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
 
             ArchipelagoData.DeathLink = Convert.ToBoolean(slotData.TryGetValue("deathlink", out var deathLink)
                 ? deathLink : slotData["death_link"]);

@@ -431,6 +431,7 @@ namespace MessengerRando
                     RandomizerSaveMethod.TryLoad(Save.APSaveData);
                 if (ArchipelagoData.LoadData(randoStateManager.CurrentFileSlot))
                 {
+                    Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
                     //The player is connected to an Archipelago server and trying to load a save file so check it's valid
                     Console.WriteLine($"Successfully loaded Archipelago seed {randoStateManager.CurrentFileSlot}");
                     Console.WriteLine("Current Inventory:");
@@ -482,7 +483,7 @@ namespace MessengerRando
                 RandoBossManager.DefeatedBosses = new List<string>();
             }
             randoStateManager = new RandomizerStateManager();
-            ArchipelagoClient.ServerData = null;
+            ArchipelagoClient.ServerData = new ArchipelagoData();
             
             clearedData = false;
             orig();

@@ -8,13 +8,21 @@ namespace MessengerRando.Utils
     {
         public static string ToReadableString(this NetworkItem item)
         {
-            var text = $"Found {ColorizeItem(item)}";
+            string text;
+            if (item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+                text = $"Found {ColorizeItem(item)}";
+            else
+            {
+                text = $"Received {ColorizeItem(item)}!";
+                return text;
+            }
             text += item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot)
                 ? "!"
                 : $" for <color=#FAFAD2>{ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player)}</color>";
             return text;
         }
-        public static string ColorizeItem(this NetworkItem item)
+
+        private static string ColorizeItem(this NetworkItem item)
         {
             var color = UserConfig.FillerColor;
             switch (item.Flags)

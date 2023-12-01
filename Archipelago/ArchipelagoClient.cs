@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,6 +7,7 @@ using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Utils;
 using Mod.Courier.UI;
@@ -30,7 +32,9 @@ namespace MessengerRando.Archipelago
         public static ArchipelagoSession Session;
         public static DeathLinkInterface DeathLinkHandler;
 
-        private static readonly List<string> MessageQueue = new List<string>();
+        private static readonly Queue ItemQueue = new Queue();
+        private static readonly Queue DialogQueue = new Queue();
+        private static readonly Queue MessageQueue = new Queue();
 
         public static void ConnectAsync()
         {
@@ -87,7 +91,7 @@ namespace MessengerRando.Archipelago
         {
             var session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
             session.MessageLog.OnMessageReceived += OnMessageReceived;
-            // session.Items.ItemReceived += ItemReceived;
+            session.Items.ItemReceived += ItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
             session.Socket.SocketClosed += SessionSocketClosed;
             return session;
@@ -157,7 +161,7 @@ namespace MessengerRando.Archipelago
         private static void OnMessageReceived(LogMessage message)
         {
             Console.WriteLine(message.ToString());
-            MessageQueue.Add(message.ToString());
+            MessageQueue.Enqueue(message.ToString());
         }
 
         public static void SyncLocations()
@@ -199,8 +203,22 @@ namespace MessengerRando.Archipelago
             if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || 
                 ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
             Console.WriteLine("ItemReceived called");
-            ItemsAndLocationsHandler.Unlock(helper.DequeueItem().Item);
-            ServerData.Index++;
+            while (helper.Index < ServerData.Index)
+                helper.DequeueItem();
+            var itemToUnlock = helper.DequeueItem();
+            DialogQueue.Enqueue(itemToUnlock.ToReadableString());
+            if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
+            {
+                while (ServerData.Index <= helper.Index)
+                {
+                    ItemsAndLocationsHandler.Unlock(helper.DequeueItem().Item);
+                    ServerData.Index++;
+                }
+            }
+            else
+            {
+                ItemQueue.Enqueue(itemToUnlock.Item);
+            }
         }
 
         private static void SessionErrorReceived(Exception e, string message)
@@ -226,6 +244,16 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateArchipelagoState()
         {
+            while (ItemQueue.Count > 0)
+            {
+                ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
+                ++ServerData.Index;
+            }
+
+            if (DialogQueue.Count > 0)
+            {
+                DialogChanger.CreateDialogBox((string)DialogQueue.Dequeue());
+            }
             if (!Authenticated)
             {
                 Console.WriteLine("Attempting to reconnect to Archipelago Server...");
@@ -235,15 +263,7 @@ namespace MessengerRando.Archipelago
             if (ServerData.Index > RandomizerStateManager.ReceivedItemsCount())
             {
                 ItemsAndLocationsHandler.ReSync();
-                return;
             }
-            if (ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
-            var currentItem = Session.Items.AllItemsReceived[ServerData.Index];
-            var currentItemId = currentItem.Item;
-            ++ServerData.Index;
-            ItemsAndLocationsHandler.Unlock(currentItemId);
-            if (!currentItem.Player.Equals(Session.ConnectionInfo.Slot))
-                DialogChanger.CreateDialogBox($"Received {currentItem.ColorizeItem()}!");
         }
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)
@@ -339,8 +359,7 @@ namespace MessengerRando.Archipelago
             if (MessageQueue.Count > 0)
             {
                 if (DisplayAPMessages)
-                    text = MessageQueue.First();
-                MessageQueue.RemoveAt(0);
+                    text = (string)MessageQueue.Dequeue();
             }
             return text;
         }

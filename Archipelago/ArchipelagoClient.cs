@@ -260,40 +260,36 @@ namespace MessengerRando.Archipelago
 
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
-            if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || 
-                ServerData.Index > Session.Items.AllItemsReceived.Count) return;
             Console.WriteLine("ItemReceived called");
-            Console.WriteLine("Removing previously unlocked items from queue");
-            while (helper.Index < ServerData.Index)
+            if (helper.Index < ServerData.Index)
             {
-                NetworkItem skippedItem;
-                skippedItem = helper.DequeueItem();
-                Console.WriteLine($"Skipped {skippedItem.ToString()}");
+                Console.WriteLine("Removing previously unlocked items from queue");
+                helper.DequeueItem();
+                return;
             }
 
-            while (ServerData.Index <= helper.Index)
+            var itemToUnlock = helper.DequeueItem();
+            if (RandomizerStateManager.Instance.InGame &&
+                RandomizerStateManager.IsSafeTeleportState() &&
+                !Manager<PauseManager>.Instance.IsPaused)
             {
-                var itemToUnlock = helper.DequeueItem();
-                if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
+                try
                 {
-                    try
-                    {
-                        ItemsAndLocationsHandler.Unlock(itemToUnlock.Item);
-                    }
-                    catch (Exception e)
-                    {
-                        ItemQueue.Enqueue(itemToUnlock.Item);
-                    }
+                    ItemsAndLocationsHandler.Unlock(itemToUnlock.Item);
                 }
-                else
+                catch (Exception e)
+                {
                     ItemQueue.Enqueue(itemToUnlock.Item);
-                ServerData.Index++;
-                if (itemToUnlock.Player.Equals(Session.ConnectionInfo.Slot) &&
-                    ItemsAndLocationsHandler.HasDialog(itemToUnlock.Location))
-                    continue;
-                Console.WriteLine($"adding {itemToUnlock.ToReadableString()} to dialog queue");
-                DialogQueue.Enqueue(itemToUnlock.ToReadableString());
+                }
             }
+            else
+                ItemQueue.Enqueue(itemToUnlock.Item);
+            ServerData.Index++;
+            if (itemToUnlock.Player.Equals(Session.ConnectionInfo.Slot) &&
+                ItemsAndLocationsHandler.HasDialog(itemToUnlock.Location))
+                return;
+            Console.WriteLine($"adding {itemToUnlock.ToReadableString()} to dialog queue");
+            DialogQueue.Enqueue(itemToUnlock.ToReadableString());
         }
 
         private static void SessionErrorReceived(Exception e, string message)
@@ -322,7 +318,6 @@ namespace MessengerRando.Archipelago
             while (ItemQueue.Count > 0)
             {
                 ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
-                ++ServerData.Index;
             }
 
             if (DialogQueue.Count > 0)

@@ -464,6 +464,7 @@ namespace MessengerRando
             }
 
             orig(self, slotIndex);
+            RandomizerStateManager.Instance.InGame = true;
         }
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
@@ -487,6 +488,7 @@ namespace MessengerRando
             
             clearedData = false;
             orig();
+            RandomizerStateManager.Instance.InGame = false;
         }
 
         //Fixing necro cutscene check

@@ -12,8 +12,8 @@ namespace MessengerRando.Archipelago
     {
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
-        public static Dictionary<EItems, long> EitemsLocationsLookup;
-        public static Dictionary<long, LocationRO> IDtoLocationsLookup;
+        private static Dictionary<EItems, long> EitemsLocationsLookup;
+        private static Dictionary<long, LocationRO> IDtoLocationsLookup;
 
         public static RandomizerStateManager RandoStateManager;
 
@@ -376,7 +376,6 @@ namespace MessengerRando.Archipelago
                     }
                     catch
                     {
-                        break;
                     }
                     break;
                 default:

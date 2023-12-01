@@ -300,7 +300,7 @@ namespace MessengerRando.Archipelago
             return LocationsLookup.First(x => x.Value.Equals(locationID)).Key;
         }
 
-        private static bool HasDialog(long locationID)
+        public static bool HasDialog(long locationID)
         {
             Console.WriteLine($"Checking if {locationID} has associated dialog");
             var location = LocationFromID(locationID).PrettyLocationName;

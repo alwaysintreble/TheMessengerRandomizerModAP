@@ -51,6 +51,8 @@ namespace MessengerRando
         SubMenuButtonInfo archipelagoCollectButton;
         SubMenuButtonInfo archipelagoHintButton;
         SubMenuButtonInfo archipelagoToggleMessagesButton;
+        SubMenuButtonInfo archipelagoToggleFilterMessagesButton;
+        SubMenuButtonInfo archipelagoToggleHintPopupButton;
         SubMenuButtonInfo archipelagoStatusButton;
         SubMenuButtonInfo archipelagoDeathLinkButton;
         SubMenuButtonInfo archipelagoMessageTimerButton;
@@ -110,6 +112,18 @@ namespace MessengerRando
             //Add Archipelago message button
             archipelagoToggleMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(() => ArchipelagoClient.DisplayAPMessages ? "Hide server messages" : "Display server messages", OnToggleAPMessages);
             
+            //Add Archipelago filter messages button
+            archipelagoToggleFilterMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => ArchipelagoClient.FilterAPMessages
+                    ? "Show all server messages"
+                    : "Filter messages to only relevant to me",
+                () => ArchipelagoClient.FilterAPMessages = !ArchipelagoClient.FilterAPMessages);
+            
+            //Add Archipelago hint popup button
+            archipelagoToggleHintPopupButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => ArchipelagoClient.HintPopUps ? "Disable hint popups" : "Enable hint popups",
+                () => ArchipelagoClient.HintPopUps = !ArchipelagoClient.HintPopUps);
+
             //Add Archipelago message display timer button
             archipelagoMessageTimerButton = Courier.UI.RegisterTextEntryModOptionButton(() => "AP Message Display Time", entry => OnSelectMessageTimer(entry), 1, () => "Enter amount of time to display Archipelago messages, in seconds", () => updateTime.ToString(), CharsetFlags.Number);
 
@@ -216,11 +230,14 @@ namespace MessengerRando
             //These AP buttons can exist in or out of game
             archipelagoStatusButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             archipelagoToggleMessagesButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+            archipelagoToggleFilterMessagesButton.IsEnabled = () =>
+                ArchipelagoClient.Authenticated && ArchipelagoClient.DisplayAPMessages;
+            archipelagoToggleHintPopupButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             archipelagoDeathLinkButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             archipelagoMessageTimerButton.IsEnabled = () => ArchipelagoClient.DisplayStatus;
-            archipelagoHintButton.IsEnabled = () => ArchipelagoClient.CanHint();
-            archipelagoReleaseButton.IsEnabled = () => ArchipelagoClient.CanRelease();
-            archipelagoCollectButton.IsEnabled = () => ArchipelagoClient.CanCollect();
+            archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
+            archipelagoReleaseButton.IsEnabled = ArchipelagoClient.CanRelease;
+            archipelagoCollectButton.IsEnabled = ArchipelagoClient.CanCollect;
 
             #if DEBUG
             SceneManager.sceneLoaded += OnSceneLoadedRando;

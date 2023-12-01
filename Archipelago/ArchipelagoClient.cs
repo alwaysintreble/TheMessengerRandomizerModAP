@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Archipelago.MultiClient.Net;
@@ -11,8 +10,8 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Utils;
 using Mod.Courier.UI;
-using static Mod.Courier.UI.TextEntryButtonInfo;
 using UnityEngine;
+using static Mod.Courier.UI.TextEntryButtonInfo;
 
 namespace MessengerRando.Archipelago
 {
@@ -27,7 +26,9 @@ namespace MessengerRando.Archipelago
         private static bool attemptingConnection;
 
         public static bool DisplayAPMessages = true;
+        public static bool FilterAPMessages = true;
         public static bool DisplayStatus = true;
+        public static bool HintPopUps = true;
 
         public static ArchipelagoSession Session;
         public static DeathLinkInterface DeathLinkHandler;
@@ -158,10 +159,61 @@ namespace MessengerRando.Archipelago
             attempt(result);
         }
 
+        private static string ColorizePlayerName(int player)
+        {
+            string color;
+            color = player.Equals(Session.ConnectionInfo.Slot) ? UserConfig.PlayerColor : UserConfig.OtherPlayerColor;
+            return $"<color=#{color}>{Session.Players.GetPlayerAlias(player)}</color>";
+        }
+
+        private static string ColorizeLocation(long locID)
+        {
+            string color = UserConfig.LocationColor;
+            return $"<color=#{color}>{Session.Locations.GetLocationNameFromId(locID)}</color>";
+        }
+
+        private static string ConvertHintMessage(HintItemSendLogMessage hintMessage)
+        {
+            var colorizedMessage = hintMessage.ToString();
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Sender.Name,
+                ColorizePlayerName(hintMessage.Sender.Slot));
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Receiver.Name,
+                ColorizePlayerName(hintMessage.Receiver.Slot));
+            colorizedMessage = colorizedMessage.Replace(
+                Session.Locations.GetLocationNameFromId(hintMessage.Item.Location),
+                ColorizeLocation(hintMessage.Item.Location));
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Item.ToString(),
+                hintMessage.Item.ColorizeItem());
+            return colorizedMessage;
+        }
+
         private static void OnMessageReceived(LogMessage message)
         {
             Console.WriteLine(message.ToString());
-            MessageQueue.Enqueue(message.ToString());
+            if (FilterAPMessages)
+            {
+                switch (message)
+                {
+                    case HintItemSendLogMessage hintMessage:
+                        if (hintMessage.IsFound) break;
+                        if (hintMessage.IsRelatedToActivePlayer && HintPopUps)
+                        {
+                            MessageQueue.Enqueue(hintMessage.ToString());
+                            DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
+                        }
+                        break;
+                    case ItemSendLogMessage itemSendMessage:
+                        if (itemSendMessage.IsRelatedToActivePlayer)
+                            MessageQueue.Enqueue(itemSendMessage.ToString());
+                        break;
+                }
+            }
+            else
+            {
+                if (HintPopUps && message is HintItemSendLogMessage hintMessage)
+                    DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
+                MessageQueue.Enqueue(message.ToString());
+            }
         }
 
         public static void SyncLocations()
@@ -203,21 +255,24 @@ namespace MessengerRando.Archipelago
             if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || 
                 ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
             Console.WriteLine("ItemReceived called");
+            Console.WriteLine("Removing previously unlocked items from queue");
             while (helper.Index < ServerData.Index)
-                helper.DequeueItem();
-            var itemToUnlock = helper.DequeueItem();
-            DialogQueue.Enqueue(itemToUnlock.ToReadableString());
-            if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
             {
-                while (ServerData.Index <= helper.Index)
-                {
-                    ItemsAndLocationsHandler.Unlock(helper.DequeueItem().Item);
-                    ServerData.Index++;
-                }
+                NetworkItem skippedItem;
+                skippedItem = helper.DequeueItem();
+                Console.WriteLine($"Skipped {skippedItem.ToString()}");
             }
-            else
+
+            while (ServerData.Index <= helper.Index)
             {
-                ItemQueue.Enqueue(itemToUnlock.Item);
+                var itemToUnlock = helper.DequeueItem();
+                if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
+                    ItemsAndLocationsHandler.Unlock(itemToUnlock.Item);
+                else
+                    ItemQueue.Enqueue(itemToUnlock.Item);
+                if (!ItemsAndLocationsHandler.HasDialog(itemToUnlock.Item))
+                    DialogQueue.Enqueue(itemToUnlock.ToReadableString());
+                ServerData.Index++;
             }
         }
 

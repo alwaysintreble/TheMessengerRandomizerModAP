@@ -18,11 +18,11 @@ namespace MessengerRando.Utils
             }
             text += item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot)
                 ? "!"
-                : $" for <color=#FAFAD2>{ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player)}</color>";
+                : $" for <color=#{UserConfig.OtherPlayerColor}>{ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player)}</color>";
             return text;
         }
 
-        private static string ColorizeItem(this NetworkItem item)
+        public static string ColorizeItem(this NetworkItem item)
         {
             var color = UserConfig.FillerColor;
             switch (item.Flags)

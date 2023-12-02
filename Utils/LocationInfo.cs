@@ -23,10 +23,7 @@ namespace MessengerRando.Utils
             return text;
         }
 
-        public static string Name(this NetworkItem item)
-        {
-            return ArchipelagoClient.Session.Items.GetItemName(item.Item);
-        }
+        public static string Name(this NetworkItem item) => ArchipelagoClient.Session.Items.GetItemName(item.Item);
 
         public static string Colorize(this NetworkItem item)
         {

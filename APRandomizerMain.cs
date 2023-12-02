@@ -92,16 +92,16 @@ namespace MessengerRando
             teleportToNinjaVillage = Courier.UI.RegisterSubMenuModOptionButton(() => "Teleport to Ninja Village", OnSelectTeleportToNinjaVillage);
 
             //Add Archipelago host button
-            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Host Name", OnSelectArchipelagoHost, 30, () => "Enter the Archipelago host name. Use spaces for periods", () => ArchipelagoClient.ServerData.Uri, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
+            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Host Name", OnSelectArchipelagoHost, 30, () => "Enter the Archipelago host name. Use spaces for periods", () => ArchipelagoClient.ServerData?.Uri, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
 
             //Add Archipelago port button
-            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Port", OnSelectArchipelagoPort, 5, () => "Enter the port for the Archipelago session", () => ArchipelagoClient.ServerData.Port.ToString(), CharsetFlags.Number);
+            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Port", OnSelectArchipelagoPort, 5, () => "Enter the port for the Archipelago session", () => ArchipelagoClient.ServerData?.Port.ToString(), CharsetFlags.Number);
 
             //Add archipelago name button
-            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Slot Name", OnSelectArchipelagoName, 16, () => "Enter player name:",() => ArchipelagoClient.ServerData.SlotName, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
+            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Slot Name", OnSelectArchipelagoName, 16, () => "Enter player name:",() => ArchipelagoClient.ServerData?.SlotName, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
 
             //Add archipelago password button
-            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Password", OnSelectArchipelagoPass, 30, () => "Enter session password:", () => ArchipelagoClient.ServerData.Password);
+            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Password", OnSelectArchipelagoPass, 30, () => "Enter session password:", () => ArchipelagoClient.ServerData?.Password);
 
             //Add Archipelago connection button
             archipelagoConnectButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Connect to Archipelago", OnSelectArchipelagoConnect);
@@ -428,7 +428,7 @@ namespace MessengerRando
             try
             {
                 if (!clearedData)
-                    RandomizerSaveMethod.TryLoad(Save.APSaveData);
+                    RandoSave.TryLoad(Save.APSaveData);
                 if (ArchipelagoData.LoadData(randoStateManager.CurrentFileSlot))
                 {
                     Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
@@ -484,10 +484,11 @@ namespace MessengerRando
                 RandoBossManager.DefeatedBosses = new List<string>();
             }
             randoStateManager = new RandomizerStateManager();
-            ArchipelagoClient.ServerData = new ArchipelagoData();
+            ArchipelagoClient.ServerData = null;
             
             clearedData = false;
             orig();
+            Console.WriteLine("returned to title");
             RandomizerStateManager.Instance.InGame = false;
         }
 

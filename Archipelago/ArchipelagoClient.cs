@@ -19,7 +19,7 @@ namespace MessengerRando.Archipelago
         private const string ApVersion = "0.4.2";
         public static ArchipelagoData ServerData = new ArchipelagoData();
 
-        private delegate void OnConnectAttempt(LoginResult result);
+        private delegate void OnConnectAttempt(string result);
         public static bool Authenticated;
         public static bool HasConnected;
         private static bool attemptingConnection;
@@ -54,7 +54,7 @@ namespace MessengerRando.Archipelago
             Connect(result => OnConnected(result, connectButton));
         }
 
-        private static void OnConnected(LoginResult connectStats)
+        private static void OnConnected(string connectStats)
         {
             if (ServerData.CheckedLocations != null)
             {
@@ -65,20 +65,10 @@ namespace MessengerRando.Archipelago
             attemptingConnection = false;
         }
 
-        private static void OnConnected(LoginResult connectResult, SubMenuButtonInfo connectButton)
+        private static void OnConnected(string outputText, SubMenuButtonInfo connectButton)
         {
             TextEntryPopup successPopup = InitTextEntryPopup(connectButton.addedTo, string.Empty,
                 entry => true, 0, null, CharsetFlags.Space);
-
-            string outputText;
-            if (connectResult.Successful)
-                outputText = $"Successfully connected to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}!";
-            else
-            {
-                outputText = $"Failed to connect to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}\n";
-                foreach (var error in ((LoginFailure)connectResult).Errors)
-                    outputText += error;
-            }
             
             successPopup.Init(outputText);
             successPopup.gameObject.SetActive(true);
@@ -97,9 +87,9 @@ namespace MessengerRando.Archipelago
             return session;
         }
 
-        private static void Connect(OnConnectAttempt attempt)
+        public static string Connect()
         {
-            if (Authenticated) return;
+            if (Authenticated) return "already connected";
             if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
             var needSlotData = ServerData.SlotData == null;
 
@@ -124,6 +114,7 @@ namespace MessengerRando.Archipelago
             }
             
 
+            string outputText;
             if (result.Successful)
             {
                 var success = (LoginSuccessful)result;
@@ -141,21 +132,27 @@ namespace MessengerRando.Archipelago
                         ServerData.CheckedLocations.ToArray()));
 
                 HasConnected = true;
+                outputText = $"Successfully connected to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}!";
             }
             else
             {
                 LoginFailure failure = (LoginFailure)result;
-                string errorMessage = $"Failed to connect to {ServerData.Uri} as {ServerData.SlotName}:";
-                errorMessage +=
-                    failure.Errors.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
+                outputText = $"Failed to connect to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}\n";
+                outputText +=
+                    failure.Errors.Aggregate(outputText, (current, error) => current + $"\n    {error}");
 
-                Console.WriteLine($"Failed to connect: {errorMessage}");
+                Console.WriteLine(outputText);
 
                 Authenticated = false;
                 Disconnect();
             }
 
-            attempt(result);
+            return outputText;
+        }
+
+        private static void Connect(OnConnectAttempt attempt)
+        {
+            attempt(Connect());
         }
 
         private static string ColorizePlayerName(int player)
@@ -243,8 +240,26 @@ namespace MessengerRando.Archipelago
                     }
                     else if (ItemsAndLocationsHandler.ShopLocation(location, out var shopLoc))
                     {
-                        var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.PrettyLocationName);
-                        Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                        Debug.Log($"collecting {shopLoc.LocationName} ({shopLoc.PrettyLocationName})");
+                        try
+                        {
+                            var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.LocationName);
+                            Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                        }
+                        catch (Exception e1)
+                        {
+                            Debug.Log(e1);
+                            try
+                            {
+                                var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID),
+                                    shopLoc.PrettyLocationName);
+                                Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                            }
+                            catch (Exception e2)
+                            {
+                                Debug.Log(e2);
+                            }
+                        }
                     }
 
                     ServerData.CheckedLocations.Add(location);
@@ -278,6 +293,7 @@ namespace MessengerRando.Archipelago
                 }
                 catch (Exception e)
                 {
+                    Debug.Log(e);
                     ItemQueue.Enqueue(itemToUnlock.Item);
                 }
             }
@@ -331,10 +347,11 @@ namespace MessengerRando.Archipelago
                 ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
                 return;
             }
-            if (ServerData.Index > RandomizerStateManager.ReceivedItemsCount())
-            {
-                ItemsAndLocationsHandler.ReSync();
-            }
+            Debug.Log("checking if we need to resync");
+            if (ServerData.Index == RandomizerStateManager.ReceivedItemsCount() &&
+                ServerData.Index == Session.Items.AllItemsReceived.Count) return;
+            Debug.Log("resyncing...");
+            ItemsAndLocationsHandler.ReSync();
         }
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)

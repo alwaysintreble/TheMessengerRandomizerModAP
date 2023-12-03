@@ -274,16 +274,13 @@ namespace MessengerRando.Archipelago
 
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
+            Console.WriteLine("OnItemReceived called");
             if (!RandomizerStateManager.Instance.InGame) return;
-            Console.WriteLine("ItemReceived called");
-            if (helper.Index < ServerData.Index)
-            {
-                Console.WriteLine("Removing previously unlocked items from queue");
-                helper.DequeueItem();
-                return;
-            }
 
             var itemToUnlock = helper.DequeueItem();
+            if (helper.Index < ServerData.Index) return;
+
+            ServerData.Index++;
             if (RandomizerStateManager.IsSafeTeleportState() &&
                 !Manager<PauseManager>.Instance.IsPaused)
             {
@@ -299,11 +296,9 @@ namespace MessengerRando.Archipelago
             }
             else
                 ItemQueue.Enqueue(itemToUnlock.Item);
-            ServerData.Index++;
             if (itemToUnlock.Player.Equals(Session.ConnectionInfo.Slot) &&
                 ItemsAndLocationsHandler.HasDialog(itemToUnlock.Location))
                 return;
-            Console.WriteLine($"adding {itemToUnlock.ToReadableString()} to dialog queue");
             DialogQueue.Enqueue(itemToUnlock.ToReadableString());
         }
 
@@ -422,22 +417,20 @@ namespace MessengerRando.Archipelago
         public static string UpdateStatusText()
         {
             string text = string.Empty;
-            if (DisplayStatus)
+            if (!DisplayStatus) return text;
+            if (Authenticated)
             {
-                if (Authenticated)
+                text = $"Connected to Archipelago v{Session.RoomState.Version}";
+                var hintCost = GetHintCost();
+                if (hintCost > 0)
                 {
-                    text = $"Connected to Archipelago v{Session.RoomState.Version}";
-                    var hintCost = GetHintCost();
-                    if (hintCost > 0)
-                    {
-                        text += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
-                    }
+                    text += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
                 }
-                else if (HasConnected)
-                {
-                    text = "Disconnected from Archipelago server.";
-                }
-            }            
+            }
+            else if (HasConnected)
+            {
+                text = "Disconnected from Archipelago server.";
+            }
             return text;
         }
 

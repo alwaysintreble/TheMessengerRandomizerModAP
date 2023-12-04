@@ -22,7 +22,6 @@ namespace MessengerRando.Utils
         public static string PlayerColor = "EE00EE";
         public static string OtherPlayerColor = "FAFAD2";
         public static string LocationColor = "00FF7F";
-        public static bool MusicShuffle;
 
         public static void ReadConfig(string path)
         {
@@ -32,24 +31,44 @@ namespace MessengerRando.Utils
                 GenerateConfig(path);
                 return;
             }
+
             var table = TOML.Parse(new StreamReader(File.OpenRead(path)));
             HostName = table.get_Item("host_name").AsString.Value;
             Port = (int)table.get_Item("port").AsInteger.Value;
             SlotName = table.get_Item("slot_name").AsString.Value;
             Password = table.get_Item("password").AsString.Value;
-            StatusTextSize = table.get_Item("status_text_size") ?? StatusTextSize;
-            MessageTextSize = table.get_Item("message_text_size") ?? MessageTextSize;
-            AdvancementColor = table.get_Item("advancement_color") ?? AdvancementColor;
-            UsefulColor = table.get_Item("useful_color") ?? UsefulColor;
-            TrapColor = table.get_Item("trap_color") ?? TrapColor;
-            FillerColor = table.get_Item("filler_color") ?? FillerColor;
-            PlayerColor = table.get_Item("player_color") ?? PlayerColor;
-            OtherPlayerColor = table.get_Item("other_player_color") ?? OtherPlayerColor;
-            LocationColor = table.get_Item("location_color") ?? LocationColor;
-            RandoMusicManager.ShuffleMusic = MusicShuffle = table.get_Item("music_shuffle") ?? MusicShuffle;
+            try
+            {
+                StatusTextSize = (float)table.get_Item("status_text_size").AsFloat.Value;
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+                Debug.Log("failed to get status size as float, trying int");
+                StatusTextSize = table.get_Item("status_text_size").AsInteger.Value;
+            }
+
+            try
+            {
+                MessageTextSize = (float)table.get_Item("message_text_size").AsFloat.Value;
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+                Debug.Log("failed to get message size as float, trying int");
+                MessageTextSize = table.get_Item("message_text_size").AsInteger.Value;
+            }
+            AdvancementColor = table.get_Item("advancement_color").AsString.Value;
+            UsefulColor = table.get_Item("useful_color").AsString.Value;
+            TrapColor = table.get_Item("trap_color").AsString.Value;
+            FillerColor = table.get_Item("filler_color").AsString.Value;
+            PlayerColor = table.get_Item("player_color").AsString.Value;
+            OtherPlayerColor = table.get_Item("other_player_color").AsString.Value;
+            LocationColor = table.get_Item("location_color").AsString.Value;
+            RandoMusicManager.ShuffleMusic = table.get_Item("music_shuffle").AsBoolean.Value;
         }
 
-        public static void GenerateConfig(string path)
+        private static void GenerateConfig(string path)
         {
             var config = new TomlTable
             {
@@ -74,7 +93,7 @@ namespace MessengerRando.Utils
                 },
                 ["status_text_size"] = new TomlFloat
                 {
-                    Value = 4.0,
+                    Value = 4,
                     Comment = "Size of the text for the current Archipelago status (Connected and hint info)"
                 },
                 ["message_text_size"] = new TomlFloat
@@ -119,8 +138,8 @@ namespace MessengerRando.Utils
                 },
                 ["music_shuffle"] = new TomlBoolean
                 {
-                    Comment = "Whether music should be randomized. Very rudimentary currently. " +
-                              "A random track whenever the music changes, such as loading into a level, " +
+                    Comment = "Whether music should be randomized. Very rudimentary currently.\n" +
+                              "A random track whenever the music changes, such as loading into a level,\n" +
                               "returning to HQ, or dying. The separate dimensions also have separate random tracks."
                 }
             };

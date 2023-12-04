@@ -99,7 +99,6 @@ namespace MessengerRando.Archipelago
                 Debug.Log("Attempting to connect");
                 ArchipelagoClient.Authenticated = false;
                 //Doing this here because of race conditions and the actual connection being threaded
-                ArchipelagoClient.HasConnected = true;
                 ArchipelagoClient.Connect();
                 return true;
             }

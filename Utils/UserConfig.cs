@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using MessengerRando.GameOverrideManagers;
 using Tommy;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ namespace MessengerRando.Utils
         public static string PlayerColor = "EE00EE";
         public static string OtherPlayerColor = "FAFAD2";
         public static string LocationColor = "00FF7F";
+        public static bool MusicShuffle;
 
         public static void ReadConfig(string path)
         {
@@ -44,6 +46,7 @@ namespace MessengerRando.Utils
             PlayerColor = table.get_Item("player_color") ?? PlayerColor;
             OtherPlayerColor = table.get_Item("other_player_color") ?? OtherPlayerColor;
             LocationColor = table.get_Item("location_color") ?? LocationColor;
+            RandoMusicManager.ShuffleMusic = MusicShuffle = table.get_Item("music_shuffle") ?? MusicShuffle;
         }
 
         public static void GenerateConfig(string path)
@@ -113,6 +116,12 @@ namespace MessengerRando.Utils
                 {
                     Value = "00FF7F",
                     Comment = "Hex ID of the color used for locations"
+                },
+                ["music_shuffle"] = new TomlBoolean
+                {
+                    Comment = "Whether music should be randomized. Very rudimentary currently. " +
+                              "A random track whenever the music changes, such as loading into a level, " +
+                              "returning to HQ, or dying. The separate dimensions also have separate random tracks."
                 }
             };
             try

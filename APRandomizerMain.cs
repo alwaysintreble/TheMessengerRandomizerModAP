@@ -40,6 +40,7 @@ namespace MessengerRando
         SubMenuButtonInfo windmillShurikenToggleButton;
         SubMenuButtonInfo teleportToHqButton;
         SubMenuButtonInfo teleportToNinjaVillage;
+        SubMenuButtonInfo shuffleMusicButton;
 
         //Archipelago buttons
         SubMenuButtonInfo archipelagoHostButton;
@@ -74,43 +75,93 @@ namespace MessengerRando
             randoStateManager = new RandomizerStateManager();
 
             //Add Randomizer Version button
-            versionButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
+            versionButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(),
+                null);
 
             //Add current seed number button
-            seedNumButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Current seed number: " + GetCurrentSeedNum(), null);
+            seedNumButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => "Current seed number: " + GetCurrentSeedNum(),
+                null);
 
             //Add Reset rando mod button
-            resetRandoSaveFileButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Reset Randomizer File Slot", OnRandoFileResetConfirmation, 1, () => "Are you sure you wish to reset your save file for randomizer play?(y/n)", () => "n", CharsetFlags.Letter);
+            resetRandoSaveFileButton = Courier.UI.RegisterTextEntryModOptionButton(
+                () => "Reset Randomizer File Slot", OnRandoFileResetConfirmation,
+                1,
+                () => "Are you sure you wish to reset your save file for randomizer play?(y/n)",
+                () => "n",
+                CharsetFlags.Letter);
 
             //Add windmill shuriken toggle button
-            windmillShurikenToggleButton = Courier.UI.RegisterSubMenuModOptionButton(() => Manager<ProgressionManager>.Instance.useWindmillShuriken ? "Active Regular Shurikens" : "Active Windmill Shurikens", OnToggleWindmillShuriken);
+            windmillShurikenToggleButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => Manager<ProgressionManager>.Instance.useWindmillShuriken
+                    ? "Active Regular Shurikens"
+                    : "Active Windmill Shurikens",
+                OnToggleWindmillShuriken);
 
             //Add teleport to HQ button
-            teleportToHqButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Teleport to HQ", OnSelectTeleportToHq);
+            teleportToHqButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => "Teleport to HQ",
+                OnSelectTeleportToHq);
 
             //Add teleport to Ninja Village button
-            teleportToNinjaVillage = Courier.UI.RegisterSubMenuModOptionButton(() => "Teleport to Ninja Village", OnSelectTeleportToNinjaVillage);
+            teleportToNinjaVillage = Courier.UI.RegisterSubMenuModOptionButton(
+                () => "Teleport to Ninja Village",
+                OnSelectTeleportToNinjaVillage);
 
             //Add Archipelago host button
-            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Host Name", OnSelectArchipelagoHost, 30, () => "Enter the Archipelago host name. Use spaces for periods", () => ArchipelagoClient.ServerData?.Uri, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
+            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(
+                () => "Enter Archipelago Host Name",
+                OnSelectArchipelagoHost,
+                30,
+                () => "Enter the Archipelago host name. Use spaces for periods",
+                () => ArchipelagoClient.ServerData?.Uri,
+                CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter
+                | CharsetFlags.Number | CharsetFlags.Space);
 
             //Add Archipelago port button
-            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Port", OnSelectArchipelagoPort, 5, () => "Enter the port for the Archipelago session", () => ArchipelagoClient.ServerData?.Port.ToString(), CharsetFlags.Number);
+            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(
+                () => "Enter Archipelago Port",
+                OnSelectArchipelagoPort,
+                5,
+                () => "Enter the port for the Archipelago session",
+                () => ArchipelagoClient.ServerData?.Port.ToString(),
+                CharsetFlags.Number);
 
             //Add archipelago name button
-            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Slot Name", OnSelectArchipelagoName, 16, () => "Enter player name:",() => ArchipelagoClient.ServerData?.SlotName, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
+            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(
+                () => "Enter Archipelago Slot Name", OnSelectArchipelagoName,
+                16,
+                () => "Enter player name:",
+                () => ArchipelagoClient.ServerData?.SlotName,
+                CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter
+                | CharsetFlags.Number | CharsetFlags.Space);
 
             //Add archipelago password button
-            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Password", OnSelectArchipelagoPass, 30, () => "Enter session password:", () => ArchipelagoClient.ServerData?.Password);
+            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(
+                () => "Enter Archipelago Password", OnSelectArchipelagoPass,
+                30,
+                () => "Enter session password:",
+                () => ArchipelagoClient.ServerData?.Password);
 
             //Add Archipelago connection button
-            archipelagoConnectButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Connect to Archipelago", OnSelectArchipelagoConnect);
+            archipelagoConnectButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => "Connect to Archipelago",
+                OnSelectArchipelagoConnect);
 
             //Add Archipelago status button
-            archipelagoStatusButton = Courier.UI.RegisterSubMenuModOptionButton(() => ArchipelagoClient.DisplayStatus ? "Hide status information" : "Display status information", OnToggleAPStatus);
+            archipelagoStatusButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => ArchipelagoClient.DisplayStatus
+                    ? "Hide status information"
+                    : "Display status information",
+                OnToggleAPStatus);
             
             //Add Archipelago message button
-            archipelagoToggleMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(() => ArchipelagoClient.DisplayAPMessages ? "Hide server messages" : "Display server messages", OnToggleAPMessages);
+            archipelagoToggleMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => ArchipelagoClient.DisplayAPMessages
+                    ? "Hide server messages"
+                    : "Display server messages",
+                OnToggleAPMessages);
             
             //Add Archipelago filter messages button
             archipelagoToggleFilterMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(
@@ -125,19 +176,42 @@ namespace MessengerRando
                 () => ArchipelagoClient.HintPopUps = !ArchipelagoClient.HintPopUps);
 
             //Add Archipelago message display timer button
-            archipelagoMessageTimerButton = Courier.UI.RegisterTextEntryModOptionButton(() => "AP Message Display Time", entry => OnSelectMessageTimer(entry), 1, () => "Enter amount of time to display Archipelago messages, in seconds", () => updateTime.ToString(), CharsetFlags.Number);
+            archipelagoMessageTimerButton = Courier.UI.RegisterTextEntryModOptionButton(
+                () => "AP Message Display Time",
+                entry => OnSelectMessageTimer(entry),
+                1,
+                () => "Enter amount of time to display Archipelago messages, in seconds",
+                () => updateTime.ToString(), CharsetFlags.Number);
 
             //Add Archipelago death link button
-            archipelagoDeathLinkButton = Courier.UI.RegisterSubMenuModOptionButton(() => ArchipelagoData.DeathLink ? "Disable Death Link" : "Enable Death Link", OnToggleDeathLink);
+            archipelagoDeathLinkButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => ArchipelagoData.DeathLink
+                    ? "Disable Death Link"
+                    : "Enable Death Link",
+                OnToggleDeathLink);
 
             //Add Archipelago hint button
-            archipelagoHintButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Hint for an item", (entry) => OnSelectArchipelagoHint(entry), 30, () => "Enter item name:");
+            archipelagoHintButton = Courier.UI.RegisterTextEntryModOptionButton(
+                () => "Hint for an item",
+                OnSelectArchipelagoHint,
+                30,
+                () => "Enter item name:");
 
             //Add Archipelago release button
-            archipelagoReleaseButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Release remaining items", OnSelectArchipelagoRelease);
+            archipelagoReleaseButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => "Release remaining items",
+                OnSelectArchipelagoRelease);
 
             //Add Archipelago collect button
-            archipelagoCollectButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Collect remaining items", OnSelectArchipelagoCollect);
+            archipelagoCollectButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => "Collect remaining items",
+                OnSelectArchipelagoCollect);
+
+            shuffleMusicButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => RandoMusicManager.ShuffleMusic
+                    ? "Disable Music Shuffle"
+                    : "Enable Music Shuffle",
+                () => RandoMusicManager.ShuffleMusic = !RandoMusicManager.ShuffleMusic);
 
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
@@ -163,6 +237,7 @@ namespace MessengerRando
             On.SousSol.UnlockFigurine += RandoShopManager.UnlockFigurine;
             On.Shop.Init += RandoShopManager.ShopInit;
             On.JukeboxTrack.IsUnlocked += (orig, self) => true;
+            On.AudioManager.PlayMusic += RandoMusicManager.OnPlayMusic;
             On.UpgradeButtonData.IsStoryUnlocked += RandoShopManager.IsStoryUnlocked;
             // boss management
             On.ProgressionManager.HasDefeatedBoss +=
@@ -185,6 +260,7 @@ namespace MessengerRando
             On.SaveManager.DoActualSaving += SaveManager_DoActualSave;
             On.PlayerController.Die += OnPlayerDie;
             On.Quarble.OnPlayerDied += Quarble_OnPlayerDied;
+            On.Quarble.OnDeathScreenDone += OnDeathScreenDone;
             // On.MegaTimeShard.NextState += RandoTimeShardManager.NextState;
             // On.MegaTimeShard.ReceiveHit += RandoTimeShardManager.ReceiveHit;
             On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
@@ -226,6 +302,7 @@ namespace MessengerRando
             teleportToNinjaVillage.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != 
                 ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && 
                 RandomizerStateManager.IsSafeTeleportState();
+            shuffleMusicButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
             
             //These AP buttons can exist in or out of game
             archipelagoStatusButton.IsEnabled = () => ArchipelagoClient.Authenticated;
@@ -465,6 +542,8 @@ namespace MessengerRando
 
             orig(self, slotIndex);
             RandomizerStateManager.Instance.InGame = true;
+            Manager<AudioManager>.Instance.levelMusicShuffle = RandoMusicManager.ShuffleMusic;
+            RandoMusicManager.BuildMusicLibrary();
         }
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
@@ -885,6 +964,13 @@ namespace MessengerRando
         {
             orig(self, deathType, fastReload);
             ArchipelagoClient.DeathLinkHandler.SendDeathLink(deathType);
+        }
+
+        private void OnDeathScreenDone(On.Quarble.orig_OnDeathScreenDone orig, Quarble self)
+        {
+            orig(self);
+            // this code doesn't expect music shuffle lmao
+            Manager<AudioManager>.Instance.StopMusic();
         }
     }
 }

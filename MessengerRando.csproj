@@ -92,6 +92,8 @@
     <Compile Include="Archipelago\ItemsAndLocationsHandler.cs" />
     <Compile Include="Exceptions\RandomizerException.cs" />
     <Compile Include="GameOverrideManagers\RandoBossManager.cs" />
+    <Compile Include="GameOverrideManagers\RandoMusicManager.cs" />
+    <Compile Include="GameOverrideManagers\RandoPortalManager.cs" />
     <Compile Include="GameOverrideManagers\RandoPowerSealManager.cs" />
     <Compile Include="GameOverrideManagers\RandoLevelManager.cs" />
     <Compile Include="GameOverrideManagers\RandoRoomManager.cs" />

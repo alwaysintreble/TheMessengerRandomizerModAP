@@ -285,7 +285,10 @@ namespace MessengerRando
             resetRandoSaveFileButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE;
             //Also the AP buttons
             archipelagoHostButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
-            archipelagoPortButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
+            archipelagoPortButton.IsEnabled = () => !ArchipelagoClient.Authenticated &&
+                                                    (Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE
+                                                    || (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE
+                                                        && ArchipelagoClient.HasConnected));
             archipelagoNameButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
             archipelagoPassButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
             archipelagoConnectButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;

@@ -50,7 +50,7 @@ namespace MessengerRando.Utils
             dialogBox.name = text;
             dialogBox.choices = new List<DialogSequenceChoice>();
             var popupParams = new AwardItemPopupParams(dialogBox, true);
-            Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, popupParams, true);
+            Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, popupParams);
         }
 
         /// <summary>

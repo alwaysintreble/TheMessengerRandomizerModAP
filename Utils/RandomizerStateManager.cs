@@ -71,7 +71,10 @@ namespace MessengerRando.Utils
             Instance.ScoutedLocations = new Dictionary<long, NetworkItem>();
             foreach (var networkItem in scoutedLocationInfo.Locations)
             {
-                Instance.ScoutedLocations.Add(networkItem.Location, networkItem);
+                // janky workaround due to scouted locations all having a player of 1 for some reason?
+                var item = networkItem;
+                item.Player = ArchipelagoClient.Session.ConnectionInfo.Slot;
+                Instance.ScoutedLocations.Add(item.Location, item);
             }
 
             ArchipelagoClient.ServerData.ScoutedLocations = Instance.ScoutedLocations;

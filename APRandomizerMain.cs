@@ -259,7 +259,6 @@ namespace MessengerRando
             On.InGameHud.OnGUI += InGameHud_OnGUI;
             On.SaveManager.DoActualSaving += SaveManager_DoActualSave;
             On.PlayerController.Die += OnPlayerDie;
-            On.Quarble.OnPlayerDied += Quarble_OnPlayerDied;
             On.Quarble.OnDeathScreenDone += OnDeathScreenDone;
             // On.MegaTimeShard.NextState += RandoTimeShardManager.NextState;
             // On.MegaTimeShard.ReceiveHit += RandoTimeShardManager.ReceiveHit;
@@ -952,18 +951,12 @@ namespace MessengerRando
             orig(self, applySaveDelay);
         }
 
-        private void OnPlayerDie(On.PlayerController.orig_Die orig, PlayerController self, EDeathType deathtype,
-            Transform killedby)
+        private void OnPlayerDie(On.PlayerController.orig_Die orig, PlayerController self, EDeathType deathType,
+            Transform killedBy)
         {
             Manager<UIManager>.Instance.CloseAllScreensOfType<AwardItemPopup>(false);
-            orig(self, deathtype, killedby);
-        }
-
-        private void Quarble_OnPlayerDied(On.Quarble.orig_OnPlayerDied orig, Quarble self, EDeathType deathType,
-            bool fastReload)
-        {
-            orig(self, deathType, fastReload);
-            ArchipelagoClient.DeathLinkHandler.SendDeathLink(deathType);
+            ArchipelagoClient.DeathLinkHandler.SendDeathLink(deathType, killedBy);
+            orig(self, deathType, killedBy);
         }
 
         private void OnDeathScreenDone(On.Quarble.orig_OnDeathScreenDone orig, Quarble self)

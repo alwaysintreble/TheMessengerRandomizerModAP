@@ -73,7 +73,7 @@ namespace MessengerRando.Archipelago
             }
         }
 
-        public void SendDeathLink(EDeathType deathType)
+        public void SendDeathLink(EDeathType deathType, Transform killer)
         {
             try
             {
@@ -81,6 +81,7 @@ namespace MessengerRando.Archipelago
                 deathsSent++;
                 Console.WriteLine("Sharing death with your friends...");
                 var alias = ArchipelagoClient.Session.Players.GetPlayerAliasAndName(ArchipelagoClient.Session.ConnectionInfo.Slot);
+                // Debug.Log(killer.GetType());
                 var cause = GetDeathLinkCause(deathType);
                 DeathLinkService.SendDeathLink(new DeathLink(ArchipelagoClient.ServerData.SlotName, alias + cause));
             }

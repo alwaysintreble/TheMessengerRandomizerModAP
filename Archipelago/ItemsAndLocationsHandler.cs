@@ -256,8 +256,8 @@ namespace MessengerRando.Archipelago
             new LocationRO("CHARGED_ATTACK", EItems.CHARGED_ATTACK),
             new LocationRO("QUARBLE_DISCOUNT_50", EItems.QUARBLE_DISCOUNT_50),
             new LocationRO("TIME_WARP", EItems.MAP_TIME_WARP),
-            new LocationRO("POWER_SEAL", EItems.MAP_POWER_SEAL_TOTAL),
-            new LocationRO("POWER_SEAL_WORLD_MAP", EItems.MAP_POWER_SEAL_PINS),
+            new LocationRO("POWER_SEAL_WORLD_MAP", EItems.MAP_POWER_SEAL_TOTAL),
+            new LocationRO("POWER_SEAL", EItems.MAP_POWER_SEAL_PINS),
         };
 
         private static readonly Dictionary<string, string> SpecialNames = new Dictionary<string, string>

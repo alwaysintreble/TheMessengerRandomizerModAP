@@ -16,9 +16,11 @@ namespace MessengerRando.Utils
 
         public RandoPowerSealManager PowerSealManager;
         public RandoBossManager BossManager;
+        public static List<NetworkItem> SeenHints = new List<NetworkItem>();
 
         public bool SkipMusicBox;
         public bool SkipPhantom;
+        public bool InGame;
 
         public Dictionary<long, NetworkItem> ScoutedLocations;
         public Dictionary<int, ArchipelagoData> APSave;
@@ -45,13 +47,15 @@ namespace MessengerRando.Utils
         public static void InitializeMultiSeed()
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
+            SeenHints = new List<NetworkItem>();
 
             if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
+            {
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
-                    ArchipelagoClient.Session.Locations.AllMissingLocations.ToArray()
-                    );
-            Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
+                    ItemsAndLocationsHandler.ItemsLookup.Keys.ToArray()
+                );
+            }
 
             ArchipelagoData.DeathLink = Convert.ToBoolean(slotData.TryGetValue("deathlink", out var deathLink)
                 ? deathLink : slotData["death_link"]);
@@ -67,7 +71,10 @@ namespace MessengerRando.Utils
             Instance.ScoutedLocations = new Dictionary<long, NetworkItem>();
             foreach (var networkItem in scoutedLocationInfo.Locations)
             {
-                Instance.ScoutedLocations.Add(networkItem.Location, networkItem);
+                // janky workaround due to scouted locations all having a player of 1 for some reason?
+                var item = networkItem;
+                item.Player = ArchipelagoClient.Session.ConnectionInfo.Slot;
+                Instance.ScoutedLocations.Add(item.Location, item);
             }
 
             ArchipelagoClient.ServerData.ScoutedLocations = Instance.ScoutedLocations;
@@ -81,7 +88,7 @@ namespace MessengerRando.Utils
                      Manager<Shop>.Instance.gameObject.activeInHierarchy ||
                      Manager<GameManager>.Instance.IsCutscenePlaying() ||
                      Manager<PlayerManager>.Instance.Player.IsInvincible() ||
-                     Manager<PlayerManager>.Instance.Player.InputBlocked() || 
+                     Manager<PlayerManager>.Instance.Player.InputBlocked() ||
                      Manager<PlayerManager>.Instance.Player.IsKnockedBack);
         }
 

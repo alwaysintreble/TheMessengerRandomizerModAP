@@ -18,6 +18,9 @@ namespace MessengerRando.Utils
         public static string UsefulColor = "6D8BE8";
         public static string TrapColor = "FA8072";
         public static string FillerColor = "00EEEE";
+        public static string PlayerColor = "EE00EE";
+        public static string OtherPlayerColor = "FAFAD2";
+        public static string LocationColor = "00FF7F";
 
         public static void ReadConfig(string path)
         {
@@ -38,6 +41,9 @@ namespace MessengerRando.Utils
             UsefulColor = table.get_Item("useful_color") ?? UsefulColor;
             TrapColor = table.get_Item("trap_color") ?? TrapColor;
             FillerColor = table.get_Item("filler_color") ?? FillerColor;
+            PlayerColor = table.get_Item("player_color") ?? PlayerColor;
+            OtherPlayerColor = table.get_Item("other_player_color") ?? OtherPlayerColor;
+            LocationColor = table.get_Item("location_color") ?? LocationColor;
         }
 
         public static void GenerateConfig(string path)
@@ -92,6 +98,21 @@ namespace MessengerRando.Utils
                 {
                     Value = "00EEEE",
                     Comment = "Hex ID of the color used for Filler items sent and received"
+                },
+                ["player_color"] = new TomlString
+                {
+                    Value = "EE00EE",
+                    Comment = "Hex ID of the color used for your own name"
+                },
+                ["other_player_color"] = new TomlString
+                {
+                    Value = "FAFAD2",
+                    Comment = "Hex ID of the color used for other players"
+                },
+                ["location_color"] = new TomlString
+                {
+                    Value = "00FF7F",
+                    Comment = "Hex ID of the color used for locations"
                 }
             };
             try

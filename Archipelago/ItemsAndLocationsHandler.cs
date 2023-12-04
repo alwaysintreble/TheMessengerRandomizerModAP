@@ -12,7 +12,8 @@ namespace MessengerRando.Archipelago
     {
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
-        public static Dictionary<EItems, long> EitemsLocationsLookup;
+        private static Dictionary<EItems, long> EitemsLocationsLookup;
+        private static Dictionary<long, LocationRO> IDtoLocationsLookup;
 
         public static RandomizerStateManager RandoStateManager;
 
@@ -51,6 +52,7 @@ namespace MessengerRando.Archipelago
             Console.WriteLine("Building LocationsLookup...");
             LocationsLookup = new Dictionary<LocationRO, long>();
             EitemsLocationsLookup = new Dictionary<EItems, long>();
+            IDtoLocationsLookup = new Dictionary<long, LocationRO>();
             
             var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
             ArchipelagoLocations.AddRange(megaShards);
@@ -63,6 +65,7 @@ namespace MessengerRando.Archipelago
             foreach (var progLocation in ArchipelagoLocations)
             {
                 LocationsLookup.Add(progLocation, offset);
+                IDtoLocationsLookup.Add(offset, progLocation);
                 // Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
                 if (progLocation.VanillaItem != EItems.NONE &&
                     !EitemsLocationsLookup.ContainsKey(progLocation.VanillaItem))
@@ -253,8 +256,8 @@ namespace MessengerRando.Archipelago
             new LocationRO("CHARGED_ATTACK", EItems.CHARGED_ATTACK),
             new LocationRO("QUARBLE_DISCOUNT_50", EItems.QUARBLE_DISCOUNT_50),
             new LocationRO("TIME_WARP", EItems.MAP_TIME_WARP),
-            new LocationRO("POWER_SEAL", EItems.MAP_POWER_SEAL_TOTAL),
-            new LocationRO("POWER_SEAL_WORLD_MAP", EItems.MAP_POWER_SEAL_PINS),
+            new LocationRO("POWER_SEAL_WORLD_MAP", EItems.MAP_POWER_SEAL_TOTAL),
+            new LocationRO("POWER_SEAL", EItems.MAP_POWER_SEAL_PINS),
         };
 
         private static readonly Dictionary<string, string> SpecialNames = new Dictionary<string, string>
@@ -297,12 +300,13 @@ namespace MessengerRando.Archipelago
 
         private static LocationRO LocationFromID(long locationID)
         {
-            return LocationsLookup.First(x => x.Value.Equals(locationID)).Key;
+            return IDtoLocationsLookup[locationID];
         }
 
-        private static bool HasDialog(long locationID)
+        public static bool HasDialog(long locationID)
         {
             Console.WriteLine($"Checking if {locationID} has associated dialog");
+            if (!IDtoLocationsLookup.ContainsKey(locationID)) return false;
             var location = LocationFromID(locationID).PrettyLocationName;
             try
             {
@@ -372,7 +376,6 @@ namespace MessengerRando.Archipelago
                     }
                     catch
                     {
-                        break;
                     }
                     break;
                 default:
@@ -432,18 +435,6 @@ namespace MessengerRando.Archipelago
                 }
             }
             else ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
-            try
-            {
-                Console.WriteLine("Checking if we need to draw a dialog box");
-                if (!HasDialog(locationID))
-                {
-                    if (!RandoStateManager.ScoutedLocations.TryGetValue(locationID, out var locationInfo)) return;
-                    DialogChanger.CreateDialogBox(locationInfo.ToReadableString());
-                }
-            } catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
             
             Console.WriteLine("Sending location checks");
             if (ArchipelagoClient.Authenticated)
@@ -460,15 +451,18 @@ namespace MessengerRando.Archipelago
             ArchipelagoClient.ServerData.Index = ArchipelagoClient.Session.Items.AllItemsReceived.Count;
             for (int i = 0; i < ArchipelagoClient.ServerData.Index; i++)
             {
-                var currentItem = ArchipelagoClient.Session.Items.AllItemsReceived[i].Item;
+                var itemToUnlock = ArchipelagoClient.Session.Items.AllItemsReceived[i];
+                var currentItem = itemToUnlock.Item;
                 if (!receivedItems.ContainsKey(currentItem)) receivedItems.Add(currentItem, 1);
                 else receivedItems[currentItem] += 1;
-                if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(currentItem) ||
-                    ArchipelagoClient.ServerData.ReceivedItems[currentItem] < receivedItems[currentItem])
-                {
-                    Console.WriteLine($"Determined {currentItem} missing while resyncing.");
-                    Unlock(currentItem);
-                }
+                if (ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(currentItem) &&
+                    ArchipelagoClient.ServerData.ReceivedItems[currentItem] >= receivedItems[currentItem]) continue;
+                Console.WriteLine($"Determined {currentItem} missing while resyncing.");
+                Unlock(currentItem);
+                if (itemToUnlock.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot) &&
+                    HasDialog(itemToUnlock.Location))
+                    continue;
+                ArchipelagoClient.DialogQueue.Enqueue(itemToUnlock.ToReadableString());
             }
         }
     }

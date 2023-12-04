@@ -50,7 +50,7 @@ namespace MessengerRando.Utils
             dialogBox.name = text;
             dialogBox.choices = new List<DialogSequenceChoice>();
             var popupParams = new AwardItemPopupParams(dialogBox, true);
-            Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, popupParams, true);
+            Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, popupParams);
         }
 
         /// <summary>
@@ -66,57 +66,55 @@ namespace MessengerRando.Utils
             //Loads all the original dialog
             orig(self, language);
 
-            if (ArchipelagoClient.HasConnected)
+            if (!ArchipelagoClient.HasConnected) return;
+            //Sets the field info so we can use reflection to get and set the private field.
+            FieldInfo dialogByLocIDField = typeof(DialogManager).GetField("dialogByLocID", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //Gets all loaded dialogs and makes a copy
+            Dictionary<string, List<DialogInfo>> Loc = dialogByLocIDField.GetValue(self) as Dictionary<string, List<DialogInfo>>;
+            Dictionary<string, List<DialogInfo>> LocCopy = new Dictionary<string, List<DialogInfo>>(Loc);
+
+            //Loop through each dialog replacement - Will output the replacements to log for debugging
+            foreach (var replaceableKey in Loc.Select(kvp => kvp.Key).Where(toBeReplaced => ItemDialogID.ContainsValue(toBeReplaced)))
             {
-                //Sets the field info so we can use reflection to get and set the private field.
-                FieldInfo dialogByLocIDField = typeof(DialogManager).GetField("dialogByLocID", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                //Gets all loaded dialogs and makes a copy
-                Dictionary<string, List<DialogInfo>> Loc = dialogByLocIDField.GetValue(self) as Dictionary<string, List<DialogInfo>>;
-                Dictionary<string, List<DialogInfo>> LocCopy = new Dictionary<string, List<DialogInfo>>(Loc);
-
-                //Loop through each dialog replacement - Will output the replacements to log for debugging
-                foreach (var replaceableKey in Loc.Select(kvp => kvp.Key).Where(toBeReplaced => ItemDialogID.ContainsValue(toBeReplaced)))
+                //Sets them to be all center and no portrait (This really only applies to phobekins but was 
+                LocCopy[replaceableKey][0].autoClose = false;
+                LocCopy[replaceableKey][0].autoCloseDelay = 0;
+                LocCopy[replaceableKey][0].characterDefinition = null;
+                LocCopy[replaceableKey][0].forcedPortraitOrientation = 0;
+                LocCopy[replaceableKey][0].position = EDialogPosition.CENTER;
+                LocCopy[replaceableKey][0].skippable = true;
+                if (RandomizerStateManager.Instance.ScoutedLocations != null &&
+                    RandomizerStateManager.Instance.IsLocationRandomized(
+                        ItemDialogID.First(x => x.Value.Equals(replaceableKey)).Key,
+                        out var locationID))
                 {
-                    //Sets them to be all center and no portrait (This really only applies to phobekins but was 
-                    LocCopy[replaceableKey][0].autoClose = false;
-                    LocCopy[replaceableKey][0].autoCloseDelay = 0;
-                    LocCopy[replaceableKey][0].characterDefinition = null;
-                    LocCopy[replaceableKey][0].forcedPortraitOrientation = 0;
-                    LocCopy[replaceableKey][0].position = EDialogPosition.CENTER;
-                    LocCopy[replaceableKey][0].skippable = true;
-                    if (RandomizerStateManager.Instance.ScoutedLocations != null &&
-                        RandomizerStateManager.Instance.IsLocationRandomized(
-                            ItemDialogID.First(x => x.Value.Equals(replaceableKey)).Key,
-                            out var locationID))
-                    {
-                        LocCopy[replaceableKey][0].text =
-                            RandomizerStateManager.Instance.ScoutedLocations[locationID].ToReadableString();
-                    }
-
-                    //This will remove all additional dialog that comes after the initial reward text
-                    for (int i = LocCopy[replaceableKey].Count - 1; i > 0; i--)
-                    {
-                        LocCopy[replaceableKey].RemoveAt(i);
-                    }
+                    LocCopy[replaceableKey][0].text =
+                        RandomizerStateManager.Instance.ScoutedLocations[locationID].ToReadableString();
                 }
-                //Sets the replacements
-                dialogByLocIDField.SetValue(self, LocCopy);
 
-                //There is probably a better way to do this but I chose to use reflection to call all onLanguageChanged events to update the localization completely.
-                if (Manager<LocalizationManager>.Instance != null)
+                //This will remove all additional dialog that comes after the initial reward text
+                for (int i = LocCopy[replaceableKey].Count - 1; i > 0; i--)
                 {
-                    Type type = typeof(LocalizationManager);
-                    FieldInfo field = type.GetField("onLanguageChanged", BindingFlags.NonPublic | BindingFlags.Instance);
-                    MulticastDelegate eventDelegate = field.GetValue(Manager<LocalizationManager>.Instance) as MulticastDelegate;
+                    LocCopy[replaceableKey].RemoveAt(i);
+                }
+            }
+            //Sets the replacements
+            dialogByLocIDField.SetValue(self, LocCopy);
+
+            //There is probably a better way to do this but I chose to use reflection to call all onLanguageChanged events to update the localization completely.
+            if (Manager<LocalizationManager>.Instance != null)
+            {
+                Type type = typeof(LocalizationManager);
+                FieldInfo field = type.GetField("onLanguageChanged", BindingFlags.NonPublic | BindingFlags.Instance);
+                MulticastDelegate eventDelegate = field.GetValue(Manager<LocalizationManager>.Instance) as MulticastDelegate;
 
 
-                    if (eventDelegate != null)
+                if (eventDelegate != null)
+                {
+                    foreach (Delegate eventHandler in eventDelegate.GetInvocationList())
                     {
-                        foreach (Delegate eventHandler in eventDelegate.GetInvocationList())
-                        {
-                            eventHandler.Method.Invoke(eventHandler.Target, null);
-                        }
+                        eventHandler.Method.Invoke(eventHandler.Target, null);
                     }
                 }
             }

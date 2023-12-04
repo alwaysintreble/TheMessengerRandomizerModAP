@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Threading;
 using Archipelago.MultiClient.Net;
@@ -9,8 +9,8 @@ using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Utils;
 using Mod.Courier.UI;
-using static Mod.Courier.UI.TextEntryButtonInfo;
 using UnityEngine;
+using static Mod.Courier.UI.TextEntryButtonInfo;
 
 namespace MessengerRando.Archipelago
 {
@@ -19,18 +19,22 @@ namespace MessengerRando.Archipelago
         private const string ApVersion = "0.4.2";
         public static ArchipelagoData ServerData = new ArchipelagoData();
 
-        private delegate void OnConnectAttempt(LoginResult result);
+        private delegate void OnConnectAttempt(string result);
         public static bool Authenticated;
         public static bool HasConnected;
         private static bool attemptingConnection;
 
         public static bool DisplayAPMessages = true;
+        public static bool FilterAPMessages = true;
         public static bool DisplayStatus = true;
+        public static bool HintPopUps = true;
 
         public static ArchipelagoSession Session;
         public static DeathLinkInterface DeathLinkHandler;
 
-        private static readonly List<string> MessageQueue = new List<string>();
+        private static readonly Queue ItemQueue = new Queue();
+        public static readonly Queue DialogQueue = new Queue();
+        private static readonly Queue MessageQueue = new Queue();
 
         public static void ConnectAsync()
         {
@@ -50,7 +54,7 @@ namespace MessengerRando.Archipelago
             Connect(result => OnConnected(result, connectButton));
         }
 
-        private static void OnConnected(LoginResult connectStats)
+        private static void OnConnected(string connectStats)
         {
             if (ServerData.CheckedLocations != null)
             {
@@ -61,20 +65,10 @@ namespace MessengerRando.Archipelago
             attemptingConnection = false;
         }
 
-        private static void OnConnected(LoginResult connectResult, SubMenuButtonInfo connectButton)
+        private static void OnConnected(string outputText, SubMenuButtonInfo connectButton)
         {
             TextEntryPopup successPopup = InitTextEntryPopup(connectButton.addedTo, string.Empty,
                 entry => true, 0, null, CharsetFlags.Space);
-
-            string outputText;
-            if (connectResult.Successful)
-                outputText = $"Successfully connected to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}!";
-            else
-            {
-                outputText = $"Failed to connect to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}\n";
-                foreach (var error in ((LoginFailure)connectResult).Errors)
-                    outputText += error;
-            }
             
             successPopup.Init(outputText);
             successPopup.gameObject.SetActive(true);
@@ -87,15 +81,15 @@ namespace MessengerRando.Archipelago
         {
             var session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
             session.MessageLog.OnMessageReceived += OnMessageReceived;
-            // session.Items.ItemReceived += ItemReceived;
+            session.Items.ItemReceived += OnItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
             session.Socket.SocketClosed += SessionSocketClosed;
             return session;
         }
 
-        private static void Connect(OnConnectAttempt attempt)
+        public static string Connect()
         {
-            if (Authenticated) return;
+            if (Authenticated) return "already connected";
             if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
             var needSlotData = ServerData.SlotData == null;
 
@@ -120,6 +114,7 @@ namespace MessengerRando.Archipelago
             }
             
 
+            string outputText;
             if (result.Successful)
             {
                 var success = (LoginSuccessful)result;
@@ -137,27 +132,91 @@ namespace MessengerRando.Archipelago
                         ServerData.CheckedLocations.ToArray()));
 
                 HasConnected = true;
+                outputText = $"Successfully connected to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}!";
             }
             else
             {
                 LoginFailure failure = (LoginFailure)result;
-                string errorMessage = $"Failed to connect to {ServerData.Uri} as {ServerData.SlotName}:";
-                errorMessage +=
-                    failure.Errors.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
+                outputText = $"Failed to connect to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}\n";
+                outputText +=
+                    failure.Errors.Aggregate(outputText, (current, error) => current + $"\n    {error}");
 
-                Console.WriteLine($"Failed to connect: {errorMessage}");
+                Console.WriteLine(outputText);
 
                 Authenticated = false;
                 Disconnect();
             }
 
-            attempt(result);
+            return outputText;
+        }
+
+        private static void Connect(OnConnectAttempt attempt)
+        {
+            attempt(Connect());
+        }
+
+        private static string ColorizePlayerName(int player)
+        {
+            string color;
+            color = player.Equals(Session.ConnectionInfo.Slot) ? UserConfig.PlayerColor : UserConfig.OtherPlayerColor;
+            return $"<color=#{color}>{Session.Players.GetPlayerAlias(player)}</color>";
+        }
+
+        private static string ColorizeLocation(long locID)
+        {
+            string color = UserConfig.LocationColor;
+            return $"<color=#{color}>{Session.Locations.GetLocationNameFromId(locID)}</color>";
+        }
+
+        private static string ConvertHintMessage(HintItemSendLogMessage hintMessage)
+        {
+            var colorizedMessage = hintMessage.ToString();
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Sender.Name,
+                ColorizePlayerName(hintMessage.Sender.Slot));
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Receiver.Name,
+                ColorizePlayerName(hintMessage.Receiver.Slot));
+            colorizedMessage = colorizedMessage.Replace(
+                Session.Locations.GetLocationNameFromId(hintMessage.Item.Location),
+                ColorizeLocation(hintMessage.Item.Location));
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Item.Name(),
+                hintMessage.Item.Colorize());
+            Console.WriteLine(colorizedMessage);
+            return colorizedMessage;
         }
 
         private static void OnMessageReceived(LogMessage message)
         {
             Console.WriteLine(message.ToString());
-            MessageQueue.Add(message.ToString());
+            if (FilterAPMessages)
+            {
+                switch (message)
+                {
+                    case HintItemSendLogMessage hintMessage:
+                        if (hintMessage.IsFound || !hintMessage.IsRelatedToActivePlayer || !HintPopUps ||
+                            RandomizerStateManager.SeenHints.Contains(hintMessage.Item)) break;
+                        RandomizerStateManager.SeenHints.Add(hintMessage.Item);
+                        MessageQueue.Enqueue(hintMessage.ToString());
+                        DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
+                        break;
+                    case ItemSendLogMessage itemSendMessage:
+                        if (itemSendMessage.IsRelatedToActivePlayer)
+                        {
+                            if (!itemSendMessage.IsReceiverTheActivePlayer && !ItemsAndLocationsHandler.HasDialog(itemSendMessage.Item.Location))
+                            {
+                                Console.WriteLine($"adding {itemSendMessage.Item.ToReadableString()} to dialog queue.");
+                                DialogQueue.Enqueue(itemSendMessage.Item.ToReadableString(itemSendMessage.Receiver.Alias));
+                            }
+                            MessageQueue.Enqueue(itemSendMessage.ToString());
+                        }
+                        break;
+                }
+            }
+            else
+            {
+                if (HintPopUps && message is HintItemSendLogMessage hintMessage)
+                    DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
+                MessageQueue.Enqueue(message.ToString());
+            }
         }
 
         public static void SyncLocations()
@@ -180,8 +239,26 @@ namespace MessengerRando.Archipelago
                     }
                     else if (ItemsAndLocationsHandler.ShopLocation(location, out var shopLoc))
                     {
-                        var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.PrettyLocationName);
-                        Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                        Debug.Log($"collecting {shopLoc.LocationName} ({shopLoc.PrettyLocationName})");
+                        try
+                        {
+                            var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.LocationName);
+                            Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                        }
+                        catch (Exception e1)
+                        {
+                            Debug.Log(e1);
+                            try
+                            {
+                                var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID),
+                                    shopLoc.PrettyLocationName);
+                                Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                            }
+                            catch (Exception e2)
+                            {
+                                Debug.Log(e2);
+                            }
+                        }
                     }
 
                     ServerData.CheckedLocations.Add(location);
@@ -194,13 +271,34 @@ namespace MessengerRando.Archipelago
             }
         }
 
-        private static void ItemReceived(ReceivedItemsHelper helper)
+        private static void OnItemReceived(ReceivedItemsHelper helper)
         {
-            if (RandomizerStateManager.Instance.CurrentFileSlot == 0 || 
-                ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
-            Console.WriteLine("ItemReceived called");
-            ItemsAndLocationsHandler.Unlock(helper.DequeueItem().Item);
+            Console.WriteLine("OnItemReceived called");
+            if (!RandomizerStateManager.Instance.InGame) return;
+
+            var itemToUnlock = helper.DequeueItem();
+            if (helper.Index < ServerData.Index) return;
+
             ServerData.Index++;
+            if (RandomizerStateManager.IsSafeTeleportState() &&
+                !Manager<PauseManager>.Instance.IsPaused)
+            {
+                try
+                {
+                    ItemsAndLocationsHandler.Unlock(itemToUnlock.Item);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e);
+                    ItemQueue.Enqueue(itemToUnlock.Item);
+                }
+            }
+            else
+                ItemQueue.Enqueue(itemToUnlock.Item);
+            if (itemToUnlock.Player.Equals(Session.ConnectionInfo.Slot) &&
+                ItemsAndLocationsHandler.HasDialog(itemToUnlock.Location))
+                return;
+            DialogQueue.Enqueue(itemToUnlock.ToReadableString());
         }
 
         private static void SessionErrorReceived(Exception e, string message)
@@ -226,24 +324,28 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateArchipelagoState()
         {
+            while (ItemQueue.Count > 0)
+            {
+                ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
+            }
+
+            if (DialogQueue.Count > 0)
+            {
+                var message = (string)DialogQueue.Dequeue();
+                Console.WriteLine(message);
+                DialogChanger.CreateDialogBox(message);
+            }
             if (!Authenticated)
             {
                 Console.WriteLine("Attempting to reconnect to Archipelago Server...");
                 ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
                 return;
             }
-            if (ServerData.Index > RandomizerStateManager.ReceivedItemsCount())
-            {
-                ItemsAndLocationsHandler.ReSync();
-                return;
-            }
-            if (ServerData.Index >= Session.Items.AllItemsReceived.Count) return;
-            var currentItem = Session.Items.AllItemsReceived[ServerData.Index];
-            var currentItemId = currentItem.Item;
-            ++ServerData.Index;
-            ItemsAndLocationsHandler.Unlock(currentItemId);
-            if (!currentItem.Player.Equals(Session.ConnectionInfo.Slot))
-                DialogChanger.CreateDialogBox($"Received {currentItem.ColorizeItem()}!");
+            Debug.Log("checking if we need to resync");
+            if (ServerData.Index == RandomizerStateManager.ReceivedItemsCount() &&
+                ServerData.Index == Session.Items.AllItemsReceived.Count) return;
+            Debug.Log("resyncing...");
+            ItemsAndLocationsHandler.ReSync();
         }
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)
@@ -314,22 +416,20 @@ namespace MessengerRando.Archipelago
         public static string UpdateStatusText()
         {
             string text = string.Empty;
-            if (DisplayStatus)
+            if (!DisplayStatus) return text;
+            if (Authenticated)
             {
-                if (Authenticated)
+                text = $"Connected to Archipelago v{Session.RoomState.Version}";
+                var hintCost = GetHintCost();
+                if (hintCost > 0)
                 {
-                    text = $"Connected to Archipelago v{Session.RoomState.Version}";
-                    var hintCost = GetHintCost();
-                    if (hintCost > 0)
-                    {
-                        text += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
-                    }
+                    text += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
                 }
-                else if (HasConnected)
-                {
-                    text = "Disconnected from Archipelago server.";
-                }
-            }            
+            }
+            else if (HasConnected)
+            {
+                text = "Disconnected from Archipelago server.";
+            }
             return text;
         }
 
@@ -339,8 +439,7 @@ namespace MessengerRando.Archipelago
             if (MessageQueue.Count > 0)
             {
                 if (DisplayAPMessages)
-                    text = MessageQueue.First();
-                MessageQueue.RemoveAt(0);
+                    text = (string)MessageQueue.Dequeue();
             }
             return text;
         }

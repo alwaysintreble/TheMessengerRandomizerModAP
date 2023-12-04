@@ -56,10 +56,7 @@ namespace MessengerRando.Archipelago
                 if (deathLinks.Count > 0) receivedDeath = true;
                 if (!receivedDeath) return;
                 var cause = deathLinks[0].Cause;
-                if (cause.IsNullOrEmpty())
-                {
-                    cause = deathLinks[0].Source + " sent you pain from afar.";
-                }
+                if (cause.IsNullOrEmpty()) cause = $"{deathLinks[0].Source} sent you pain from afar.";
                 DialogSequence receivedDeathDialog = ScriptableObject.CreateInstance<DialogSequence>();
                 receivedDeathDialog.dialogID = "DEATH_LINK";
                 receivedDeathDialog.name = cause;

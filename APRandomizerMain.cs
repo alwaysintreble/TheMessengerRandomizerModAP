@@ -51,6 +51,8 @@ namespace MessengerRando
         SubMenuButtonInfo archipelagoCollectButton;
         SubMenuButtonInfo archipelagoHintButton;
         SubMenuButtonInfo archipelagoToggleMessagesButton;
+        SubMenuButtonInfo archipelagoToggleFilterMessagesButton;
+        SubMenuButtonInfo archipelagoToggleHintPopupButton;
         SubMenuButtonInfo archipelagoStatusButton;
         SubMenuButtonInfo archipelagoDeathLinkButton;
         SubMenuButtonInfo archipelagoMessageTimerButton;
@@ -90,16 +92,16 @@ namespace MessengerRando
             teleportToNinjaVillage = Courier.UI.RegisterSubMenuModOptionButton(() => "Teleport to Ninja Village", OnSelectTeleportToNinjaVillage);
 
             //Add Archipelago host button
-            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Host Name", OnSelectArchipelagoHost, 30, () => "Enter the Archipelago host name. Use spaces for periods", () => ArchipelagoClient.ServerData.Uri, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
+            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Host Name", OnSelectArchipelagoHost, 30, () => "Enter the Archipelago host name. Use spaces for periods", () => ArchipelagoClient.ServerData?.Uri, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
 
             //Add Archipelago port button
-            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Port", OnSelectArchipelagoPort, 5, () => "Enter the port for the Archipelago session", () => ArchipelagoClient.ServerData.Port.ToString(), CharsetFlags.Number);
+            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Port", OnSelectArchipelagoPort, 5, () => "Enter the port for the Archipelago session", () => ArchipelagoClient.ServerData?.Port.ToString(), CharsetFlags.Number);
 
             //Add archipelago name button
-            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Slot Name", OnSelectArchipelagoName, 16, () => "Enter player name:",() => ArchipelagoClient.ServerData.SlotName, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
+            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Slot Name", OnSelectArchipelagoName, 16, () => "Enter player name:",() => ArchipelagoClient.ServerData?.SlotName, CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter | CharsetFlags.Number | CharsetFlags.Space);
 
             //Add archipelago password button
-            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Password", OnSelectArchipelagoPass, 30, () => "Enter session password:", () => ArchipelagoClient.ServerData.Password);
+            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(() => "Enter Archipelago Password", OnSelectArchipelagoPass, 30, () => "Enter session password:", () => ArchipelagoClient.ServerData?.Password);
 
             //Add Archipelago connection button
             archipelagoConnectButton = Courier.UI.RegisterSubMenuModOptionButton(() => "Connect to Archipelago", OnSelectArchipelagoConnect);
@@ -110,6 +112,18 @@ namespace MessengerRando
             //Add Archipelago message button
             archipelagoToggleMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(() => ArchipelagoClient.DisplayAPMessages ? "Hide server messages" : "Display server messages", OnToggleAPMessages);
             
+            //Add Archipelago filter messages button
+            archipelagoToggleFilterMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => ArchipelagoClient.FilterAPMessages
+                    ? "Show all server messages"
+                    : "Filter messages to only relevant to me",
+                () => ArchipelagoClient.FilterAPMessages = !ArchipelagoClient.FilterAPMessages);
+            
+            //Add Archipelago hint popup button
+            archipelagoToggleHintPopupButton = Courier.UI.RegisterSubMenuModOptionButton(
+                () => ArchipelagoClient.HintPopUps ? "Disable hint popups" : "Enable hint popups",
+                () => ArchipelagoClient.HintPopUps = !ArchipelagoClient.HintPopUps);
+
             //Add Archipelago message display timer button
             archipelagoMessageTimerButton = Courier.UI.RegisterTextEntryModOptionButton(() => "AP Message Display Time", entry => OnSelectMessageTimer(entry), 1, () => "Enter amount of time to display Archipelago messages, in seconds", () => updateTime.ToString(), CharsetFlags.Number);
 
@@ -216,11 +230,14 @@ namespace MessengerRando
             //These AP buttons can exist in or out of game
             archipelagoStatusButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             archipelagoToggleMessagesButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+            archipelagoToggleFilterMessagesButton.IsEnabled = () =>
+                ArchipelagoClient.Authenticated && ArchipelagoClient.DisplayAPMessages;
+            archipelagoToggleHintPopupButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             archipelagoDeathLinkButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             archipelagoMessageTimerButton.IsEnabled = () => ArchipelagoClient.DisplayStatus;
-            archipelagoHintButton.IsEnabled = () => ArchipelagoClient.CanHint();
-            archipelagoReleaseButton.IsEnabled = () => ArchipelagoClient.CanRelease();
-            archipelagoCollectButton.IsEnabled = () => ArchipelagoClient.CanCollect();
+            archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
+            archipelagoReleaseButton.IsEnabled = ArchipelagoClient.CanRelease;
+            archipelagoCollectButton.IsEnabled = ArchipelagoClient.CanCollect;
 
             #if DEBUG
             SceneManager.sceneLoaded += OnSceneLoadedRando;
@@ -411,9 +428,10 @@ namespace MessengerRando
             try
             {
                 if (!clearedData)
-                    RandomizerSaveMethod.TryLoad(Save.APSaveData);
+                    RandoSave.TryLoad(Save.APSaveData);
                 if (ArchipelagoData.LoadData(randoStateManager.CurrentFileSlot))
                 {
+                    Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
                     //The player is connected to an Archipelago server and trying to load a save file so check it's valid
                     Console.WriteLine($"Successfully loaded Archipelago seed {randoStateManager.CurrentFileSlot}");
                     Console.WriteLine("Current Inventory:");
@@ -446,6 +464,7 @@ namespace MessengerRando
             }
 
             orig(self, slotIndex);
+            RandomizerStateManager.Instance.InGame = true;
         }
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
@@ -469,6 +488,8 @@ namespace MessengerRando
             
             clearedData = false;
             orig();
+            Console.WriteLine("returned to title");
+            RandomizerStateManager.Instance.InGame = false;
         }
 
         //Fixing necro cutscene check
@@ -726,10 +747,7 @@ namespace MessengerRando
 
         bool OnSelectArchipelagoHint(string answer)
         {
-            if (!string.IsNullOrEmpty(answer))
-            {
-                ArchipelagoClient.Session.Socket.SendPacket(new SayPacket { Text = $"!hint {answer}" });
-            }
+            ArchipelagoClient.Session.Socket.SendPacket(new SayPacket { Text = $"!hint {answer}" });
             return true;
         }
 

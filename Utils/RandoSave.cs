@@ -1,5 +1,8 @@
-﻿using MessengerRando.Archipelago;
+﻿using System;
+using MessengerRando.Archipelago;
 using Mod.Courier.Save;
+using Newtonsoft.Json;
+using UnityEngine;
 
 namespace MessengerRando.Utils
 {
@@ -34,6 +37,30 @@ namespace MessengerRando.Utils
             }
 
             return output;
+        }
+        
+        private const char SplitConst = '|';
+
+        public static void TryLoad(string load)
+        {
+            Debug.Log("loading rando save data...");
+            if (string.IsNullOrEmpty(load)) return;
+            try
+            {
+                var loadedData = load.Split(SplitConst);
+                var index = 1;
+                foreach (var dataString in loadedData)
+                {
+                    var loadedAPData = JsonConvert.DeserializeObject<ArchipelagoData>(dataString);
+                    RandomizerStateManager.Instance.APSave[index] = loadedAPData;
+                    index++;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to load AP Save Data");
+                Console.WriteLine(e);
+            }
         }
     }
 }

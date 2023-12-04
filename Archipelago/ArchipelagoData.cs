@@ -94,12 +94,13 @@ namespace MessengerRando.Archipelago
                 ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
                 RandomizerStateManager.Instance.ScoutedLocations = 
                     ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
-                
+
                 //Attempt to connect to the server and save the new data
                 Debug.Log("Attempting to connect");
                 ArchipelagoClient.Authenticated = false;
-                ArchipelagoClient.ConnectAsync();
-                return ArchipelagoClient.HasConnected = true; //Doing this here because of race conditions and the actual connection being threaded
+                //Doing this here because of race conditions and the actual connection being threaded
+                ArchipelagoClient.Connect();
+                return true;
             }
             catch (Exception ex) 
             {

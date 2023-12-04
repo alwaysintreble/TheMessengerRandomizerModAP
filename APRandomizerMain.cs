@@ -747,10 +747,7 @@ namespace MessengerRando
 
         bool OnSelectArchipelagoHint(string answer)
         {
-            if (!string.IsNullOrEmpty(answer))
-            {
-                ArchipelagoClient.Session.Socket.SendPacket(new SayPacket { Text = $"!hint {answer}" });
-            }
+            ArchipelagoClient.Session.Socket.SendPacket(new SayPacket { Text = $"!hint {answer}" });
             return true;
         }
 

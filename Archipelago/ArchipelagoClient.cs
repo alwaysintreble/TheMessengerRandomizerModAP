@@ -192,12 +192,11 @@ namespace MessengerRando.Archipelago
                 switch (message)
                 {
                     case HintItemSendLogMessage hintMessage:
-                        if (hintMessage.IsFound) break;
-                        if (hintMessage.IsRelatedToActivePlayer && HintPopUps)
-                        {
-                            MessageQueue.Enqueue(hintMessage.ToString());
-                            DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
-                        }
+                        if (hintMessage.IsFound || !hintMessage.IsRelatedToActivePlayer || !HintPopUps ||
+                            RandomizerStateManager.SeenHints.Contains(hintMessage.Item)) break;
+                        RandomizerStateManager.SeenHints.Add(hintMessage.Item);
+                        MessageQueue.Enqueue(hintMessage.ToString());
+                        DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
                         break;
                     case ItemSendLogMessage itemSendMessage:
                         if (itemSendMessage.IsRelatedToActivePlayer)

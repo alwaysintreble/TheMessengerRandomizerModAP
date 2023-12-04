@@ -16,6 +16,7 @@ namespace MessengerRando.Utils
 
         public RandoPowerSealManager PowerSealManager;
         public RandoBossManager BossManager;
+        public static List<NetworkItem> SeenHints = new List<NetworkItem>();
 
         public bool SkipMusicBox;
         public bool SkipPhantom;
@@ -46,6 +47,7 @@ namespace MessengerRando.Utils
         public static void InitializeMultiSeed()
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
+            SeenHints = new List<NetworkItem>();
 
             if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
             {

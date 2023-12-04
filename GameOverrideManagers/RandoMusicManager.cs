@@ -48,12 +48,12 @@ namespace MessengerRando.GameOverrideManagers
             Debug.Log("playing music");
             // Debug.Log(audioObjectDefinition.GetInstanceID());
             // Debug.Log(audioObjectDefinition.GetInstanceID());
-            if (audioObjectDefinition.IsMusic() && shuffleMusic)
-            {
-                var newAudio = Manager<AudioManager>.Instance.GetRandomLevelTrack();
-                var dimension = random.Next(0, 2);
-                audioObjectDefinition = dimension == 0 ? newAudio.track_8 : newAudio.track_16;
-            }
+            if (!audioObjectDefinition.IsMusic() || !shuffleMusic ||
+                Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE)
+                return orig(self, audioObjectDefinition, loop, fadeInDuration, playbackTime, customAudioObject);
+            var newAudio = Manager<AudioManager>.Instance.GetRandomLevelTrack();
+            var dimension = random.Next(0, 2);
+            audioObjectDefinition = dimension == 0 ? newAudio.track_8 : newAudio.track_16;
             return orig(self, audioObjectDefinition, loop, fadeInDuration, playbackTime, customAudioObject);
         }
     }

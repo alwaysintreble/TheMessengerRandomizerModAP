@@ -366,8 +366,7 @@ namespace MessengerRando.Archipelago
         public static bool CanRelease()
         {
             if (!Authenticated) return false;
-            Permissions releasePermission = Session.RoomState.ReleasePermissions;
-            switch (releasePermission)
+            switch (Session.RoomState.ReleasePermissions)
             {
                 case Permissions.Goal:
                     return ClientFinished();
@@ -380,8 +379,7 @@ namespace MessengerRando.Archipelago
         public static bool CanCollect()
         {
             if (!Authenticated) return false;
-            var collectPermission = Session.RoomState.CollectPermissions;
-            switch (collectPermission)
+            switch (Session.RoomState.CollectPermissions)
             {
                 case Permissions.Goal:
                     return ClientFinished();
@@ -405,12 +403,7 @@ namespace MessengerRando.Archipelago
 
         public static bool CanHint()
         {
-            bool canHint = false;
-            if (Authenticated)
-            {
-                canHint = GetHintCost() <= Session.RoomState.HintPoints;
-            }
-            return canHint;
+            return Authenticated && GetHintCost() <= Session.RoomState.HintPoints;
         }
 
         public static string UpdateStatusText()

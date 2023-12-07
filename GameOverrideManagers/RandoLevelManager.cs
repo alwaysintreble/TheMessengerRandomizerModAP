@@ -229,12 +229,12 @@ namespace MessengerRando.GameOverrideManagers
             ScreenEdge newRoomBottomEdge, ScreenEdge newRoomTopEdge,
             bool teleportedInRoom)
         {
+            #if DEBUG
             string GetRoomKey()
             {
                 return newRoomLeftEdge.edgeIdX + newRoomRightEdge.edgeIdX
                                                + newRoomBottomEdge.edgeIdY + newRoomTopEdge.edgeIdY;
             }
-            #if DEBUG
             Console.WriteLine("new room params:" +
                               $"{newRoomLeftEdge.edgeIdX} " +
                               $"{newRoomRightEdge.edgeIdX} " +
@@ -257,7 +257,7 @@ namespace MessengerRando.GameOverrideManagers
             //if we're in a room, it leaves the current room then enters the new room with the teleported bool
             //no idea what the teleported bool does currently
             orig(self, newRoomLeftEdge, newRoomRightEdge, newRoomBottomEdge, newRoomTopEdge, teleportedInRoom);
-            RandoBossManager.ShouldFightBoss(GetRoomKey());
+            // RandoBossManager.ShouldFightBoss(GetRoomKey());
         }
     }
 }

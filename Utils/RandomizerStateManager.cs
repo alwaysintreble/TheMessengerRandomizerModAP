@@ -51,9 +51,16 @@ namespace MessengerRando.Utils
 
             if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
             {
+                var index = ItemsAndLocationsHandler.BaseOffset;
+                var scoutIDs = new List<long>();
+                foreach (var unused in DialogChanger.ItemDialogID)
+                {
+                    scoutIDs.Add(index);
+                    index++;
+                }
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
-                    ItemsAndLocationsHandler.ItemsLookup.Keys.ToArray()
+                    scoutIDs.ToArray()
                 );
             }
 

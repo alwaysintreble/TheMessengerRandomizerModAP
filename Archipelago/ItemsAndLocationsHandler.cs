@@ -18,6 +18,7 @@ namespace MessengerRando.Archipelago
         public static RandomizerStateManager RandoStateManager;
 
         public const int APQuantity = 69;
+        public const long BaseOffset = 0xADD_000;
 
         /// <summary>
         /// Builds the item and lookup dictionaries for converting to and from AP checks. Will always make every location
@@ -25,9 +26,8 @@ namespace MessengerRando.Archipelago
         /// </summary>
         public static void Initialize()
         {
-            const long baseOffset = 0xADD_000;
 
-            long offset = baseOffset;
+            long offset = BaseOffset;
             Console.WriteLine("Building ItemsLookup...");
             ItemsLookup = new Dictionary<long, RandoItemRO>();
             foreach (var figurine in Enum.GetValues(typeof(EFigurine)))
@@ -48,7 +48,7 @@ namespace MessengerRando.Archipelago
                 ++offset;
             }
 
-            offset = baseOffset;
+            offset = BaseOffset;
             Console.WriteLine("Building LocationsLookup...");
             LocationsLookup = new Dictionary<LocationRO, long>();
             EitemsLocationsLookup = new Dictionary<EItems, long>();

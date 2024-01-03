@@ -202,7 +202,7 @@ namespace MessengerRando.Archipelago
                     case ItemSendLogMessage itemSendMessage:
                         if (itemSendMessage.IsRelatedToActivePlayer)
                         {
-                            if (!itemSendMessage.IsReceiverTheActivePlayer && !ItemsAndLocationsHandler.HasDialog(itemSendMessage.Item.Location))
+                            if (!ItemsAndLocationsHandler.HasDialog(itemSendMessage.Item.Location))
                             {
                                 Console.WriteLine($"adding {itemSendMessage.Item.ToReadableString()} to dialog queue.");
                                 DialogQueue.Enqueue(itemSendMessage.Item.ToReadableString(itemSendMessage.Receiver.Alias));
@@ -282,24 +282,7 @@ namespace MessengerRando.Archipelago
             if (helper.Index < ServerData.Index) return;
 
             ServerData.Index++;
-            if (RandomizerStateManager.IsSafeTeleportState() &&
-                !Manager<PauseManager>.Instance.IsPaused)
-            {
-                try
-                {
-                    ItemsAndLocationsHandler.Unlock(itemToUnlock.Item);
-                }
-                catch (Exception e)
-                {
-                    Debug.Log(e);
-                    ItemQueue.Enqueue(itemToUnlock.Item);
-                }
-            }
-            else
-                ItemQueue.Enqueue(itemToUnlock.Item);
-            if (itemToUnlock.Player.Equals(Session.ConnectionInfo.Slot) &&
-                ItemsAndLocationsHandler.HasDialog(itemToUnlock.Location))
-                return;
+            ItemQueue.Enqueue(itemToUnlock.Item);
             DialogQueue.Enqueue(itemToUnlock.ToReadableString());
         }
 

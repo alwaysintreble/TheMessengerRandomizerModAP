@@ -45,6 +45,14 @@ namespace MessengerRando.GameOverrideManagers
             "ClockworkConcierge",
             "Phantom"
         };
+        
+        private static readonly Dictionary<long, string> IDToBossMap = new Dictionary<long, string>
+        {
+            { 11391075, "LeafGolem" },
+            { 11391076, "Necromancer" },
+            { 11391077, "EmeraldGolem" },
+            { 11391078, "QueenOfQuills" },
+        };
 
         public static readonly Dictionary<string, string> bossCutscenes = new Dictionary<string, string>
         {
@@ -223,6 +231,14 @@ namespace MessengerRando.GameOverrideManagers
             }
             AdjustPlayerInBossRoom(bossName);
             return teleporting;
+        }
+
+        public static void TryCollectLocation(long locationID)
+        {
+            if (IDToBossMap.TryGetValue(locationID, out var boss))
+            {
+                DefeatedBosses.Add(boss);
+            }
         }
 
         public RandoBossManager(Dictionary<string, string> bossMapping)

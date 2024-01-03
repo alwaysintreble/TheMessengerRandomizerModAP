@@ -7,6 +7,7 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
+using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils;
 using Mod.Courier.UI;
 using UnityEngine;
@@ -261,6 +262,10 @@ namespace MessengerRando.Archipelago
                             }
                         }
                     }
+                    else
+                    {
+                        RandoBossManager.TryCollectLocation(location);
+                    }
 
                     ServerData.CheckedLocations.Add(location);
                 }
@@ -283,7 +288,6 @@ namespace MessengerRando.Archipelago
 
             ServerData.Index++;
             ItemQueue.Enqueue(itemToUnlock.Item);
-            DialogQueue.Enqueue(itemToUnlock.ToReadableString());
         }
 
         private static void SessionErrorReceived(Exception e, string message)

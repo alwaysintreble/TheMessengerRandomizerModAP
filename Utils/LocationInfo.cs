@@ -10,14 +10,15 @@ namespace MessengerRando.Utils
         public static string ToReadableString(this NetworkItem item, string otherPlayer = "")
         {
             string text;
-            if (item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+            var ownPlayer = ArchipelagoClient.Session.ConnectionInfo.Slot;
+            if (item.Player.Equals(ownPlayer))
                 text = item.Location.Equals(-1) ? $"Cheated {item.Colorize()}" : $"Found {item.Colorize()}";
             else
             {
                 text = $"Received {item.Colorize()}!";
                 return text;
             }
-            text += otherPlayer.IsNullOrEmpty()
+            text += otherPlayer.IsNullOrEmpty() || otherPlayer.Equals(ArchipelagoClient.Session.Players.GetPlayerAlias(ownPlayer))
                 ? "!"
                 : $" for <color=#{UserConfig.OtherPlayerColor}>{otherPlayer}</color>";
             return text;

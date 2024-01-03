@@ -27,12 +27,9 @@ namespace MessengerRando.GameOverrideManagers
             Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}");
             #endif
             orig(self, levelInfo);
-            if (RandoLevelMapping == null || teleporting) teleporting = false;
-            else
-            {
-                lastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
-                currentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelInfo.levelName);
-            }
+            if (RandoLevelMapping == null || teleporting) return;
+            lastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
+            currentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelInfo.levelName);
         }
 
         static bool WithinRange(float pos1, float pos2)
@@ -155,7 +152,7 @@ namespace MessengerRando.GameOverrideManagers
             if (RandoLevelMapping == null || !RandoLevelMapping.TryGetValue(oldLevel, out var newLevel))
             {
                 if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
-                    RandomizerStateManager.Instance.SkipMusicBox && RandomizerStateManager.IsSafeTeleportState())
+                    RandomizerStateManager.Instance.SkipMusicBox)
                 {
                     SkipMusicBox();
                 }
@@ -192,6 +189,7 @@ namespace MessengerRando.GameOverrideManagers
         
         public static void SkipMusicBox()
         {
+            Console.WriteLine($"attempting to skip music box. already teleporting : {teleporting}");
             if (teleporting)
             {
                 teleporting = false;
@@ -220,6 +218,7 @@ namespace MessengerRando.GameOverrideManagers
                 true, true, LoadSceneMode.Single,
                 ELevelEntranceID.NONE, dimension);
             teleporting = true;
+            Console.WriteLine("set teleporting to true");
             Manager<LevelManager>.Instance.LoadLevel(levelLoadingInfo);
         }
 

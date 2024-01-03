@@ -97,10 +97,8 @@ namespace MessengerRando.Archipelago
 
                 //Attempt to connect to the server and save the new data
                 Debug.Log("Attempting to connect");
-                ArchipelagoClient.Authenticated = false;
-                //Doing this here because of race conditions and the actual connection being threaded
                 ArchipelagoClient.Connect();
-                return true;
+                return ArchipelagoClient.HasConnected = true;
             }
             catch (Exception ex) 
             {

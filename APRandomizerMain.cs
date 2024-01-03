@@ -957,8 +957,15 @@ namespace MessengerRando
         private void OnPlayerDie(On.PlayerController.orig_Die orig, PlayerController self, EDeathType deathType,
             Transform killedBy)
         {
-            Manager<UIManager>.Instance.CloseAllScreensOfType<AwardItemPopup>(false);
-            ArchipelagoClient.DeathLinkHandler.SendDeathLink(deathType, killedBy);
+            try
+            {
+                Manager<UIManager>.Instance.CloseAllScreensOfType<AwardItemPopup>(false);
+                ArchipelagoClient.DeathLinkHandler.SendDeathLink(deathType, killedBy);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             orig(self, deathType, killedBy);
         }
 

@@ -157,14 +157,15 @@ namespace MessengerRando.Archipelago
 
         private static string ColorizePlayerName(int player)
         {
-            string color;
-            color = player.Equals(Session.ConnectionInfo.Slot) ? UserConfig.PlayerColor : UserConfig.OtherPlayerColor;
+            var color = player.Equals(Session.ConnectionInfo.Slot)
+                ? UserConfig.PlayerColor
+                : UserConfig.OtherPlayerColor;
             return $"<color=#{color}>{Session.Players.GetPlayerAlias(player)}</color>";
         }
 
         private static string ColorizeLocation(long locID)
         {
-            string color = UserConfig.LocationColor;
+            var color = UserConfig.LocationColor;
             return $"<color=#{color}>{Session.Locations.GetLocationNameFromId(locID)}</color>";
         }
 
@@ -277,6 +278,7 @@ namespace MessengerRando.Archipelago
             if (!RandomizerStateManager.Instance.InGame) return;
 
             var itemToUnlock = helper.DequeueItem();
+            Console.WriteLine($"received network item: {helper.Index} ({ServerData.Index}), {itemToUnlock.Location}, {itemToUnlock.Item}, {itemToUnlock.ToReadableString()}");
             if (helper.Index < ServerData.Index) return;
 
             ServerData.Index++;
@@ -341,10 +343,11 @@ namespace MessengerRando.Archipelago
                 ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
                 return;
             }
-            Debug.Log("checking if we need to resync");
-            if (ServerData.Index == RandomizerStateManager.ReceivedItemsCount() &&
-                ServerData.Index == Session.Items.AllItemsReceived.Count) return;
-            Debug.Log("resyncing...");
+            Debug.Log("checking if we need to re-sync");
+            
+            if (ServerData.Index == Session.Items.AllItemsReceived.Count)
+                return;
+            Debug.Log("re-syncing...");
             ItemsAndLocationsHandler.ReSync();
         }
 
@@ -389,7 +392,7 @@ namespace MessengerRando.Archipelago
             return false;
         }
 
-        public static int GetHintCost()
+        private static int GetHintCost()
         {
             var hintPercent = Session.RoomState.HintCostPercentage;
             if (hintPercent > 0)
@@ -408,7 +411,7 @@ namespace MessengerRando.Archipelago
 
         public static string UpdateStatusText()
         {
-            string text = string.Empty;
+            var text = string.Empty;
             if (!DisplayStatus) return text;
             if (Authenticated)
             {
@@ -429,11 +432,9 @@ namespace MessengerRando.Archipelago
         public static string UpdateMessagesText()
         {
             var text = string.Empty;
-            if (MessageQueue.Count > 0)
-            {
-                if (DisplayAPMessages)
-                    text = (string)MessageQueue.Dequeue();
-            }
+            if (MessageQueue.Count <= 0) return text;
+            if (DisplayAPMessages)
+                text = (string)MessageQueue.Dequeue();
             return text;
         }
     }

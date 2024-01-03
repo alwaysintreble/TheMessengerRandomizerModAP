@@ -444,6 +444,16 @@ namespace MessengerRando.Archipelago
             Manager<SaveManager>.Instance.SaveGame();
         }
 
+        public static void UnlockItems()
+        {
+            if (ArchipelagoClient.ServerData.Index == ArchipelagoClient.Session.Items.AllItemsReceived.Count) return;
+            for (var currentIndex = ArchipelagoClient.ServerData.Index;
+                 ArchipelagoClient.ServerData.Index < ArchipelagoClient.Session.Items.AllItemsReceived.Count;
+                 currentIndex++)
+            {
+                ArchipelagoClient.ItemQueue.Enqueue(ArchipelagoClient.Session.Items.AllItemsReceived[currentIndex].Item);
+            }
+        }
         public static void ReSync()
         {
             var receivedItems = new Dictionary<long, int>();

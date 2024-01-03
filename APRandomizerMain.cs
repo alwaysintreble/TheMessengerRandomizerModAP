@@ -894,6 +894,7 @@ namespace MessengerRando
             ArchipelagoClient.DeathLinkHandler.Player = controller;
             if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
                 ArchipelagoClient.DeathLinkHandler.KillPlayer();
+            // ItemsAndLocationsHandler.UnlockItems();
             //This updates every {updateTime} seconds
             updateTimer += Time.deltaTime;
             if (!(updateTimer >= updateTime)) return;

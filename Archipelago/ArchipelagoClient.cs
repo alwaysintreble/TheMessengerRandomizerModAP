@@ -34,7 +34,6 @@ namespace MessengerRando.Archipelago
         public static DeathLinkInterface DeathLinkHandler;
 
         public static readonly Queue ItemQueue = new Queue();
-        private static readonly Queue TempItemQueue = new Queue();
         public static readonly Queue DialogQueue = new Queue();
         private static readonly Queue MessageQueue = new Queue();
 
@@ -282,12 +281,6 @@ namespace MessengerRando.Archipelago
         {
             Console.WriteLine("OnItemReceived called");
             var itemToUnlock = helper.DequeueItem();
-            if (!RandomizerStateManager.Instance.InGame)
-            {
-                TempItemQueue.Enqueue(itemToUnlock.Item);
-                return;
-            }
-
             if (helper.Index < ServerData.Index) return;
 
             ServerData.Index++;
@@ -317,15 +310,6 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateArchipelagoState()
         {
-            if (TempItemQueue.Count > 0)
-            {
-                for (var i = 0; i < ServerData.Index; i++)
-                {
-                    TempItemQueue.Dequeue();
-                }
-                while (TempItemQueue.Count > 0)
-                    ItemQueue.Enqueue(TempItemQueue.Dequeue());
-            }
             while (ItemQueue.Count > 0)
             {
                 ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());

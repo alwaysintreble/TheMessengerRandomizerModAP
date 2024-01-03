@@ -98,6 +98,13 @@ namespace MessengerRando.Archipelago
                 //Attempt to connect to the server and save the new data
                 Debug.Log("Attempting to connect");
                 ArchipelagoClient.Connect();
+                if (ArchipelagoClient.ItemQueue.Count > 0)
+                {
+                    for (var i = 0; i < Index; i++)
+                    {
+                        ArchipelagoClient.ItemQueue.Dequeue();
+                    }
+                }
                 return ArchipelagoClient.HasConnected = true;
             }
             catch (Exception ex) 

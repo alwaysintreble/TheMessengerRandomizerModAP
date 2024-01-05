@@ -25,6 +25,7 @@ namespace MessengerRando.GameOverrideManagers
 
         public static bool IsBossRoom(string roomKey, out string bossName)
         {
+            Console.WriteLine($"Checking if {roomKey} is a boss room");
             bossName = string.Empty;
             return roomKey != null && BossConstants.RoomToVanillaBoss.TryGetValue(roomKey, out bossName) &&
                    BossConstants.BossLocations.TryGetValue(bossName, out var bossLocation) &&
@@ -37,6 +38,7 @@ namespace MessengerRando.GameOverrideManagers
             bool teleportedInRoom)
         {
             var oldRoomKey = GetRoomKey(leftEdge, rightEdge, bottomEdge, topEdge);
+            #if DEBUG
             Console.WriteLine("Changing rooms.");
             Console.WriteLine($"Last Level: {Manager<LevelManager>.Instance.lastLevelLoaded}");
             Console.WriteLine($"Current Level: {Manager<LevelManager>.Instance.GetCurrentLevelEnum()}");
@@ -50,7 +52,7 @@ namespace MessengerRando.GameOverrideManagers
                               $"{position.x} " +
                               $"{position.y} " +
                               $"{position.z}");
-            
+            #endif
             //This func checks if the new roomKey exists within levelRooms before changing and checks if currentRoom exists
             //if we're in a room, it leaves the current room then enters the new room with the teleported bool
             //no idea what the teleported bool does currently

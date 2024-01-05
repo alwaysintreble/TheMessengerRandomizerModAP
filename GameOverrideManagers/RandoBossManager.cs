@@ -177,11 +177,10 @@ namespace MessengerRando.GameOverrideManagers
             }
         }
 
-        public static bool ShouldFightBoss(string newRoomKey)
+        public static bool ShouldFightBoss(string bossName)
         {
-            if (!BossRoomKeys.Contains(newRoomKey) || BossOverride) return false;
+            if (BossOverride) return false;
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
-            var bossName = GetVanillaBoss(newRoomKey);
             Console.WriteLine($"Entered {bossName}'s room. Has Defeated: {HasBossDefeated(bossName)}");
             if (HasBossDefeated(bossName) || !currentLevel.Equals(bossLocations[bossName].BossRegion)) return false;
             
@@ -227,7 +226,7 @@ namespace MessengerRando.GameOverrideManagers
                 {
                     Console.WriteLine(e);
                 }
-                bossName = RandomizerStateManager.Instance.BossManager.GetActualBoss(newRoomKey);
+                bossName = RandomizerStateManager.Instance.BossManager.GetActualBoss(bossName);
             }
             AdjustPlayerInBossRoom(bossName);
             return teleporting;
@@ -248,9 +247,8 @@ namespace MessengerRando.GameOverrideManagers
             origToNewBoss = bossMapping;
         }
 
-        private string GetActualBoss(string roomKey)
+        private string GetActualBoss(string vanillaBoss)
         {
-            var vanillaBoss = roomToVanillBoss[roomKey];
             Console.WriteLine($"requested {vanillaBoss}, going to {origToNewBoss[vanillaBoss]}");
             return origToNewBoss[vanillaBoss];
         }

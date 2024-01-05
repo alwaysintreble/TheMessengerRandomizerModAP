@@ -247,7 +247,7 @@ namespace MessengerRando
             On.ProgressionManager.SetBossAsDefeated +=
                 (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
             // level teleporting etc management
-            On.Level.ChangeRoom += RandoLevelManager.Level_ChangeRoom;
+            On.Level.ChangeRoom += RandoRoomManager.Level_ChangeRoom;
             //These functions let us override and manage power seals ourselves with 'fake' items
             On.ProgressionManager.TotalPowerSealCollected += ProgressionManager_TotalPowerSealCollected;
             On.ShopChestOpenCutscene.OnChestOpened += (orig, self) =>

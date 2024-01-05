@@ -265,10 +265,10 @@ namespace MessengerRando
             On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
             On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
+            On.Cutscene.Play += Cutscene_Play;
             //temp add
             #if DEBUG
             On.InventoryManager.GetItemQuantity += InventoryManager_GetItemQuantity;
-            On.Cutscene.Play += Cutscene_Play;
             On.PhantomIntroCutscene.OnEnterRoom += PhantomIntro_OnEnterRoom; //this lets us skip the phantom fight
             On.UIManager.ShowView += UIManager_ShowView;
             On.MusicBox.SetNotesState += MusicBox_SetNotesState;

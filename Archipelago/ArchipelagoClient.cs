@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Archipelago.MultiClient.Net;
@@ -37,6 +38,16 @@ namespace MessengerRando.Archipelago
         public static readonly Queue DialogQueue = new Queue();
         private static readonly Queue MessageQueue = new Queue();
 
+        public static List<string> EventsICareAbout = new List<string>
+        {
+            "DecurseQueenCutscene",
+            "QueenDefrostLanternsCutscene",
+            "ElderAwardSeedCutscene",
+            "PlantTeaSeedCutscene",
+        };
+
+        private static bool hasSynced;
+        
         public static void ConnectAsync()
         {
             if (attemptingConnection || Authenticated) return;
@@ -225,6 +236,7 @@ namespace MessengerRando.Archipelago
         {
             if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
             var checkedLocations = Session.Locations.AllLocationsChecked;
+            SyncEvents();
             if (ServerData.CheckedLocations.Count == checkedLocations.Count) return;
             foreach (var location in checkedLocations)
             {
@@ -277,6 +289,20 @@ namespace MessengerRando.Archipelago
             }
         }
 
+        public static void SyncEvents()
+        {
+            if (hasSynced) return;
+            Console.WriteLine("Checking datastorage events");
+            var eventStorage = Session.DataStorage[Scope.Slot, "Events"];
+            eventStorage.Initialize(new List<string>());
+            foreach (var cutscene in eventStorage.To<List<string>>())
+            {
+                Console.WriteLine(cutscene);
+                Manager<ProgressionManager>.Instance.cutscenesPlayed.Add(cutscene);
+            }
+
+            hasSynced = true;
+        }
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
             Console.WriteLine("OnItemReceived called");

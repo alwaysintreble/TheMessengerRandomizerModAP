@@ -114,7 +114,7 @@ namespace MessengerRando
                 () => "Enter Archipelago Host Name",
                 OnSelectArchipelagoHost,
                 30,
-                () => "Enter the Archipelago host name. Use spaces for periods",
+                () => "Enter the Archipelago host name.",
                 () => ArchipelagoClient.ServerData?.Uri,
                 CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter
                 | CharsetFlags.Number | CharsetFlags.Space);
@@ -629,7 +629,15 @@ namespace MessengerRando
 
         void Cutscene_Play(On.Cutscene.orig_Play orig, Cutscene self)
         {
-            Console.WriteLine($"Playing cutscene: {self}");
+            var eventName = self.GetType().ToString();
+#if DEBUG
+            Console.WriteLine($"Playing cutscene: {eventName}");
+#endif
+            if (ArchipelagoClient.EventsICareAbout.Contains(eventName))
+            {
+                ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"] +=
+                    new List<string> { eventName };
+            }
             orig(self);
         }
 
@@ -661,7 +669,7 @@ namespace MessengerRando
 
         void DialogCutscene_Play(On.DialogCutscene.orig_Play orig, DialogCutscene self)
         {
-            Console.WriteLine($"Playing dialog cutscene: {self}");
+            // Console.WriteLine($"Playing dialog cutscene: {self}");
             //ruxxtin cutscene is being a bitch so just gonna hard code around it here.
             if (ArchipelagoClient.HasConnected && self.name.Equals("ReadNote"))
             {

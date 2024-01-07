@@ -1022,11 +1022,6 @@ namespace MessengerRando
                 {
                     ArchipelagoClient.UpdateClientStatus(ArchipelagoClientState.ClientGoal);
                 }
-                if (randoStateManager.CurrentFileSlot == 0) return;
-                var saveSlot = self.GetCurrentSaveGameSlot();
-                var playerAlias =
-                    ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
-                saveSlot.SlotName = playerAlias;
             }
             Save?.Update();
             orig(self, applySaveDelay);

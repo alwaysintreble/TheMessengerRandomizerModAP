@@ -593,9 +593,10 @@ namespace MessengerRando
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
-            RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
-            // self.OnLoadGame(slot.slotIndex);
-            // orig(self, slot);
+            if (ArchipelagoClient.Authenticated)
+                RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+            else
+                orig(self, slot);
         }
 
         private void SaveGameSelectionScreen_LaunchGame(On.SaveGameSelectionScreen.orig_LaunchGame orig, SaveGameSelectionScreen self, string leveltoload, CheckpointSaveInfo checkpointsaveinfo)

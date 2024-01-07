@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AdvancedInspector;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
+using MonoMod.Utils;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
@@ -135,23 +138,43 @@ namespace MessengerRando.Utils
 
         public static void InitializeNewSecondQuest(SaveGameSelectionScreen saveScreen, int slot)
         {
+            // create a fresh save slot
             var saveManager = Manager<SaveManager>.Instance;
             saveManager.SelectSaveGameSlot(slot);
             saveManager.NewGame();
             saveManager.GetCurrentSaveGameSlot().SlotName = "Test";
+            // add everything to the various managers that we need for our save slot, following the order in SaveGameSlot.UpdateSaveGameData()
             var progManager = Manager<ProgressionManager>.Instance;
-            progManager.secondQuest = true;
+            progManager.lastSaveTime = Time.time;
             progManager.checkpointSaveInfo = new CheckpointSaveInfo
             {
-                mana = 3,
+                mana = 0,
                 loadedLevelDimension = EBits.BITS_16,
                 playerLocationDimension = EBits.BITS_16,
-                loadedLevelName = ELevel.Level_13_TowerOfTimeHQ.ToString(),
+                loadedLevelName = ELevel.Level_02_AutumnHills.ToString(),
                 playerLocationSceneName = ELevel.Level_13_TowerOfTimeHQ.ToString(),
-                loadedLevelPlayerPosition = new Vector3(1160.79f, -42.5f, 0f),
+                loadedLevelPlayerPosition = new Vector3(485.03f, -101.5f, 0f),
                 loadedLevelCheckpointIndex = -1,
-                playerFacingDirection = -1f
+                playerFacingDirection = 1
             };
+            var flagsToSet = new[]
+            {
+                "CloudStepTutorialDone", "RuxxtinEncounter_1", "RuxxtinEncounter_2", "ManfredChase_1_Done",
+                "ManfredChase_2_Done", "ManfredChase_3_Done", "TOTHQ_SmallMageFirstInterractionDone"
+            };
+            foreach (var flag in flagsToSet)
+            {
+                progManager.SetFlag(flag, false);
+            }
+
+            var invManager = Manager<InventoryManager>.Instance;
+            invManager.ItemQuantityByItemId.Add(EItems.SCROLL_UPGRADE, 1);
+            invManager.ItemQuantityByItemId.Add(EItems.TIME_SHARD, 0);
+            invManager.ItemQuantityByItemId.Add(EItems.MAP, 1);
+            invManager.ItemQuantityByItemId.Add(EItems.CLIMBING_CLAWS, 1);
+            invManager.AllTimeItemQuantityByItemId = invManager.ItemQuantityByItemId;
+            
+            progManager.secondQuest = true;
             var discoveredLevels = new List<ELevel>
             {
                 ELevel.Level_01_NinjaVillage,
@@ -167,30 +190,70 @@ namespace MessengerRando.Utils
                 ELevel.Level_11_A_CloudRuins,
                 ELevel.Level_12_UnderWorld,
                 ELevel.Level_13_TowerOfTimeHQ,
+                ELevel.Level_04_C_RiviereTurquoise,
+                ELevel.Level_05_B_SunkenShrine,
             };
             progManager.levelsDiscovered.AddRange(discoveredLevels);
             progManager.allTimeDiscoveredLevels.AddRange(discoveredLevels);
-            progManager.SetFlag(Flags.TOTHQ_SmallMageFirstInterractionDone, false);
-            progManager.SetFlag(Flags.CloudStepTutorialDone, false);
+            progManager.isLevelDiscoveredAwarded = true;
+            
             var skipCutscenes = new List<string>
             {
-                // "ClimbDownToCatacombsCutscene",
-                // "ClimbDownToSearingCragsCutscene",
-                // "ClimbUpFromCatacombsCutscene",
-                // "ClimbUpToForlornCutscene",
-                // "CloudStepIntroCutscene",
-                // "CloudStepComeBackCutscene",
-                // "CloudRuinsTowerEntranceCutscene",
-                // "GlacialPeakTowerOfTimeCutscene",
-                // "GlacialPeakTowerOutCutscene",
-                // "GlouciousEntranceFromSearingRopeCutscene",
+                "MessengerCutScene",
+                "CloudStepIntroCutScene",
                 "NinjaVillageElderCutScene",
+                "DemonGeneralCutScene",
                 "NinjaVillageIntroEndCutScene",
-                // "SearagToGlacialPeakEntranceCutscene",
+                "LeafGolemIntroCutScene",
+                "LeafGolemOutroCutScene",
+                "NecrophobicWorkerCutscene",
+                "NecromancerIntroCutscene",
+                "NecromancerOutroCutscene",
+                "HowlingGrottoBossIntroCutscene",
+                "HowlingGrottoBossOutroCutscene",
+                "HowlingGrottoToQuillshroomFirstQuestCutScene",
+                "QuillshroomMarshBossIntroCutscene",
+                "QuillshroomMarshBossOutroCutscene",
+                "SearingCragsBossIntroCutscene",
+                "SearingCragsBossOutroCutscene",
+                "SearagToGlacialPeakEntranceCutscene",
+                "GlacialPeakTowerOfTimeCutscene",
+                "GlacialPeakTowerOutCutscene",
+                "QuibbleIntroCutscene",
+                "TowerOfTimeBossIntroCutscene",
+                "TowerOfTimeBossOutroCutscene",
+                "Teleport16BitsRoomCutscene",
+                "To16BitsCutscene",
+                "TowerOfTimeTeleportToCloudRuinsCutscene",
+                "CloudRuinsTowerEntranceCutscene",
+                "ManfredBossIntroCutscene",
+                "ManfredBossOutroCutscene",
+                "DemonGeneralBossIntroCutscene",
+                "DemonGeneralBossOutroCutscene",
+                "UnderworldManfredEscapeCutscene",
+                "FutureMessengerCutscene",
                 "SecondQuestStartShopCutscene",
+                "ArmoireOpeningCutscene",
+                "DialogCutscene",
+                "GoToTotMageDialog",
+                "RiviereTurquoisePortalOpeningCutscene",
+                "EnterPortalCutscene",
+                "ExitPortalCutscene",
+                "ProphetIntroCutscene",
+                "PortalOpeningCutscene",
+                "SunkenShrinePortalOpeningCutscene",
+                "SearingCragsPortalOpeningCutscene",
+                "ExitPortalAwardMapCutscene"
             };
             progManager.cutscenesPlayed.AddRange(skipCutscenes);
-            Manager<LevelManager>.Instance.lastLevelLoaded = ELevel.Level_13_TowerOfTimeHQ.ToString();
+            
+            progManager.actionSequenceDone.AddRange(new []{
+                "AwardGrimplouSequence(Clone)",
+                "AwardGlidouSequence(Clone)",
+                "AwardGraplouSequence(Clone)"
+            });
+            // copy everything from the managers to the save slot
+            saveManager.GetCurrentSaveGameSlot().UpdateSaveGameData();
             saveManager.Save();
             try
             {

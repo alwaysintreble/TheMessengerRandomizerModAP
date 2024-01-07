@@ -6,6 +6,7 @@ using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace MessengerRando.Utils
 {
@@ -130,6 +131,75 @@ namespace MessengerRando.Utils
         {
             return ArchipelagoClient.ServerData.CheckedLocations != null &&
                    ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID);
+        }
+
+        public static void InitializeNewSecondQuest(SaveGameSelectionScreen saveScreen, int slot)
+        {
+            var saveManager = Manager<SaveManager>.Instance;
+            saveManager.SelectSaveGameSlot(slot);
+            saveManager.NewGame();
+            saveManager.GetCurrentSaveGameSlot().SlotName = "Test";
+            var progManager = Manager<ProgressionManager>.Instance;
+            progManager.secondQuest = true;
+            progManager.checkpointSaveInfo = new CheckpointSaveInfo
+            {
+                mana = 3,
+                loadedLevelDimension = EBits.BITS_16,
+                playerLocationDimension = EBits.BITS_16,
+                loadedLevelName = ELevel.Level_13_TowerOfTimeHQ.ToString(),
+                playerLocationSceneName = ELevel.Level_13_TowerOfTimeHQ.ToString(),
+                loadedLevelPlayerPosition = new Vector3(1160.79f, -42.5f, 0f),
+                loadedLevelCheckpointIndex = -1,
+                playerFacingDirection = -1f
+            };
+            var discoveredLevels = new List<ELevel>
+            {
+                ELevel.Level_01_NinjaVillage,
+                ELevel.Level_02_AutumnHills,
+                ELevel.Level_03_ForlornTemple,
+                ELevel.Level_04_Catacombs,
+                ELevel.Level_06_A_BambooCreek,
+                ELevel.Level_05_A_HowlingGrotto,
+                ELevel.Level_07_QuillshroomMarsh,
+                ELevel.Level_08_SearingCrags,
+                ELevel.Level_09_A_GlacialPeak,
+                ELevel.Level_10_A_TowerOfTime,
+                ELevel.Level_11_A_CloudRuins,
+                ELevel.Level_12_UnderWorld,
+                ELevel.Level_13_TowerOfTimeHQ,
+            };
+            progManager.levelsDiscovered.AddRange(discoveredLevels);
+            progManager.allTimeDiscoveredLevels.AddRange(discoveredLevels);
+            progManager.SetFlag(Flags.TOTHQ_SmallMageFirstInterractionDone, false);
+            progManager.SetFlag(Flags.CloudStepTutorialDone, false);
+            var skipCutscenes = new List<string>
+            {
+                // "ClimbDownToCatacombsCutscene",
+                // "ClimbDownToSearingCragsCutscene",
+                // "ClimbUpFromCatacombsCutscene",
+                // "ClimbUpToForlornCutscene",
+                // "CloudStepIntroCutscene",
+                // "CloudStepComeBackCutscene",
+                // "CloudRuinsTowerEntranceCutscene",
+                // "GlacialPeakTowerOfTimeCutscene",
+                // "GlacialPeakTowerOutCutscene",
+                // "GlouciousEntranceFromSearingRopeCutscene",
+                "NinjaVillageElderCutScene",
+                "NinjaVillageIntroEndCutScene",
+                // "SearagToGlacialPeakEntranceCutscene",
+                "SecondQuestStartShopCutscene",
+            };
+            progManager.cutscenesPlayed.AddRange(skipCutscenes);
+            Manager<LevelManager>.Instance.lastLevelLoaded = ELevel.Level_13_TowerOfTimeHQ.ToString();
+            saveManager.Save();
+            try
+            {
+                saveScreen.OnLoadGame(slot);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public static int ReceivedItemsCount()

@@ -215,17 +215,31 @@ namespace MessengerRando
 
             RandoMenu.ArchipelagoMenuButton = Courier.UI.RegisterSubMenuOptionButton(() => "Randomizer", RandoMenu.DisplayRandoMenu);
             
-            PopulateRandoButtons();
-            
-            void PopulateRandoButtons()
-            {
-                RandoMenu.versionButton =
-                    RandoMenu.RegisterSubRandoButton(
-                        () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
-                RandoMenu.connectMenuButton = RandoMenu.RegisterSubRandoButton(() => "Connect to Archipelago", null);
-                RandoMenu.resetSaveButton = RandoMenu.RegisterMultipleRandoButton(() => "Reset Randomizer File Slot", null,
-                    ResetSaves, null, RandoMenu.GetTextForResetIndex);
-            }
+            // PopulateRandoButtons();
+            //
+            // void PopulateRandoButtons()
+            // {
+            //     RandoMenu.versionButton =
+            //         RandoMenu.RegisterSubRandoButton(
+            //             () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
+            //     RandoMenu.connectMenuButton = RandoMenu.RegisterSubRandoButton(() => "Connect to Archipelago", null);
+            //     RandoMenu.resetSaveButton = RandoMenu.RegisterMultipleRandoButton(() => "Reset Randomizer File Slot", null,
+            //         ResetSaves, null, RandoMenu.GetTextForResetIndex);
+            // }
+            //
+            // RandoMenu.ArchipelagoMenuButton = Courier.UI.RegisterSubMenuOptionButton(() => "Randomizer", RandoMenu.DisplayRandoMenu);
+            //
+            // PopulateRandoButtons();
+            //
+            // void PopulateRandoButtons()
+            // {
+            //     RandoMenu.versionButton =
+            //         RandoMenu.RegisterSubRandoButton(
+            //             () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
+            //     RandoMenu.connectMenuButton = RandoMenu.RegisterSubRandoButton(() => "Connect to Archipelago", null);
+            //     RandoMenu.resetSaveButton = RandoMenu.RegisterMultipleRandoButton(() => "Reset Randomizer File Slot", null,
+            //         ResetSaves, null, RandoMenu.GetTextForResetIndex);
+            // }
 
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
@@ -233,8 +247,10 @@ namespace MessengerRando
             On.HasItem.IsTrue += HasItem_IsTrue;
             On.AwardNoteCutscene.ShouldPlay += AwardNoteCutscene_ShouldPlay;
             On.CutsceneHasPlayed.IsTrue += CutsceneHasPlayed_IsTrue;
+            On.SaveGameSelectionScreen.LoadGame += SaveGameSelectionScreen_LoadGame;
             On.SaveGameSelectionScreen.OnLoadGame += SaveGameSelectionScreen_OnLoadGame;
             On.SaveGameSelectionScreen.OnNewGame += SaveGameSelectionScreen_OnNewGame;
+            On.SaveGameSelectionScreen.LaunchGame += SaveGameSelectionScreen_LaunchGame;
             On.BackToTitleScreen.GoBackToTitleScreen += PauseScreen_OnQuitToTitle;
             On.NecrophobicWorkerCutscene.Play += NecrophobicWorkerCutscene_Play;
             IL.RuxxtinNoteAndAwardAmuletCutscene.Play += RuxxtinNoteAndAwardAmuletCutscene_Play;
@@ -511,6 +527,19 @@ namespace MessengerRando
             }
             return orig(self);
         }
+        
+        private void SaveGameSelectionScreen_LoadGame(On.SaveGameSelectionScreen.orig_LoadGame orig, SaveGameSelectionScreen self, int slotindex)
+        {
+            Console.WriteLine("loading game");
+            try
+            {
+                orig(self, slotindex);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
 
         void SaveGameSelectionScreen_OnLoadGame(On.SaveGameSelectionScreen.orig_OnLoadGame orig, SaveGameSelectionScreen self, int slotIndex)
         {
@@ -564,9 +593,24 @@ namespace MessengerRando
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
-            orig(self, slot);
+            RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+            // self.OnLoadGame(slot.slotIndex);
+            // orig(self, slot);
         }
 
+        private void SaveGameSelectionScreen_LaunchGame(On.SaveGameSelectionScreen.orig_LaunchGame orig, SaveGameSelectionScreen self, string leveltoload, CheckpointSaveInfo checkpointsaveinfo)
+        {
+            Console.WriteLine("attempting to launch game");
+            try
+            {
+                orig(self, leveltoload, checkpointsaveinfo);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+        
         void PauseScreen_OnQuitToTitle(On.BackToTitleScreen.orig_GoBackToTitleScreen orig)
         {
             if (ArchipelagoClient.HasConnected)
@@ -966,6 +1010,9 @@ namespace MessengerRando
 
         private void SaveManager_DoActualSave(On.SaveManager.orig_DoActualSaving orig, SaveManager self, bool applySaveDelay = true)
         {
+            // var checkpoint = Manager<ProgressionManager>.Instance.checkpointSaveInfo;
+            // var pos = checkpoint.loadedLevelPlayerPosition;
+            // Console.WriteLine($"{checkpoint.loadedLevelCheckpointIndex} \n{checkpoint.playerFacingDirection}\n {pos.x} {pos.y} {pos.z}");
             if (ArchipelagoClient.HasConnected)
             {
                 // The game calls the save method after the ending cutscene before rolling credits

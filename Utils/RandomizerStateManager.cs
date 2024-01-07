@@ -75,6 +75,8 @@ namespace MessengerRando.Utils
             Instance.SkipMusicBox = !Convert.ToBoolean(slotData["music_box"]);
             RandoShopManager.ShopPrices = ((JObject)slotData["shop"]).ToObject<Dictionary<EShopUpgradeID, int>>();
             RandoShopManager.FigurePrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EFigurine, int>>();
+            RandoPortalManager.LimitedPortals =
+                Convert.ToBoolean(slotData.TryGetValue("limited_portals", out var limitPortal));
         }
 
         private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)
@@ -142,8 +144,11 @@ namespace MessengerRando.Utils
             var saveManager = Manager<SaveManager>.Instance;
             saveManager.SelectSaveGameSlot(slot);
             saveManager.NewGame();
-            saveManager.GetCurrentSaveGameSlot().SlotName =
-                ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
+            if (ArchipelagoClient.Authenticated)
+                saveManager.GetCurrentSaveGameSlot().SlotName =
+                    ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
+            else
+                saveManager.GetCurrentSaveGameSlot().SlotName = "Ayy Lmao";
             // add everything to the various managers that we need for our save slot, following the order in SaveGameSlot.UpdateSaveGameData()
             var progManager = Manager<ProgressionManager>.Instance;
             progManager.lastSaveTime = Time.time;
@@ -178,21 +183,21 @@ namespace MessengerRando.Utils
             progManager.secondQuest = true;
             var discoveredLevels = new List<ELevel>
             {
-                ELevel.Level_01_NinjaVillage,
-                ELevel.Level_02_AutumnHills,
-                ELevel.Level_03_ForlornTemple,
-                ELevel.Level_04_Catacombs,
-                ELevel.Level_06_A_BambooCreek,
-                ELevel.Level_05_A_HowlingGrotto,
-                ELevel.Level_07_QuillshroomMarsh,
-                ELevel.Level_08_SearingCrags,
-                ELevel.Level_09_A_GlacialPeak,
-                ELevel.Level_10_A_TowerOfTime,
-                ELevel.Level_11_A_CloudRuins,
-                ELevel.Level_12_UnderWorld,
-                ELevel.Level_13_TowerOfTimeHQ,
-                ELevel.Level_04_C_RiviereTurquoise,
-                ELevel.Level_05_B_SunkenShrine,
+                // ELevel.Level_01_NinjaVillage,
+                // ELevel.Level_02_AutumnHills,
+                // ELevel.Level_03_ForlornTemple,
+                // ELevel.Level_04_Catacombs,
+                // ELevel.Level_06_A_BambooCreek,
+                // ELevel.Level_05_A_HowlingGrotto,
+                // ELevel.Level_07_QuillshroomMarsh,
+                // ELevel.Level_08_SearingCrags,
+                // ELevel.Level_09_A_GlacialPeak,
+                // ELevel.Level_10_A_TowerOfTime,
+                // ELevel.Level_11_A_CloudRuins,
+                // ELevel.Level_12_UnderWorld,
+                // ELevel.Level_13_TowerOfTimeHQ,
+                // ELevel.Level_04_C_RiviereTurquoise,
+                // ELevel.Level_05_B_SunkenShrine,
             };
             progManager.levelsDiscovered.AddRange(discoveredLevels);
             progManager.allTimeDiscoveredLevels.AddRange(discoveredLevels);
@@ -205,47 +210,48 @@ namespace MessengerRando.Utils
                 "NinjaVillageElderCutScene",
                 "DemonGeneralCutScene",
                 "NinjaVillageIntroEndCutScene",
-                "LeafGolemIntroCutScene",
-                "LeafGolemOutroCutScene",
-                "NecrophobicWorkerCutscene",
-                "NecromancerIntroCutscene",
-                "NecromancerOutroCutscene",
-                "HowlingGrottoBossIntroCutscene",
-                "HowlingGrottoBossOutroCutscene",
-                "HowlingGrottoToQuillshroomFirstQuestCutScene",
-                "QuillshroomMarshBossIntroCutscene",
-                "QuillshroomMarshBossOutroCutscene",
-                "SearingCragsBossIntroCutscene",
-                "SearingCragsBossOutroCutscene",
-                "SearagToGlacialPeakEntranceCutscene",
-                "GlacialPeakTowerOfTimeCutscene",
-                "GlacialPeakTowerOutCutscene",
-                "QuibbleIntroCutscene",
-                "TowerOfTimeBossIntroCutscene",
-                "TowerOfTimeBossOutroCutscene",
+                // "LeafGolemIntroCutScene",
+                // "LeafGolemOutroCutScene",
+                // "NecrophobicWorkerCutscene",
+                // "NecromancerIntroCutscene",
+                // "NecromancerOutroCutscene",
+                // "HowlingGrottoBossIntroCutscene",
+                // "HowlingGrottoBossOutroCutscene",
+                // "HowlingGrottoToQuillshroomFirstQuestCutScene",
+                // "QuillshroomMarshBossIntroCutscene",
+                // "QuillshroomMarshBossOutroCutscene",
+                // "SearingCragsBossIntroCutscene",
+                // "SearingCragsBossOutroCutscene",
+                // "SearagToGlacialPeakEntranceCutscene",
+                // "GlacialPeakTowerOfTimeCutscene",
+                // "GlacialPeakTowerOutCutscene",
+                // "QuibbleIntroCutscene",
+                // "TowerOfTimeBossIntroCutscene",
+                // "TowerOfTimeBossOutroCutscene",
                 "Teleport16BitsRoomCutscene",
                 "To16BitsCutscene",
                 "TowerOfTimeTeleportToCloudRuinsCutscene",
-                "CloudRuinsTowerEntranceCutscene",
-                "ManfredBossIntroCutscene",
-                "ManfredBossOutroCutscene",
-                "DemonGeneralBossIntroCutscene",
-                "DemonGeneralBossOutroCutscene",
-                "UnderworldManfredEscapeCutscene",
-                "FutureMessengerCutscene",
+                // "CloudRuinsTowerEntranceCutscene",
+                // "ManfredBossIntroCutscene",
+                // "ManfredBossOutroCutscene",
+                // "DemonGeneralBossIntroCutscene",
+                // "DemonGeneralBossOutroCutscene",
+                // "UnderworldManfredEscapeCutscene",
+                // "FutureMessengerCutscene",
                 "SecondQuestStartShopCutscene",
                 "ArmoireOpeningCutscene",
                 "DialogCutscene",
                 "GoToTotMageDialog",
-                "RiviereTurquoisePortalOpeningCutscene",
-                "EnterPortalCutscene",
-                "ExitPortalCutscene",
+                // "RiviereTurquoisePortalOpeningCutscene",
+                // "EnterPortalCutscene",
+                // "ExitPortalCutscene",
                 "ProphetIntroCutscene",
-                "PortalOpeningCutscene",
-                "SunkenShrinePortalOpeningCutscene",
-                "SearingCragsPortalOpeningCutscene",
+                // "SunkenShrinePortalOpeningCutscene",
+                // "SearingCragsPortalOpeningCutscene",
                 "ExitPortalAwardMapCutscene"
             };
+            if (RandoPortalManager.LimitedPortals)
+                skipCutscenes.Add("PortalOpeningCutscene");
             progManager.cutscenesPlayed.AddRange(skipCutscenes);
             
             progManager.actionSequenceDone.AddRange(new []{

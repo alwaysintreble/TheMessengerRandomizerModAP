@@ -278,6 +278,7 @@ namespace MessengerRando
                 (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
             // level teleporting etc management
             On.Level.ChangeRoom += RandoRoomManager.Level_ChangeRoom;
+            // On.PortalOpeningCutscene.OnOpenPortalEvent += RandoPortalManager.OpenPortalEvent;
             //These functions let us override and manage power seals ourselves with 'fake' items
             On.ProgressionManager.TotalPowerSealCollected += ProgressionManager_TotalPowerSealCollected;
             On.ShopChestOpenCutscene.OnChestOpened += (orig, self) =>
@@ -593,10 +594,14 @@ namespace MessengerRando
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
+#if DEBUG
+            RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+#elif RELEASE
             if (ArchipelagoClient.Authenticated)
                 RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
             else
                 orig(self, slot);
+#endif
         }
 
         private void SaveGameSelectionScreen_LaunchGame(On.SaveGameSelectionScreen.orig_LaunchGame orig, SaveGameSelectionScreen self, string leveltoload, CheckpointSaveInfo checkpointsaveinfo)

@@ -250,7 +250,7 @@ namespace MessengerRando.Utils
                 // "SearingCragsPortalOpeningCutscene",
                 "ExitPortalAwardMapCutscene"
             };
-            if (RandoPortalManager.LimitedPortals)
+            if (!RandoPortalManager.LimitedPortals)
                 skipCutscenes.Add("PortalOpeningCutscene");
             progManager.cutscenesPlayed.AddRange(skipCutscenes);
             

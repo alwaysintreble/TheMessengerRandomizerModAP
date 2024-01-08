@@ -8,8 +8,10 @@ using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
 using MonoMod.Utils;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using Random = System.Random;
 
 namespace MessengerRando.Utils
 {
@@ -24,7 +26,6 @@ namespace MessengerRando.Utils
 
         public bool SkipMusicBox;
         public bool SkipPhantom;
-        public bool InGame;
 
         public Dictionary<long, NetworkItem> ScoutedLocations;
         public Dictionary<int, ArchipelagoData> APSave;
@@ -75,8 +76,17 @@ namespace MessengerRando.Utils
             Instance.SkipMusicBox = !Convert.ToBoolean(slotData["music_box"]);
             RandoShopManager.ShopPrices = ((JObject)slotData["shop"]).ToObject<Dictionary<EShopUpgradeID, int>>();
             RandoShopManager.FigurePrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EFigurine, int>>();
-            RandoPortalManager.LimitedPortals =
-                Convert.ToBoolean(slotData.TryGetValue("limited_portals", out var limitPortal));
+            if (slotData.TryGetValue("starting_portals", out var portals))
+            {
+                var startingPortals = ((JArray)portals).ToObject<List<string>>();
+                RandoPortalManager.StartingPortals = new List<string>();
+                foreach (var portal in startingPortals)
+                {
+                    var scene = $"{portal}OpeningCutscene".Replace(" ", "");
+                    Console.WriteLine(scene);
+                    RandoPortalManager.StartingPortals.Add(scene);
+                }
+            }
         }
 
         private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)
@@ -97,12 +107,19 @@ namespace MessengerRando.Utils
         public static bool IsSafeTeleportState()
         {
             //Unsafe teleport states are shops/hq/boss fights
-            return !(Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
-                     Manager<Shop>.Instance.gameObject.activeInHierarchy ||
-                     Manager<GameManager>.Instance.IsCutscenePlaying() ||
-                     Manager<PlayerManager>.Instance.Player.IsInvincible() ||
-                     Manager<PlayerManager>.Instance.Player.InputBlocked() ||
-                     Manager<PlayerManager>.Instance.Player.IsKnockedBack);
+            try
+            {
+                return !(Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
+                         Manager<Shop>.Instance.gameObject.activeInHierarchy ||
+                         Manager<GameManager>.Instance.IsCutscenePlaying() ||
+                         Manager<PlayerManager>.Instance.Player.IsInvincible() ||
+                         Manager<PlayerManager>.Instance.Player.InputBlocked() ||
+                         Manager<PlayerManager>.Instance.Player.IsKnockedBack);
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -242,18 +259,13 @@ namespace MessengerRando.Utils
                 "ArmoireOpeningCutscene",
                 "DialogCutscene",
                 "GoToTotMageDialog",
-                // "RiviereTurquoisePortalOpeningCutscene",
-                // "EnterPortalCutscene",
-                // "ExitPortalCutscene",
                 "ProphetIntroCutscene",
-                // "SunkenShrinePortalOpeningCutscene",
-                // "SearingCragsPortalOpeningCutscene",
                 "ExitPortalAwardMapCutscene"
             };
-            if (!RandoPortalManager.LimitedPortals)
-                skipCutscenes.Add("PortalOpeningCutscene");
             progManager.cutscenesPlayed.AddRange(skipCutscenes);
-            
+
+            if (RandoPortalManager.StartingPortals != null)
+                progManager.cutscenesPlayed.AddRange(RandoPortalManager.StartingPortals);
             progManager.actionSequenceDone.AddRange(new []{
                 "AwardGrimplouSequence(Clone)",
                 "AwardGlidouSequence(Clone)",

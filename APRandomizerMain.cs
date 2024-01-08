@@ -28,12 +28,10 @@ namespace MessengerRando
     {
         private float updateTimer;
         private float updateTime = 3.0f;
-        private bool clearedData = false;
+        private bool clearedData;
 
         private RandomizerStateManager randoStateManager;
 
-        TextEntryButtonInfo resetRandoSaveFileButton;
-  
         SubMenuButtonInfo versionButton;
         SubMenuButtonInfo seedNumButton;
 
@@ -70,7 +68,7 @@ namespace MessengerRando
         public override void Load()
         {
             Console.WriteLine("Randomizer loading and ready to try things!");
-          
+
             //Initialize the randomizer state manager
             randoStateManager = new RandomizerStateManager();
 
@@ -83,14 +81,6 @@ namespace MessengerRando
             seedNumButton = Courier.UI.RegisterSubMenuModOptionButton(
                 () => "Current seed number: " + GetCurrentSeedNum(),
                 null);
-
-            //Add Reset rando mod button
-            resetRandoSaveFileButton = Courier.UI.RegisterTextEntryModOptionButton(
-                () => "Reset Randomizer File Slot", OnRandoFileResetConfirmation,
-                1,
-                () => "Are you sure you wish to reset your save file for randomizer play?(y/n)",
-                () => "n",
-                CharsetFlags.Letter);
 
             //Add windmill shuriken toggle button
             windmillShurikenToggleButton = Courier.UI.RegisterSubMenuModOptionButton(
@@ -155,21 +145,21 @@ namespace MessengerRando
                     ? "Hide status information"
                     : "Display status information",
                 OnToggleAPStatus);
-            
+
             //Add Archipelago message button
             archipelagoToggleMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(
                 () => ArchipelagoClient.DisplayAPMessages
                     ? "Hide server messages"
                     : "Display server messages",
                 OnToggleAPMessages);
-            
+
             //Add Archipelago filter messages button
             archipelagoToggleFilterMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(
                 () => ArchipelagoClient.FilterAPMessages
                     ? "Show all server messages"
                     : "Filter messages to only relevant to me",
                 () => ArchipelagoClient.FilterAPMessages = !ArchipelagoClient.FilterAPMessages);
-            
+
             //Add Archipelago hint popup button
             archipelagoToggleHintPopupButton = Courier.UI.RegisterSubMenuModOptionButton(
                 () => ArchipelagoClient.HintPopUps ? "Disable hint popups" : "Enable hint popups",
@@ -213,34 +203,19 @@ namespace MessengerRando
                     : "Enable Music Shuffle",
                 () => RandoMusicManager.ShuffleMusic = !RandoMusicManager.ShuffleMusic);
 
-            RandoMenu.ArchipelagoMenuButton = Courier.UI.RegisterSubMenuOptionButton(() => "Randomizer", RandoMenu.DisplayRandoMenu);
-            
-            // PopulateRandoButtons();
-            //
-            // void PopulateRandoButtons()
-            // {
-            //     RandoMenu.versionButton =
-            //         RandoMenu.RegisterSubRandoButton(
-            //             () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
-            //     RandoMenu.connectMenuButton = RandoMenu.RegisterSubRandoButton(() => "Connect to Archipelago", null);
-            //     RandoMenu.resetSaveButton = RandoMenu.RegisterMultipleRandoButton(() => "Reset Randomizer File Slot", null,
-            //         ResetSaves, null, RandoMenu.GetTextForResetIndex);
-            // }
-            //
-            // RandoMenu.ArchipelagoMenuButton = Courier.UI.RegisterSubMenuOptionButton(() => "Randomizer", RandoMenu.DisplayRandoMenu);
-            //
-            // PopulateRandoButtons();
-            //
-            // void PopulateRandoButtons()
-            // {
-            //     RandoMenu.versionButton =
-            //         RandoMenu.RegisterSubRandoButton(
-            //             () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
-            //     RandoMenu.connectMenuButton = RandoMenu.RegisterSubRandoButton(() => "Connect to Archipelago", null);
-            //     RandoMenu.resetSaveButton = RandoMenu.RegisterMultipleRandoButton(() => "Reset Randomizer File Slot", null,
-            //         ResetSaves, null, RandoMenu.GetTextForResetIndex);
-            // }
+            RandoMenu.ArchipelagoMenuButton =
+                Courier.UI.RegisterSubMenuOptionButton(() => "Randomizer", RandoMenu.DisplayRandoMenu);
 
+            PopulateRandoButtons();
+            
+            void PopulateRandoButtons()
+            {
+                RandoMenu.versionButton =
+                    RandoMenu.RegisterSubRandoButton(
+                        () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
+                RandoMenu.connectMenuButton = RandoMenu.RegisterSubRandoButton(() => "Connect to Archipelago", null);
+            }
+            
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
             On.ProgressionManager.SetChallengeRoomAsCompleted += ProgressionManager_SetChallengeRoomAsCompleted;
@@ -250,7 +225,8 @@ namespace MessengerRando
             On.SaveGameSelectionScreen.LoadGame += SaveGameSelectionScreen_LoadGame;
             On.SaveGameSelectionScreen.OnLoadGame += SaveGameSelectionScreen_OnLoadGame;
             On.SaveGameSelectionScreen.OnNewGame += SaveGameSelectionScreen_OnNewGame;
-            On.SaveGameSelectionScreen.LaunchGame += SaveGameSelectionScreen_LaunchGame;
+            On.SaveGameSelectionScreen.ConfirmSaveDelete += SaveGameSelectionScreen_ConfirmSaveDelete;
+            On.SaveGameSelectionScreen.OnDeleteChoiceDone += SaveGameSelectionScreen_OnDelete;
             On.BackToTitleScreen.GoBackToTitleScreen += PauseScreen_OnQuitToTitle;
             On.NecrophobicWorkerCutscene.Play += NecrophobicWorkerCutscene_Play;
             IL.RuxxtinNoteAndAwardAmuletCutscene.Play += RuxxtinNoteAndAwardAmuletCutscene_Play;
@@ -313,7 +289,6 @@ namespace MessengerRando
         public override void Initialize()
         {
             //I only want the generate seed/enter seed mod options available when not in the game.
-            resetRandoSaveFileButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE;
             //Also the AP buttons
             archipelagoHostButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
             archipelagoPortButton.IsEnabled = () => !ArchipelagoClient.Authenticated &&
@@ -587,7 +562,6 @@ namespace MessengerRando
             }
 
             orig(self, slotIndex);
-            RandomizerStateManager.Instance.InGame = true;
             Manager<AudioManager>.Instance.levelMusicShuffle = RandoMusicManager.ShuffleMusic;
             RandoMusicManager.BuildMusicLibrary();
         }
@@ -604,17 +578,20 @@ namespace MessengerRando
 #endif
         }
 
-        private void SaveGameSelectionScreen_LaunchGame(On.SaveGameSelectionScreen.orig_LaunchGame orig, SaveGameSelectionScreen self, string leveltoload, CheckpointSaveInfo checkpointsaveinfo)
+        private void SaveGameSelectionScreen_ConfirmSaveDelete(On.SaveGameSelectionScreen.orig_ConfirmSaveDelete orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
-            Console.WriteLine("attempting to launch game");
-            try
+            randoStateManager.CurrentFileSlot = slot.slotIndex + 1;
+            orig(self, slot);
+        }
+
+        private void SaveGameSelectionScreen_OnDelete(On.SaveGameSelectionScreen.orig_OnDeleteChoiceDone orig, SaveGameSelectionScreen self, bool delete)
+        {
+            if (delete)
             {
-                orig(self, leveltoload, checkpointsaveinfo);
+                randoStateManager.APSave[randoStateManager.CurrentFileSlot] = new ArchipelagoData();
+                Save.APSaveData = RandoSave.GetSaveData();
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            orig(self, delete);
         }
         
         void PauseScreen_OnQuitToTitle(On.BackToTitleScreen.orig_GoBackToTitleScreen orig)
@@ -634,7 +611,6 @@ namespace MessengerRando
             clearedData = false;
             orig();
             Console.WriteLine("returned to title");
-            RandomizerStateManager.Instance.InGame = false;
         }
 
         //Fixing necro cutscene check
@@ -753,49 +729,7 @@ namespace MessengerRando
             // this determines which notes should be shown present in the music box
             orig(self);
         }
-
-        bool OnRandoFileResetConfirmation(string answer)
-        {
-            
-            if(!"y".Equals(answer.ToLowerInvariant()))
-            {
-                return true;
-            }
-
-            ConfirmFileReset();
-            return true;
-        }
         
-        void ConfirmFileReset()
-        {
-            ArchipelagoData.ClearData();
-            randoStateManager = new RandomizerStateManager();
-            clearedData = true;
-            try
-            {
-                Save.APSaveData = RandoSave.GetSaveData();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            string path = Application.persistentDataPath + "/SaveGame.txt";
-            using (StreamWriter sw = File.CreateText(path))
-            {
-                sw.WriteLine(RandomizerConstants.SAVE_FILE_STRING);
-            }
-
-            Manager<SaveManager>.Instance.LoadSaveGame();
-            //Delete the existing save file selection ui since it really wants to hold on to the previous saves data.
-            GameObject.Destroy(Manager<UIManager>.Instance.GetView<SaveGameSelectionScreen>().gameObject);
-            //Reinit the save file selection ui.
-            SaveGameSelectionScreen selectionScreen =
-                Manager<UIManager>.Instance.ShowView<SaveGameSelectionScreen>(EScreenLayers.MAIN, null, false,
-                    AnimatorUpdateMode.Normal);
-            selectionScreen.GoOffscreenInstant();
-
-        }
-
         public static void OnToggleWindmillShuriken()
         {
             //Toggle Shuriken

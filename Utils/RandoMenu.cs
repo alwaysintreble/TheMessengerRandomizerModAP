@@ -21,7 +21,6 @@ namespace MessengerRando.Utils
 
         public static SubMenuButtonInfo versionButton;
         public static SubMenuButtonInfo connectMenuButton;
-        public static MultipleOptionButtonInfo resetSaveButton;
 
 
         public static void DisplayRandoMenu()

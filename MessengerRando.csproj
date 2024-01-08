@@ -102,6 +102,7 @@
     <Compile Include="Overrides\RandoCatacombLevelInitializer.cs" />
     <Compile Include="RO\RandoItemRO.cs" />
     <Compile Include="RO\LocationRO.cs" />
+    <Compile Include="Utils\HintMenu.cs" />
     <Compile Include="Utils\Constants\BossConstants.cs" />
     <Compile Include="Utils\Constants\LevelConstants.cs" />
     <Compile Include="Utils\Constants\RoomConstants.cs" />

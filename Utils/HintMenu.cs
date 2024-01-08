@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using MessengerRando.Archipelago;
 using Mod.Courier;
 using Mod.Courier.UI;
 using TMPro;
@@ -14,48 +12,25 @@ using UnityEngine.UI;
 
 namespace MessengerRando.Utils
 {
-    public class RandoMenu
+    public class HintMenu
     {
-        public static OptionsButtonInfo ArchipelagoMenuButton;
-        public static RandoScreen randoScreen;
+        public static OptionsButtonInfo ArchipelagoHintMenuButton;
+        private static HintScreen hintScreen;
 
-        public static SubMenuButtonInfo versionButton;
-        public static SubMenuButtonInfo seedNumButton;
+        public static SubMenuButtonInfo archipelagoHintButton;
 
-        public static SubMenuButtonInfo windmillShurikenToggleButton;
-        public static SubMenuButtonInfo teleportToHqButton;
-        public static SubMenuButtonInfo teleportToNinjaVillage;
-        public static SubMenuButtonInfo shuffleMusicButton;
-
-        public static SubMenuButtonInfo ArchipelagoHostButton;
-        public static SubMenuButtonInfo ArchipelagoPortButton;
-        public static SubMenuButtonInfo ArchipelagoNameButton;
-        public static SubMenuButtonInfo ArchipelagoPassButton;
-        public static SubMenuButtonInfo ArchipelagoConnectButton;
-        
-        public static SubMenuButtonInfo archipelagoReleaseButton;
-        public static SubMenuButtonInfo archipelagoCollectButton;
-        public static SubMenuButtonInfo archipelagoToggleMessagesButton;
-        public static SubMenuButtonInfo archipelagoToggleFilterMessagesButton;
-        public static SubMenuButtonInfo archipelagoToggleHintPopupButton;
-        public static SubMenuButtonInfo archipelagoStatusButton;
-        public static SubMenuButtonInfo archipelagoDeathLinkButton;
-        public static SubMenuButtonInfo archipelagoMessageTimerButton;
-
-
-
-        public static void DisplayRandoMenu()
+        public static void DisplayHintMenu()
         {
             Manager<UIManager>.Instance.GetView<OptionScreen>().gameObject.SetActive(false);
-            if (!RandoScreen.RandoScreenLoaded)
-                randoScreen = RandoScreen.BuildModOptionScreen(Manager<UIManager>.Instance.GetView<OptionScreen>());
-
-            Courier.UI.ShowView(randoScreen, EScreenLayers.PROMPT, null, false);
+            if (!HintScreen.ConnectScreenLoaded)
+                hintScreen = HintScreen.BuildModOptionScreen(Manager<UIManager>.Instance.GetView<OptionScreen>());
+            
+            Courier.UI.ShowView(hintScreen, EScreenLayers.PROMPT, null, false);
         }
 
-        public class RandoScreen : ModOptionScreen
+        public class HintScreen : ModOptionScreen
         {
-            public static bool RandoScreenLoaded;
+            public static bool ConnectScreenLoaded;
             public static readonly List<OptionsButtonInfo> OptionButtons = new List<OptionsButtonInfo>();
 
             private static int OptionsCount()
@@ -132,12 +107,12 @@ namespace MessengerRando.Utils
                 parent.Find("Back")?.SetAsLastSibling();
             }
 
-            public new static RandoScreen BuildModOptionScreen(OptionScreen optionScreen)
+            public new static HintScreen BuildModOptionScreen(OptionScreen optionScreen)
             {
                 GameObject gameObject = new GameObject();
-                RandoScreen randoScreen = gameObject.AddComponent<RandoScreen>();
+                HintScreen randoScreen = gameObject.AddComponent<HintScreen>();
                 OptionScreen newScreen = Instantiate(optionScreen);
-                randoScreen.name = "RandoScreen";
+                randoScreen.name = "ConnectScreen";
                 // Swap everything under the option screen to the mod option screen
                 // Iterate backwards so elements don't shift as lower ones are removed
                 for (int i = newScreen.transform.childCount - 1; i >= 0; i--)
@@ -167,7 +142,7 @@ namespace MessengerRando.Utils
                 randoScreen.InitStuffUnityWouldDo();
 
                 randoScreen.gameObject.SetActive(false);
-                RandoScreenLoaded = true;
+                ConnectScreenLoaded = true;
                 return randoScreen;
             }
 
@@ -244,7 +219,7 @@ namespace MessengerRando.Utils
                     }
                     catch (Exception e)
                     {
-                        CourierLogger.Log(LogType.Exception, "RandoScreen",
+                        CourierLogger.Log(LogType.Exception, "ConnectScreen",
                             "Image not Read/Writeable when recoloring selection frames in ModOptionScreen");
                         e.LogDetailed();
                     }
@@ -304,7 +279,7 @@ namespace MessengerRando.Utils
             public new void GoOffscreenInstant()
             {
                 gameObject.SetActive(false);
-                RandoScreenLoaded = false;
+                ConnectScreenLoaded = false;
             }
 
             public new int GetSelectedButtonIndex()
@@ -400,7 +375,7 @@ namespace MessengerRando.Utils
                     }
                 }
 
-                backgroundFrame.Find("Title").GetComponent<TextMeshProUGUI>().SetText("Randomizer Options");
+                backgroundFrame.Find("Title").GetComponent<TextMeshProUGUI>().SetText("Archipelago Hint Menu");
                 foreach (OptionsButtonInfo buttonInfo in OptionButtons)
                 {
                     buttonInfo.UpdateStateText();
@@ -411,23 +386,23 @@ namespace MessengerRando.Utils
             {
                 Close(false);
                 Manager<UIManager>.Instance.GetView<OptionScreen>().gameObject.SetActive(true);
-                ArchipelagoMenuButton.gameObject.transform.Find("Button").GetComponent<UIObjectAudioHandler>()
+                ArchipelagoHintMenuButton.gameObject.transform.Find("Button").GetComponent<UIObjectAudioHandler>()
                     .playAudio = false;
-                EventSystem.current.SetSelectedGameObject(ArchipelagoMenuButton.gameObject.transform.Find("Button")
+                EventSystem.current.SetSelectedGameObject(ArchipelagoHintMenuButton.gameObject.transform.Find("Button")
                     .gameObject);
-                ArchipelagoMenuButton.gameObject.transform.Find("Button").GetComponent<UIObjectAudioHandler>()
+                ArchipelagoHintMenuButton.gameObject.transform.Find("Button").GetComponent<UIObjectAudioHandler>()
                     .playAudio = true;
             }
 
             public override void Close(bool transitionOut)
             {
                 base.Close(transitionOut);
-                RandoScreenLoaded = false;
+                ConnectScreenLoaded = false;
             }
         }
 
         private static void RegisterRandoButton(OptionsButtonInfo buttonInfo) =>
-            RandoScreen.OptionButtons.Add(buttonInfo);
+            HintScreen.OptionButtons.Add(buttonInfo);
 
         public static SubMenuButtonInfo RegisterSubRandoButton(Func<string> GetText, UnityAction onClick)
         {
@@ -457,28 +432,6 @@ namespace MessengerRando.Utils
                 new TextEntryButtonInfo(getText, onEntry, maxCharacter, getEntryText, getInitialText, charset);
             RegisterRandoButton(buttonInfo);
             return buttonInfo;
-        }
-
-        public static MultipleOptionButtonInfo RegisterMultipleRandoButton(Func<string> getText,
-            UnityAction onClick,
-            Action<int> onSwitch, Func<MultipleOptionButtonInfo, int> getIndex, Func<int, string> getTextForIndex)
-        {
-            var buttonInfo = new MultipleOptionButtonInfo(getText, onClick, onSwitch, getIndex, getTextForIndex);
-            RegisterRandoButton(buttonInfo);
-            return buttonInfo;
-        }
-
-        public static string GetTextForResetIndex(int index)
-        {
-            switch (index)
-            {
-                case 0:
-                    return "No";
-                case 1:
-                    return "Yes";
-            }
-
-            return "???";
         }
     }
 }

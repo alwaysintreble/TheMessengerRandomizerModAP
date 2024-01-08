@@ -48,13 +48,13 @@ namespace MessengerRando
             //Initialize the randomizer state manager
             randoStateManager = new RandomizerStateManager();
 
-            RandoMenu.ArchipelagoMenuButton =
-                Courier.UI.RegisterSubMenuOptionButton(() => "Randomizer", RandoMenu.DisplayRandoMenu);
-
-            PopulateRandoMenu();
+            BuildRandoMenu();
             
-            void PopulateRandoMenu()
+            void BuildRandoMenu()
             {
+                RandoMenu.ArchipelagoMenuButton =
+                    Courier.UI.RegisterSubMenuOptionButton(() => "Randomizer", RandoMenu.DisplayRandoMenu);
+
                 RandoMenu.versionButton =
                     RandoMenu.RegisterSubRandoButton(
                         () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(), null);
@@ -179,15 +179,15 @@ namespace MessengerRando
                     OnSelectArchipelagoConnect);
             }
             
-            HintMenu.ArchipelagoHintMenuButton =
-                Courier.UI.RegisterSubMenuOptionButton(() => "Hint Menu", HintMenu.DisplayHintMenu);
+            BuildHintMenu();
 
-            PopulateHintMenu();
-
-            void PopulateHintMenu()
+            void BuildHintMenu()
             {
+                // HintMenu.ArchipelagoHintMenuButton =
+                //     Courier.UI.RegisterSubMenuOptionButton(() => "Hint Menu", HintMenu.DisplayHintMenu);
+
                 //Add Archipelago hint button
-                HintMenu.archipelagoHintButton = HintMenu.RegisterTextRandoButton(
+                HintMenu.archipelagoHintButton = RandoMenu.RegisterTextRandoButton(
                     () => "Hint for an item",
                     OnSelectArchipelagoHint,
                     30,

@@ -86,6 +86,26 @@ namespace MessengerRando.Utils
                     Console.WriteLine(scene);
                     RandoPortalManager.StartingPortals.Add(scene);
                 }
+
+                var portalExits = ((JObject)slotData["portal_exits"]).ToObject<Dictionary<string, string>>();
+                RandoPortalManager.PortalMapping = new Dictionary<string, RandoPortalManager.Portal>();
+                foreach (var kvp in portalExits)
+                {
+                    var currentPortalExit = kvp.Value.Split(' ');
+                    RandoPortalManager.PortalMapping[kvp.Key] =
+                        new RandoPortalManager.Portal(
+                            currentPortalExit[0], currentPortalExit[1], Convert.ToInt32(currentPortalExit[2])
+                            );
+                }
+            }
+            else
+            {
+                RandoPortalManager.StartingPortals = new List<string>
+                {
+                    "RiviereTurquoisePortalOpeningCutscene",
+                    "SunkenShrinePortalOpeningCutscene",
+                    "SearingCragsPortalOpeningCutscene",
+                };
             }
         }
 

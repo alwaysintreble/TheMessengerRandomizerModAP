@@ -300,7 +300,7 @@ namespace MessengerRando
             RandoMenu.archipelagoCollectButton.IsEnabled = ArchipelagoClient.CanCollect;
 
             // hint menu button displays
-            HintMenu.ArchipelagoHintMenuButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+            // HintMenu.ArchipelagoHintMenuButton.IsEnabled = () => ArchipelagoClient.Authenticated;
             HintMenu.archipelagoHintButton.IsEnabled = () => true;//ArchipelagoClient.CanHint;
             #if DEBUG
             SceneManager.sceneLoaded += OnSceneLoadedRando;

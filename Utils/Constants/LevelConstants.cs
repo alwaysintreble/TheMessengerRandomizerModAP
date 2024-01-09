@@ -10,11 +10,20 @@ namespace MessengerRando.Utils.Constants
         {
             public ELevel LevelName { get; }
             public Vector3 PlayerPos { get; }
+            public EBits Dimension { get; }
 
             public RandoLevel(ELevel levelName, Vector3 playerPos)
             {
                 LevelName = levelName;
                 PlayerPos = playerPos;
+                Dimension = EBits.NONE;
+            }
+
+            public RandoLevel(ELevel levelName, Vector3 playerPos, EBits dimension)
+            {
+                LevelName = levelName;
+                PlayerPos = playerPos;
+                Dimension = dimension;
             }
 
             public bool Equals(RandoLevel other)
@@ -335,11 +344,11 @@ namespace MessengerRando.Utils.Constants
                 },
                 {
                     new Transition(ELevel.Level_06_A_BambooCreek, ELevel.Level_05_A_HowlingGrotto),
-                    "Howling Grotto - Top"
+                    "Howling Grotto - Left"
                 },
                 {
                     new Transition(ELevel.Level_05_B_SunkenShrine, ELevel.Level_05_A_HowlingGrotto),
-                    "Howling Grotto - Left"
+                    "Howling Grotto - Bottom"
                 },
                 {
                     new Transition(ELevel.Level_07_QuillshroomMarsh, ELevel.Level_05_A_HowlingGrotto),
@@ -371,7 +380,12 @@ namespace MessengerRando.Utils.Constants
                 },
                 {
                     new Transition(ELevel.Level_11_A_CloudRuins, ELevel.Level_09_A_GlacialPeak),
-                    "Glacial Peak - Top" },
+                    "Glacial Peak - Top"
+                },
+                {
+                    new Transition(ELevel.Level_09_A_GlacialPeak, ELevel.Level_11_A_CloudRuins),
+                    "Cloud Ruins - Left"
+                },
                 {
                     new Transition(ELevel.Level_08_SearingCrags, ELevel.Level_12_UnderWorld),
                     "Underworld - Top Left"
@@ -387,10 +401,6 @@ namespace MessengerRando.Utils.Constants
                 {
                     new Transition(ELevel.Level_09_A_GlacialPeak, ELevel.Level_09_B_ElementalSkylands),
                     "Elemental Skylands - Left"
-                },
-                {
-                    new Transition(ELevel.Level_09_A_GlacialPeak, ELevel.Level_11_A_CloudRuins),
-                    "Cloud Ruins - Left"
                 },
                 {
                     new Transition(ELevel.Level_13_TowerOfTimeHQ, ELevel.Level_11_B_MusicBox),
@@ -421,7 +431,8 @@ namespace MessengerRando.Utils.Constants
                     "Sunken Shrine - Portal"
                 },
                 {
-                    new Transition(ELevel.Level_13_TowerOfTimeHQ, ELevel.Level_10_A_TowerOfTime), "Tower of Time - Left"
+                    new Transition(ELevel.Level_13_TowerOfTimeHQ, ELevel.Level_10_A_TowerOfTime),
+                    "Tower of Time - Left"
                 },
                 {
                     new Transition(ELevel.Level_13_TowerOfTimeHQ, ELevel.Level_14_CorruptedFuture),
@@ -444,11 +455,6 @@ namespace MessengerRando.Utils.Constants
                     "Voodoo Heart - Left"
                 },
             };
-
-        public static readonly List<string> SpecialCutscenes = new List<string>
-        {
-            "SunkenShrinePortalOpeningCutscene",
-        };
 
         /// <summary>
         /// I'm doing the magic by determining where the player teleported from as that's definitely the easiest way to

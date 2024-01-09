@@ -15,7 +15,6 @@ namespace MessengerRando.GameOverrideManagers
         private static bool teleporting;
         private static ELevel lastLevel;
         private static ELevel currentLevel;
-        public static readonly List<string> PlayedSpecialCutscenes = new List<string>();
 
         public static Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel> RandoLevelMapping;
 
@@ -43,11 +42,14 @@ namespace MessengerRando.GameOverrideManagers
         {
             try
             {
-                currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
                 var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
                 if (!LevelConstants.TransitionToEntranceName.TryGetValue(
                         new LevelConstants.Transition(lastLevel, currentLevel), out var entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
+                if (entrance.Contains("Portal"))
+                    return RandoPortalManager.PortalMapping == null
+                        ? new LevelConstants.RandoLevel(ELevel.NONE, new Vector3())
+                        : RandoPortalManager.GetPortalExit(entrance);
                 LevelConstants.RandoLevel oldLevel = default;
                 if (LevelConstants.SpecialEntranceNames.Contains(entrance))
                 {
@@ -147,28 +149,24 @@ namespace MessengerRando.GameOverrideManagers
                 teleporting = false;
                 return;
             }
-
-            var oldLevel = FindEntrance();
-            if (RandoLevelMapping == null || !RandoLevelMapping.TryGetValue(oldLevel, out var newLevel))
+            
+            if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
+                RandomizerStateManager.Instance.SkipMusicBox)
             {
-                if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
-                    RandomizerStateManager.Instance.SkipMusicBox)
-                {
-                    SkipMusicBox();
-                }
+                SkipMusicBox();
+                return;
             }
-            else
+            var oldLevel = FindEntrance();
+            if (RandoLevelMapping != null && RandoLevelMapping.TryGetValue(oldLevel, out var newLevel))
             {
                 var actualEntrance = LevelConstants.EntranceNameToRandoLevel
                     .First(ret => ret.Value.Equals(newLevel)).Key;
-                var newDimension = Manager<DimensionManager>.Instance.currentDimension;
+                var newDimension = newLevel.Dimension == EBits.NONE
+                    ? Manager<DimensionManager>.Instance.currentDimension
+                    : newLevel.Dimension;
                 if (LevelConstants.Force16.Contains(actualEntrance)) newDimension = EBits.BITS_16;
                 else if (LevelConstants.Force8.Contains(actualEntrance)) newDimension = EBits.BITS_8;
-            
-                if (newLevel.LevelName.Equals(ELevel.Level_11_B_MusicBox) &&
-                    RandomizerStateManager.Instance.SkipMusicBox)
-                    SkipMusicBox();
-                else TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newDimension);
+                TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newDimension);
             }
             // put the region we just loaded into in AP data storage for tracking
             if (!ArchipelagoClient.Authenticated) return;
@@ -178,13 +176,6 @@ namespace MessengerRando.GameOverrideManagers
             else
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
                     self.GetCurrentLevelEnum().ToString();
-        }
-
-        public static void PortalIntoArea(On.TotHQLevelInitializer.orig_InitLevel orig, TotHQLevelInitializer self,
-            Scene levelScene, ELevelEntranceID levelEntranceID, EBits dimension, bool positionPlayer,
-            LevelInitializerParams levelInitParams)
-        {
-            orig(self, levelScene, levelEntranceID, dimension, positionPlayer, levelInitParams);
         }
         
         public static void SkipMusicBox()

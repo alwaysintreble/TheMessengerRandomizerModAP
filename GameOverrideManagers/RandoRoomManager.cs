@@ -11,19 +11,19 @@ namespace MessengerRando.GameOverrideManagers
         public static bool RoomOverride;
         public static Dictionary<string, string> RoomMap; // old room name - new room name
         
-        private static string GetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top)
+        static string GetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top)
         {
             return $"{left.edgeIdX} {right.edgeIdX} {bottom.edgeIdY} {top.edgeIdY}";
         }
 
-        private static void SetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top,
+        static void SetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top,
             string roomKey)
         {
             var edges = roomKey.Split(' ');
             left.edgeIdX = edges[0]; right.edgeIdX = edges[1]; bottom.edgeIdY = edges[2]; top.edgeIdY = edges[3];
         }
 
-        public static bool IsBossRoom(string roomKey, out string bossName)
+        static bool IsBossRoom(string roomKey, out string bossName)
         {
             Console.WriteLine($"Checking if {roomKey} is a boss room");
             bossName = string.Empty;
@@ -90,7 +90,7 @@ namespace MessengerRando.GameOverrideManagers
             return comparison <= 10;
         }
 
-        public static RoomConstants.RandoRoom PlaceInRoom(string oldRoomKey, ELevel currentLevel, out RoomConstants.RoomTransition newTransition)
+        static RoomConstants.RandoRoom PlaceInRoom(string oldRoomKey, ELevel currentLevel, out RoomConstants.RoomTransition newTransition)
         {
             newTransition = new RoomConstants.RoomTransition();
             if (!RoomConstants.RoomNameLookup.TryGetValue(new RoomConstants.RandoRoom(oldRoomKey, currentLevel),

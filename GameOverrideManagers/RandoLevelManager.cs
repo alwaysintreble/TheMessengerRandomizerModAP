@@ -158,16 +158,12 @@ namespace MessengerRando.GameOverrideManagers
             }
             var oldLevel = FindEntrance();
             if (RandoLevelMapping != null && RandoLevelMapping.TryGetValue(oldLevel, out var newLevel))
-            {
-                var actualEntrance = LevelConstants.EntranceNameToRandoLevel
-                    .First(ret => ret.Value.Equals(newLevel)).Key;
-                var newDimension = newLevel.Dimension == EBits.NONE
-                    ? Manager<DimensionManager>.Instance.currentDimension
-                    : newLevel.Dimension;
-                if (LevelConstants.Force16.Contains(actualEntrance)) newDimension = EBits.BITS_16;
-                else if (LevelConstants.Force8.Contains(actualEntrance)) newDimension = EBits.BITS_8;
-                TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newDimension);
-            }
+                TeleportInArea(
+                    newLevel.LevelName,
+                    newLevel.PlayerPos,
+                    newLevel.Dimension == EBits.NONE
+                        ? Manager<DimensionManager>.Instance.currentDimension
+                        : newLevel.Dimension);
             // put the region we just loaded into in AP data storage for tracking
             if (!ArchipelagoClient.Authenticated) return;
             if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
@@ -180,7 +176,9 @@ namespace MessengerRando.GameOverrideManagers
         
         public static void SkipMusicBox()
         {
+            #if DEBUG
             Console.WriteLine($"attempting to skip music box. already teleporting : {teleporting}");
+            #endif
             if (teleporting)
             {
                 teleporting = false;
@@ -201,7 +199,9 @@ namespace MessengerRando.GameOverrideManagers
                 teleporting = false;
                 return;
             }
+            #if DEBUG
             Console.WriteLine($"Attempting to teleport to {area}, ({position.x}, {position.y}), {dimension}");
+            #endif
             Manager<AudioManager>.Instance.StopMusic();
             Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition = position;
             if (dimension.Equals(EBits.NONE)) dimension = Manager<DimensionManager>.Instance.currentDimension;
@@ -209,45 +209,7 @@ namespace MessengerRando.GameOverrideManagers
                 true, true, LoadSceneMode.Single,
                 ELevelEntranceID.NONE, dimension);
             teleporting = true;
-            Console.WriteLine("set teleporting to true");
             Manager<LevelManager>.Instance.LoadLevel(levelLoadingInfo);
-        }
-
-
-        public static void Level_ChangeRoom(On.Level.orig_ChangeRoom orig, Level self,
-            ScreenEdge newRoomLeftEdge, ScreenEdge newRoomRightEdge,
-            ScreenEdge newRoomBottomEdge, ScreenEdge newRoomTopEdge,
-            bool teleportedInRoom)
-        {
-            #if DEBUG
-            string GetRoomKey()
-            {
-                return newRoomLeftEdge.edgeIdX + newRoomRightEdge.edgeIdX
-                                               + newRoomBottomEdge.edgeIdY + newRoomTopEdge.edgeIdY;
-            }
-            Console.WriteLine("new room params:" +
-                              $"{newRoomLeftEdge.edgeIdX} " +
-                              $"{newRoomRightEdge.edgeIdX} " +
-                              $"{newRoomBottomEdge.edgeIdY} " +
-                              $"{newRoomTopEdge.edgeIdY} ");
-            Console.WriteLine($"new roomKey: {GetRoomKey()}");
-            Console.WriteLine(self.CurrentRoom != null
-                ? $"currentRoom roomKey: {self.CurrentRoom.roomKey}"
-                : "currentRoom does not exist.");
-            Console.WriteLine($"teleported: {teleportedInRoom}");
-            var position = Manager<PlayerManager>.Instance.Player.transform.position;
-            Console.WriteLine("Player position: " +
-                              $"{position.x} " +
-                              $"{position.y} " +
-                              $"{position.z}");
-            #endif
-
-
-            //This func checks if the new roomKey exists within levelRooms before changing and checks if currentRoom exists
-            //if we're in a room, it leaves the current room then enters the new room with the teleported bool
-            //no idea what the teleported bool does currently
-            orig(self, newRoomLeftEdge, newRoomRightEdge, newRoomBottomEdge, newRoomTopEdge, teleportedInRoom);
-            // RandoBossManager.ShouldFightBoss(GetRoomKey());
         }
     }
 }

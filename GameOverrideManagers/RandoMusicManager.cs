@@ -6,7 +6,7 @@ using Random = System.Random;
 
 namespace MessengerRando.GameOverrideManagers
 {
-    public class RandoMusicManager
+    public static class RandoMusicManager
     {
         private static Random random;
         private static bool shuffleMusic;

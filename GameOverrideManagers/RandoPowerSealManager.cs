@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using MessengerRando.Archipelago;
 using MessengerRando.Utils;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace MessengerRando.GameOverrideManagers
@@ -52,6 +53,7 @@ namespace MessengerRando.GameOverrideManagers
         {
             try
             {
+                Debug.Log("Opening the shop chest...");
                 Object.FindObjectOfType<Shop>().LeaveToCurrentLevel();
                 RandoLevelManager.SkipMusicBox();
             }

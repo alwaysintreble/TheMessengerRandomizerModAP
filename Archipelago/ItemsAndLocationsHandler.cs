@@ -454,6 +454,7 @@ namespace MessengerRando.Archipelago
                 ArchipelagoClient.ItemQueue.Enqueue(ArchipelagoClient.Session.Items.AllItemsReceived[currentIndex].Item);
             }
         }
+        
         public static void ReSync()
         {
             var receivedItems = new Dictionary<long, int>();

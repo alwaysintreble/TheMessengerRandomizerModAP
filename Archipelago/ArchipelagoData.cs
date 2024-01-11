@@ -74,12 +74,16 @@ namespace MessengerRando.Archipelago
                         ThreadPool.QueueUserWorkItem(o =>
                             ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                                 CheckedLocations.ToArray()));
+                        if (ArchipelagoClient.ItemQueue.Count <= 0) return true;
+                        for (var i = 0; i < Index; i++)
+                        {
+                            ArchipelagoClient.ItemQueue.Dequeue();
+                        }
                         return true;
                     }
                     //There was archipelago save data and it doesn't match our current connection so abort.
                     ArchipelagoClient.Disconnect();
-                    ArchipelagoClient.HasConnected = false;
-                    return false;
+                    return ArchipelagoClient.HasConnected = false;
                 }
                 //We aren't connected to an Archipelago server so attempt to use the found data
                 Uri = tempServerData.Uri;
@@ -96,7 +100,7 @@ namespace MessengerRando.Archipelago
                     ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
 
                 //Attempt to connect to the server and save the new data
-                Debug.Log("Attempting to connect");
+                Debug.Log("Rando save found! Attempting to connect...");
                 ArchipelagoClient.Connect();
                 if (ArchipelagoClient.ItemQueue.Count > 0)
                 {

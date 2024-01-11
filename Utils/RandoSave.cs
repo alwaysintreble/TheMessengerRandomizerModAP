@@ -24,8 +24,8 @@ namespace MessengerRando.Utils
                 
                 if (ArchipelagoClient.Authenticated && RandomizerStateManager.IsSafeTeleportState())
                     ArchipelagoClient.SyncLocations();
+                APSaveData = GetSaveData();
             }
-            APSaveData = GetSaveData();
         }
 
         public static string GetSaveData()
@@ -44,7 +44,11 @@ namespace MessengerRando.Utils
         public static void TryLoad(string load)
         {
             Debug.Log("loading rando save data...");
-            if (string.IsNullOrEmpty(load)) return;
+            if (string.IsNullOrEmpty(load))
+            {
+                Debug.Log("unable to find rando save data to load");
+                return;
+            }
             try
             {
                 var loadedData = load.Split(SplitConst);
@@ -58,7 +62,7 @@ namespace MessengerRando.Utils
             }
             catch (Exception e)
             {
-                Console.WriteLine("Failed to load AP Save Data");
+                Debug.Log("Failed to load AP Save Data");
                 Console.WriteLine(e);
             }
         }

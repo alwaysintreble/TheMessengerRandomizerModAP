@@ -557,15 +557,12 @@ namespace MessengerRando
         {
             if (ArchipelagoClient.HasConnected)
             {
-                if (ArchipelagoClient.Authenticated)
-                {
-                    ArchipelagoClient.Disconnect();
-                }
+                ArchipelagoClient.Disconnect();
                 ArchipelagoClient.HasConnected = false;
                 RandoBossManager.DefeatedBosses = new List<string>();
             }
             randoStateManager = new RandomizerStateManager();
-            ArchipelagoClient.ServerData = null;
+            ArchipelagoClient.ServerData = new ArchipelagoData();
             
             clearedData = false;
             orig();

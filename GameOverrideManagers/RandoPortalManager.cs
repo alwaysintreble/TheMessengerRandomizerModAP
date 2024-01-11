@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MessengerRando.Utils.Constants;
 using UnityEngine;
 
@@ -8,35 +9,36 @@ namespace MessengerRando.GameOverrideManagers
     {
         public readonly struct Portal
         {
-            public readonly string Region;
-            public readonly string PortalType;
+            public readonly int Region;
+            public readonly int PortalType;
             public readonly int Index;
 
-            public Portal(string region, string portalType, int index)
+            public Portal(int portalWarp)
             {
-                Region = region;
-                PortalType = portalType;
-                Index = index;
+                var modWarp = portalWarp.ToString();
+                Region = Convert.ToInt32(modWarp[0]);
+                PortalType = Convert.ToInt32(modWarp[1]);
+                Index = Convert.ToInt32(modWarp[2]);
             }
         }
         
         public static List<string> StartingPortals;
         public static Dictionary<string, Portal> PortalMapping;
 
-        static readonly Dictionary<string, Dictionary<string, List<LevelConstants.RandoLevel>>> AreaCheckpoints =
-            new Dictionary<string, Dictionary<string, List<LevelConstants.RandoLevel>>>
+        static readonly List<List<List<LevelConstants.RandoLevel>>> AreaCheckpoints =
+            new List<List<List<LevelConstants.RandoLevel>>>
             {
                 {
-                    "AutumnHills", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Portal", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(-20076.46f, -200004)),
                             }
                         },
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(-45.5f, -89)),
                                 new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(68, -111)),
@@ -45,7 +47,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(175, -148)),
                                 new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(92, -87)),
@@ -57,10 +59,10 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "ForlornTemple", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(1, -11)),
                                 new LevelConstants.RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(89, -10)),
@@ -72,7 +74,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(125, 47)),
                                 new LevelConstants.RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(260, 24)),
@@ -81,17 +83,17 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "Catacombs", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_04_Catacombs, new Vector3(241, -25)),
                                 new LevelConstants.RandoLevel(ELevel.Level_04_Catacombs, new Vector3(732, -75)),
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_04_Catacombs, new Vector3(380, -23)),
                                 new LevelConstants.RandoLevel(ELevel.Level_04_Catacombs, new Vector3(530, -75)),
@@ -101,10 +103,10 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "BambooCreek", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(-29, -19)),
                                 new LevelConstants.RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(92, 25)),
@@ -112,7 +114,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(227, -41)),
                                 new LevelConstants.RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(210, 29)),
@@ -121,16 +123,16 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "HowlingGrotto", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Portal", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(241f, -196f)),
                             }
                         },
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(26, -27)),
                                 new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(310, -115)),
@@ -138,7 +140,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(138, -90)),
                                 new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(439, -170)),
@@ -147,10 +149,10 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "QuillshroomMarsh", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(194, -37)),
                                 new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(663, -27)),
@@ -158,7 +160,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(161, -54)),
                                 new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(410, -42)),
@@ -168,16 +170,16 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "SearingCrags", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Portal", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(384.5f, 135f)),
                             }
                         },
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(61, -27)),
                                 new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(147, 69)),
@@ -188,7 +190,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(109, 63)),
                                 new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(296, 189), EBits.BITS_8),
@@ -197,16 +199,16 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "GlacialPeak", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Portal", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(220.6358f, -67f)),
                             }
                         },
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(216, -456)),
                                 new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(260, -297)),
@@ -214,7 +216,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(227, -405)),
                                 new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(251, -235)),
@@ -224,17 +226,17 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "TowerOfTime", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(71, -11), EBits.BITS_8),
                                 new LevelConstants.RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(84, 237), EBits.BITS_8),
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(29, 21), EBits.BITS_8),
                                 new LevelConstants.RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(5, 37), EBits.BITS_8),
@@ -247,10 +249,10 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "CloudRuins", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-368, -26), EBits.BITS_8),
                                 new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-116, -35), EBits.BITS_8),
@@ -262,7 +264,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-146, 24), EBits.BITS_8),
                                 new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(159, -29)),
@@ -273,10 +275,10 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "Underworld", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-305, -51), EBits.BITS_8),
                                 new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-186, -24), EBits.BITS_8),
@@ -286,7 +288,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-225, -89), EBits.BITS_8),
                                 new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(1, 72), EBits.BITS_8),
@@ -296,16 +298,16 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "RiviereTurquoise", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Portal", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_04_C_RiviereTurquoise, new Vector3(837, 13)),
                             }
                         },
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_04_C_RiviereTurquoise, new Vector3(804, -40)),
                                 new LevelConstants.RandoLevel(ELevel.Level_04_C_RiviereTurquoise, new Vector3(499, -132), EBits.BITS_8),
@@ -316,7 +318,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_04_C_RiviereTurquoise, new Vector3(648, -83), EBits.BITS_8),
                             }
@@ -324,16 +326,16 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 },
                 {
-                    "SunkenShrine", new Dictionary<string, List<LevelConstants.RandoLevel>>
+                    new List<List<LevelConstants.RandoLevel>>
                     {
                         {
-                            "Portal", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(29f, -55f)),
                             }
                         },
                         {
-                            "Shops", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(36, -41)),
                                 new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(186, -9), EBits.BITS_8),
@@ -343,7 +345,7 @@ namespace MessengerRando.GameOverrideManagers
                             }
                         },
                         {
-                            "Checkpoints", new List<LevelConstants.RandoLevel>
+                            new List<LevelConstants.RandoLevel>
                             {
                                 new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(76, -16), EBits.BITS_8),
                                 new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(30, -87), EBits.BITS_8),
@@ -354,6 +356,16 @@ namespace MessengerRando.GameOverrideManagers
                     }
                 }
             };
+
+        public static readonly List<string> Portals = new List<string>
+        {
+            "Autumn Hills - Portal",
+            "Riviere Turquoise - Portal",
+            "Howling Grotto - Portal",
+            "Sunken Shrine - Portal",
+            "Searing Crags - Portal",
+            "Glacial Peak - Portal",
+        };
         
         public static LevelConstants.RandoLevel GetPortalExit(string enteredPortal)
         {

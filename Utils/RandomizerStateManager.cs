@@ -87,15 +87,12 @@ namespace MessengerRando.Utils
                     RandoPortalManager.StartingPortals.Add(scene);
                 }
 
-                var portalExits = ((JObject)slotData["portal_exits"]).ToObject<Dictionary<string, string>>();
+                var portalExits = ((JObject)slotData["portal_exits"]).ToObject<List<int>>();
                 RandoPortalManager.PortalMapping = new Dictionary<string, RandoPortalManager.Portal>();
-                foreach (var kvp in portalExits)
+                for (int i = 0; i < RandoPortalManager.Portals.Count; i++)
                 {
-                    var currentPortalExit = kvp.Value.Split(' ');
-                    RandoPortalManager.PortalMapping[kvp.Key] =
-                        new RandoPortalManager.Portal(
-                            currentPortalExit[0], currentPortalExit[1], Convert.ToInt32(currentPortalExit[2])
-                            );
+                    RandoPortalManager.PortalMapping[RandoPortalManager.Portals[i]] =
+                        new RandoPortalManager.Portal(portalExits[i]);
                 }
             }
             else

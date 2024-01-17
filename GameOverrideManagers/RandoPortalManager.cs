@@ -16,9 +16,30 @@ namespace MessengerRando.GameOverrideManagers
             public Portal(int portalWarp)
             {
                 var modWarp = portalWarp.ToString();
-                Region = Convert.ToInt32(modWarp[0]);
-                PortalType = Convert.ToInt32(modWarp[1]);
-                Index = Convert.ToInt32(modWarp[2]);
+                if (modWarp.Length == 4)
+                {
+                    Region = Convert.ToInt32(modWarp.Substring(0, 2));
+                    PortalType = Convert.ToInt32(modWarp[2]);
+                    Index = Convert.ToInt32(modWarp[3]);
+                }
+                else if (modWarp.Length == 3)
+                {
+                    Region = Convert.ToInt32(modWarp[0]);
+                    PortalType = Convert.ToInt32(modWarp[1]);
+                    Index = Convert.ToInt32(modWarp[2]);
+                }
+                else if (modWarp.Length == 2)
+                {
+                    Region = 0;
+                    PortalType = Convert.ToInt32(modWarp[0]);
+                    Index = Convert.ToInt32(modWarp[1]);
+                }
+                else
+                {
+                    Region = 0;
+                    PortalType = 0;
+                    Index = Convert.ToInt32(modWarp);
+                }
             }
         }
         

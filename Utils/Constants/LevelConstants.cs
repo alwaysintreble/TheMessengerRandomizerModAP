@@ -31,6 +31,11 @@ namespace MessengerRando.Utils.Constants
                 return LevelName == other.LevelName && PlayerPos.Equals(other.PlayerPos);
             }
 
+            public bool Equals(ELevel level)
+            {
+                return LevelName == level;
+            }
+
             public override bool Equals(object obj)
             {
                 return obj is RandoLevel other && Equals(other);

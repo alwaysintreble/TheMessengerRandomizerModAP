@@ -135,7 +135,21 @@ namespace MessengerRando.Archipelago
                 ServerData.SeedName = Session.RoomState.Seed;
                 Authenticated = true;
 
-                RandomizerStateManager.InitializeMultiSeed();
+                try
+                {
+                    RandomizerStateManager.InitializeMultiSeed();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    outputText =
+                        "Something went wrong.\n" +
+                        "Please submit a bug report with the log.txt, " +
+                        "which can be found by the game executable.";
+                    Authenticated = false;
+                    Disconnect();
+                    return outputText;
+                }
                 
                 DeathLinkHandler = new DeathLinkInterface();
                 

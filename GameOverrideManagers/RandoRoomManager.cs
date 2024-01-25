@@ -63,6 +63,7 @@ namespace MessengerRando.GameOverrideManagers
                 return;
             }
 
+            var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             var bossRoomKey = oldRoomKey.Replace(" ", string.Empty);
             if (IsBossRoom(bossRoomKey, out var bossName))
             {
@@ -70,7 +71,6 @@ namespace MessengerRando.GameOverrideManagers
             }
             else if (RoomRando)
             {
-                var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
                 var newRoom = PlaceInRoom(oldRoomKey, currentLevel, out var transition);
                 if (newRoom.RoomKey.IsNullOrEmpty() || transition.Direction.IsNullOrEmpty()) return;
                 

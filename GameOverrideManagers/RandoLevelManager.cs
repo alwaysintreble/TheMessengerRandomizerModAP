@@ -1,9 +1,6 @@
 ﻿using System;
 using MessengerRando.Utils;
 using System.Collections.Generic;
-using System.Linq;
-using Archipelago.MultiClient.Net.Enums;
-using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,8 +10,8 @@ namespace MessengerRando.GameOverrideManagers
     public static class RandoLevelManager
     {
         private static bool teleporting;
-        private static ELevel lastLevel;
-        private static ELevel currentLevel;
+        public static ELevel LastLevel;
+        public static ELevel CurrentLevel;
 
         public static Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel> RandoLevelMapping;
 
@@ -26,9 +23,9 @@ namespace MessengerRando.GameOverrideManagers
             Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}");
             #endif
             orig(self, levelInfo);
-            if (RandoLevelMapping == null || teleporting) return;
-            lastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
-            currentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelInfo.levelName);
+            if (teleporting) return;
+            LastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
+            CurrentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelInfo.levelName);
         }
 
         static bool WithinRange(float pos1, float pos2)
@@ -38,14 +35,18 @@ namespace MessengerRando.GameOverrideManagers
             return comparison <= 10;
         }
 
-        private static LevelConstants.RandoLevel FindEntrance()
+        public static LevelConstants.RandoLevel FindEntrance()
         {
             try
             {
+                Console.WriteLine("looking for entrance we just entered");
                 var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
+                Console.WriteLine(LastLevel);
+                Console.WriteLine(CurrentLevel);
                 if (!LevelConstants.TransitionToEntranceName.TryGetValue(
-                        new LevelConstants.Transition(lastLevel, currentLevel), out var entrance))
+                        new LevelConstants.Transition(LastLevel, CurrentLevel), out var entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
+                Console.WriteLine(entrance);
                 if (entrance.Contains("Portal"))
                     return RandoPortalManager.PortalMapping == null
                         ? new LevelConstants.RandoLevel(ELevel.NONE, new Vector3())
@@ -156,22 +157,38 @@ namespace MessengerRando.GameOverrideManagers
                 SkipMusicBox();
                 return;
             }
+#if DEBUG
+            Console.WriteLine("loaded into level...");
+            Console.WriteLine(self.lastLevelLoaded);
+            Console.WriteLine(self.GetCurrentLevelEnum());
+            if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
+            {
+                // we just teleported into HQ
+                
+            }
             var oldLevel = FindEntrance();
             if (RandoLevelMapping != null && RandoLevelMapping.TryGetValue(oldLevel, out var newLevel))
                 TeleportInArea(
                     newLevel.LevelName,
                     newLevel.PlayerPos,
-                    newLevel.Dimension == EBits.NONE
-                        ? Manager<DimensionManager>.Instance.currentDimension
-                        : newLevel.Dimension);
+                    newLevel.Dimension);
+            else if (RandoPortalManager.PortalMapping != null && !oldLevel.Equals(ELevel.NONE))
+            {
+                TeleportInArea(
+                    oldLevel.LevelName,
+                    oldLevel.PlayerPos,
+                    oldLevel.Dimension
+                    );
+            }
             // put the region we just loaded into in AP data storage for tracking
-            if (!ArchipelagoClient.Authenticated) return;
+            if (!ArchipelagoClient.Authenticated || teleporting) return;
             if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
                     ELevel.Level_13_TowerOfTimeHQ.ToString();
             else
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
                     self.GetCurrentLevelEnum().ToString();
+#endif
         }
         
         public static void SkipMusicBox()

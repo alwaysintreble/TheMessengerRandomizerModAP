@@ -7,7 +7,6 @@ using MessengerRando.Utils;
 using MessengerRando.RO;
 using Mod.Courier;
 using Mod.Courier.Module;
-using Mod.Courier.UI;
 using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -297,6 +296,7 @@ namespace MessengerRando
             On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
             On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
+            On.TotHQ.LeaveToLevel += RandoPortalManager.LeaveHQ;
             On.Cutscene.Play += Cutscene_Play;
             //temp add
             #if DEBUG
@@ -716,7 +716,7 @@ namespace MessengerRando
             Manager<PauseManager>.Instance.Resume();
             Manager<UIManager>.Instance.GetView<OptionScreen>().Close(false);                
             Console.WriteLine("Teleporting to HQ!");
-            Courier.UI.ModOptionScreen.Close(false);
+            RandoMenu.randoScreen.Close(false);
 
             //Fade the music out because musiception is annoying
             Manager<AudioManager>.Instance.FadeMusicVolume(1f, 0f, true);
@@ -732,7 +732,7 @@ namespace MessengerRando
             // Properly close out of the mod options and get the game state back together
             Manager<PauseManager>.Instance.Resume();
             Manager<UIManager>.Instance.GetView<OptionScreen>().Close(false);
-            Courier.UI.ModOptionScreen.Close(false);
+            RandoMenu.randoScreen.Close(false);
             EBits dimension = Manager<DimensionManager>.Instance.currentDimension;
 
             //Fade the music out because musiception is annoying
@@ -920,17 +920,30 @@ namespace MessengerRando
             // var checkpoint = Manager<ProgressionManager>.Instance.checkpointSaveInfo;
             // var pos = checkpoint.loadedLevelPlayerPosition;
             // Console.WriteLine($"{checkpoint.loadedLevelCheckpointIndex} \n{checkpoint.playerFacingDirection}\n {pos.x} {pos.y} {pos.z}");
-            if (ArchipelagoClient.HasConnected)
+            orig(self, applySaveDelay);
+            Save?.Update();
+            if (!ArchipelagoClient.HasConnected) return;
+            try
             {
-                // The game calls the save method after the ending cutscene before rolling credits
-                if (ArchipelagoClient.Authenticated
-                    && Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_Ending))
+                if (RandoPortalManager.LeftHQPortal)
                 {
-                    ArchipelagoClient.UpdateClientStatus(ArchipelagoClientState.ClientGoal);
+                    Manager<UIManager>.Instance.CloseAllScreensOfType<TransitionScreen>(false);
+                    Manager<UIManager>.Instance.CloseAllScreensOfType<SavingScreen>(false);
+                    Manager<UIManager>.Instance.CloseAllScreensOfType<LoadingAnimation>(false);
+                    RandoPortalManager.Teleport();
                 }
             }
-            Save?.Update();
-            orig(self, applySaveDelay);
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+                
+            // The game calls the save method after the ending cutscene before rolling credits
+            if (ArchipelagoClient.Authenticated
+                && Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_Ending))
+            {
+                ArchipelagoClient.UpdateClientStatus(ArchipelagoClientState.ClientGoal);
+            }
         }
 
         private void OnPlayerDie(On.PlayerController.orig_Die orig, PlayerController self, EDeathType deathType,

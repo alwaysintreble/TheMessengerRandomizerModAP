@@ -50,7 +50,8 @@ namespace MessengerRando.GameOverrideManagers
             // Debug.Log(audioObjectDefinition.GetInstanceID());
             var cantShuffleLevels = new List<ELevel> { ELevel.NONE, ELevel.Level_05_B_SunkenShrine };
             if (!audioObjectDefinition.IsMusic() || !shuffleMusic ||
-                cantShuffleLevels.Contains(Manager<LevelManager>.Instance.GetCurrentLevelEnum()))
+                cantShuffleLevels.Contains(Manager<LevelManager>.Instance.GetCurrentLevelEnum()) ||
+                audioObjectDefinition.IsSFX())
                 return orig(self, audioObjectDefinition, loop, fadeInDuration, playbackTime, customAudioObject);
             var newAudio = Manager<AudioManager>.Instance.GetRandomLevelTrack();
             var dimension = random.Next(0, 2);

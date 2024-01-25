@@ -1,6 +1,8 @@
 ﻿using System;
 using MessengerRando.Utils;
 using System.Collections.Generic;
+using Archipelago.MultiClient.Net.Enums;
+using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
 using UnityEngine;
 using UnityEngine.SceneManagement;

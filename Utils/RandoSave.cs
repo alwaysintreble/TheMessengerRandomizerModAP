@@ -17,25 +17,26 @@ namespace MessengerRando.Utils
 
         public void Update()
         {
-            if (ArchipelagoClient.HasConnected)
-            {
-                RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
-                    ArchipelagoClient.ServerData;
-                
-                if (ArchipelagoClient.Authenticated && RandomizerStateManager.IsSafeTeleportState())
-                    ArchipelagoClient.SyncLocations();
-                APSaveData = GetSaveData();
-            }
+            if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.NONE)) return;
+            RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
+                ArchipelagoClient.ServerData;
+
+            if (ArchipelagoClient.Authenticated && RandomizerStateManager.IsSafeTeleportState())
+                ArchipelagoClient.SyncLocations();
+            APSaveData = GetSaveData();
+        }
+
+        public void ForceUpdate()
+        {
+            APSaveData = GetSaveData();
         }
 
         public static string GetSaveData()
         {
-            var output = "";
-            for (int i = 1; i <= 3; i++)
-            {
-                output += $"{RandomizerStateManager.Instance.APSave[i]}|";
-            }
-
+            var output =
+                $"{RandomizerStateManager.Instance.APSave[1]}|" +
+                $"{RandomizerStateManager.Instance.APSave[2]}|" +
+                $"{RandomizerStateManager.Instance.APSave[3]}";
             return output;
         }
         

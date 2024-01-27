@@ -33,7 +33,7 @@ namespace MessengerRando.Utils
         public RandomizerStateManager()
         {
             #if DEBUG
-            SkipPhantom = true;
+            // SkipPhantom = true;
             #endif
             try
             {
@@ -178,11 +178,8 @@ namespace MessengerRando.Utils
             var saveManager = Manager<SaveManager>.Instance;
             saveManager.SelectSaveGameSlot(slot);
             saveManager.NewGame();
-            if (ArchipelagoClient.Authenticated)
-                saveManager.GetCurrentSaveGameSlot().SlotName =
-                    ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
-            else
-                saveManager.GetCurrentSaveGameSlot().SlotName = "Ayy Lmao";
+            saveManager.GetCurrentSaveGameSlot().SlotName =
+                ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
             // add everything to the various managers that we need for our save slot, following the order in SaveGameSlot.UpdateSaveGameData()
             var progManager = Manager<ProgressionManager>.Instance;
             progManager.lastSaveTime = Time.time;
@@ -270,8 +267,8 @@ namespace MessengerRando.Utils
                 // "ManfredBossOutroCutscene",
                 // "DemonGeneralBossIntroCutscene",
                 // "DemonGeneralBossOutroCutscene",
-                // "UnderworldManfredEscapeCutscene",
-                // "FutureMessengerCutscene",
+                "UnderworldManfredEscapeCutscene",
+                "FutureMessengerCutscene",
                 "SecondQuestStartShopCutscene",
                 "ArmoireOpeningCutscene",
                 "DialogCutscene",

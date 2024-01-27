@@ -52,7 +52,7 @@ namespace MessengerRando.Archipelago
         private bool loadData(int slot)
         {
             if (!RandomizerStateManager.Instance.APSave.TryGetValue(slot, out var tempServerData) ||
-                string.IsNullOrEmpty(tempServerData.SlotName))
+                tempServerData.SeedName == null || tempServerData.SeedName.Equals("Unknown"))
                 return false;
             try
             {

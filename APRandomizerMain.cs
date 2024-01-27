@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using MessengerRando.Archipelago;
 using MessengerRando.Overrides;
 using MessengerRando.Utils;
@@ -27,7 +26,6 @@ namespace MessengerRando
     {
         private float updateTimer;
         private float updateTime = 3.0f;
-        private bool clearedData;
 
         private RandomizerStateManager randoStateManager;
 
@@ -498,8 +496,7 @@ namespace MessengerRando
             //This is probably a bad way to do this
             try
             {
-                if (!clearedData)
-                    RandoSave.TryLoad(Save.APSaveData);
+                RandoSave.TryLoad(Save.APSaveData);
                 if (ArchipelagoData.LoadData(randoStateManager.CurrentFileSlot))
                 {
                     Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
@@ -518,8 +515,13 @@ namespace MessengerRando
                     //We force a reload of all dialog when loading the game
                     try
                     {
-                        Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);   
-                    } catch (Exception e){Console.WriteLine(e);}
+                        Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance
+                            .CurrentLanguage);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                 }
             }
             catch (Exception e)
@@ -541,14 +543,10 @@ namespace MessengerRando
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
-#if DEBUG
-            RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
-#elif RELEASE
             if (ArchipelagoClient.Authenticated)
                 RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
             else
                 orig(self, slot);
-#endif
         }
 
         private void SaveGameSelectionScreen_ConfirmSaveDelete(On.SaveGameSelectionScreen.orig_ConfirmSaveDelete orig, SaveGameSelectionScreen self, SaveSlotUI slot)
@@ -561,8 +559,9 @@ namespace MessengerRando
         {
             if (delete)
             {
+                RandoSave.TryLoad(Save.APSaveData);
                 randoStateManager.APSave[randoStateManager.CurrentFileSlot] = new ArchipelagoData();
-                Save.APSaveData = RandoSave.GetSaveData();
+                Save?.ForceUpdate();
             }
             orig(self, delete);
         }
@@ -574,13 +573,13 @@ namespace MessengerRando
                 ArchipelagoClient.Disconnect();
                 ArchipelagoClient.HasConnected = false;
                 RandoBossManager.DefeatedBosses = new List<string>();
+                Manager<ProgressionManager>.Instance.powerSealTotal = 0;
             }
             randoStateManager = new RandomizerStateManager();
             ArchipelagoClient.ServerData = new ArchipelagoData();
-            
-            clearedData = false;
             orig();
             Console.WriteLine("returned to title");
+            Manager<UIManager>.Instance.GetView<InGameHud>().UpdateShurikenVisibility();
         }
 
         //Fixing necro cutscene check
@@ -921,8 +920,8 @@ namespace MessengerRando
             // var pos = checkpoint.loadedLevelPlayerPosition;
             // Console.WriteLine($"{checkpoint.loadedLevelCheckpointIndex} \n{checkpoint.playerFacingDirection}\n {pos.x} {pos.y} {pos.z}");
             orig(self, applySaveDelay);
-            Save?.Update();
             if (!ArchipelagoClient.HasConnected) return;
+            Save?.Update();
             try
             {
                 if (RandoPortalManager.LeftHQPortal)
@@ -931,6 +930,7 @@ namespace MessengerRando
                     Manager<UIManager>.Instance.CloseAllScreensOfType<SavingScreen>(false);
                     Manager<UIManager>.Instance.CloseAllScreensOfType<LoadingAnimation>(false);
                     RandoPortalManager.Teleport();
+                    return;
                 }
             }
             catch (Exception e)

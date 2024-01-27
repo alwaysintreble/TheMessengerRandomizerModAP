@@ -34,9 +34,9 @@ namespace MessengerRando.Archipelago
         public static ArchipelagoSession Session;
         public static DeathLinkInterface DeathLinkHandler;
 
-        public static readonly Queue ItemQueue = new Queue();
-        public static readonly Queue DialogQueue = new Queue();
-        private static readonly Queue MessageQueue = new Queue();
+        public static Queue ItemQueue = new Queue();
+        public static Queue DialogQueue = new Queue();
+        private static Queue messageQueue = new Queue();
 
         public static List<string> EventsICareAbout = new List<string>
         {
@@ -222,7 +222,7 @@ namespace MessengerRando.Archipelago
                         if (hintMessage.IsFound || !hintMessage.IsRelatedToActivePlayer || !HintPopUps ||
                             RandomizerStateManager.SeenHints.Contains(hintMessage.Item)) break;
                         RandomizerStateManager.SeenHints.Add(hintMessage.Item);
-                        MessageQueue.Enqueue(hintMessage.ToString());
+                        messageQueue.Enqueue(hintMessage.ToString());
                         DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
                         break;
                     case ItemSendLogMessage itemSendMessage:
@@ -233,7 +233,7 @@ namespace MessengerRando.Archipelago
                                 Console.WriteLine($"adding {itemSendMessage.Item.ToReadableString()} to dialog queue.");
                                 DialogQueue.Enqueue(itemSendMessage.Item.ToReadableString(itemSendMessage.Receiver.Alias));
                             }
-                            MessageQueue.Enqueue(itemSendMessage.ToString());
+                            messageQueue.Enqueue(itemSendMessage.ToString());
                         }
                         break;
                 }
@@ -242,7 +242,7 @@ namespace MessengerRando.Archipelago
             {
                 if (HintPopUps && message is HintItemSendLogMessage hintMessage)
                     DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
-                MessageQueue.Enqueue(message.ToString());
+                messageQueue.Enqueue(message.ToString());
             }
         }
 
@@ -346,6 +346,9 @@ namespace MessengerRando.Archipelago
             Session = null;
             Authenticated = false;
             attemptingConnection = false;
+            DialogQueue = new Queue();
+            ItemQueue = new Queue();
+            messageQueue = new Queue();
         }
 
         public static void UpdateArchipelagoState()
@@ -456,9 +459,9 @@ namespace MessengerRando.Archipelago
         public static string UpdateMessagesText()
         {
             var text = string.Empty;
-            if (MessageQueue.Count <= 0) return text;
+            if (messageQueue.Count <= 0) return text;
             if (DisplayAPMessages)
-                text = (string)MessageQueue.Dequeue();
+                text = (string)messageQueue.Dequeue();
             return text;
         }
     }

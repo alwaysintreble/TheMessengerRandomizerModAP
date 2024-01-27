@@ -219,9 +219,9 @@ namespace MessengerRando.GameOverrideManagers
                     new List<LevelConstants.RandoLevel>
                     {
                         new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-368, -26), EBits.BITS_8),
-                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-116, -35), EBits.BITS_8),
-                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(108, -24)),
-                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(355, -27), EBits.BITS_8),
+                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-140, -26), EBits.BITS_8),
+                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(116, -26)),
+                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(366, -27), EBits.BITS_8),
                         new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(721, -22), EBits.BITS_8),
                         new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(816, -26), EBits.BITS_8),
                         new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(1148, -27), EBits.BITS_8),
@@ -229,8 +229,8 @@ namespace MessengerRando.GameOverrideManagers
                     new List<LevelConstants.RandoLevel>
                     {
                         new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-146, 24), EBits.BITS_8),
-                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(159, -29)),
-                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(780, -26)),
+                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(164, -21)),
+                        new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(770, -26)),
                         new LevelConstants.RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-251, 13)),
                     }
                 },

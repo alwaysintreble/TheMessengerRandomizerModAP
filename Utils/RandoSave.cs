@@ -31,7 +31,7 @@ namespace MessengerRando.Utils
             APSaveData = GetSaveData();
         }
 
-        public static string GetSaveData()
+        private static string GetSaveData()
         {
             var output =
                 $"{RandomizerStateManager.Instance.APSave[1]}|" +

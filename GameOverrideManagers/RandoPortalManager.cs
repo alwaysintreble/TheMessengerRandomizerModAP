@@ -242,7 +242,7 @@ namespace MessengerRando.GameOverrideManagers
                         new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-305, -51), EBits.BITS_8),
                         new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-186.5f, -24), EBits.BITS_8),
                         new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-125.5f, -91), EBits.BITS_8),
-                        //new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(124.5f, -43)), // barm'athaziel which isn't accessible in second quest
+                        //new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(124.5f, -43)), // barm'athazel which isn't accessible in second quest
                         new LevelConstants.RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(132.5f, -130)),
                     },
                     new List<LevelConstants.RandoLevel>
@@ -331,11 +331,11 @@ namespace MessengerRando.GameOverrideManagers
             }
         }
 
-        public static void LeaveHQ(On.TotHQ.orig_LeaveToLevel orig, TotHQ self, bool playlevelmusic, bool loadingnewlevel)
+        public static void LeaveHQ(On.TotHQ.orig_LeaveToLevel orig, TotHQ self, bool playLevelMusic, bool loadingNewLevel)
         {
             Console.WriteLine($"leaving hq.. should be teleporting: {PortalMapping != null}");
             LeftHQPortal = PortalMapping != null;
-            orig(self, playlevelmusic, loadingnewlevel);
+            orig(self, playLevelMusic, loadingNewLevel);
         }
     }
 }

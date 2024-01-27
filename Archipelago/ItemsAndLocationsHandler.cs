@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using MessengerRando.RO;
 using MessengerRando.GameOverrideManagers;
+using MessengerRando.RO;
 using MessengerRando.Utils;
 
 namespace MessengerRando.Archipelago
@@ -12,7 +12,7 @@ namespace MessengerRando.Archipelago
     {
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
-        private static Dictionary<EItems, long> EitemsLocationsLookup;
+        private static Dictionary<EItems, long> EItemsLocationsLookup;
         private static Dictionary<long, LocationRO> IDtoLocationsLookup;
 
         public static RandomizerStateManager RandoStateManager;
@@ -51,7 +51,7 @@ namespace MessengerRando.Archipelago
             offset = BaseOffset;
             Console.WriteLine("Building LocationsLookup...");
             LocationsLookup = new Dictionary<LocationRO, long>();
-            EitemsLocationsLookup = new Dictionary<EItems, long>();
+            EItemsLocationsLookup = new Dictionary<EItems, long>();
             IDtoLocationsLookup = new Dictionary<long, LocationRO>();
             
             var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
@@ -68,8 +68,8 @@ namespace MessengerRando.Archipelago
                 IDtoLocationsLookup.Add(offset, progLocation);
                 // Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
                 if (progLocation.VanillaItem != EItems.NONE &&
-                    !EitemsLocationsLookup.ContainsKey(progLocation.VanillaItem))
-                    EitemsLocationsLookup.Add(progLocation.VanillaItem, offset);
+                    !EItemsLocationsLookup.ContainsKey(progLocation.VanillaItem))
+                    EItemsLocationsLookup.Add(progLocation.VanillaItem, offset);
                 ++offset;
             }
         }
@@ -289,7 +289,7 @@ namespace MessengerRando.Archipelago
 
         public static long LocationFromEItem(EItems location)
         {
-            return !EitemsLocationsLookup.ContainsKey(location) ? 0 : EitemsLocationsLookup[location];
+            return !EItemsLocationsLookup.ContainsKey(location) ? 0 : EItemsLocationsLookup[location];
         }
 
         public static bool ShopLocation(long locationID, out LocationRO shopLocation)
@@ -376,7 +376,9 @@ namespace MessengerRando.Archipelago
                     }
                     catch
                     {
+                        // ignored
                     }
+
                     break;
                 default:
                     Console.WriteLine($"Checking if {randoItem.Item} is a shop item: {ShopItem(randoItem.Item)}");

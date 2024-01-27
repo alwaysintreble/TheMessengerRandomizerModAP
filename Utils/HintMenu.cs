@@ -74,15 +74,15 @@ namespace MessengerRando.Utils
                             break;
                         default:
                             CourierLogger.Log(LogType.Warning, "OptionsMenu",
-                                button.GetType()?.ToString() + " not a known type of OptionsButtonInfo!");
+                                button.GetType() + " not a known type of OptionsButtonInfo!");
                             break;
                     }
 
                     button.gameObject.transform.SetAsLastSibling();
-                    GameObject gameObject = button.gameObject;
+                    GameObject buttonGameObject = button.gameObject;
                     Func<string> getText = button.GetText;
                     string str = getText?.Invoke() ?? "Nameless Modded Options Button";
-                    gameObject.name = str;
+                    buttonGameObject.name = str;
                     button.addedTo = view;
                     foreach (TextMeshProUGUI componentsInChild in button.gameObject
                                  .GetComponentsInChildren<TextMeshProUGUI>())
@@ -265,10 +265,11 @@ namespace MessengerRando.Utils
                     new Vector2(sizeDelta.x, 110 + heightPerButton * OptionsCount());
             }
 
+            // ReSharper disable Unity.PerformanceAnalysis
             private void SetInitialSelection()
             {
                 GameObject defaultSelectionButton =
-                    (initialSelection ?? defaultSelection).transform.Find("Button").gameObject;
+                    (initialSelection ? initialSelection : defaultSelection).transform.Find("Button").gameObject;
                 defaultSelectionButton.transform.GetComponent<UIObjectAudioHandler>().playAudio = false;
                 EventSystem.current.SetSelectedGameObject(defaultSelectionButton);
                 defaultSelectionButton.GetComponent<Button>().OnSelect(null);

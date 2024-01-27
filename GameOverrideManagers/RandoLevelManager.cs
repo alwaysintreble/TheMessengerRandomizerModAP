@@ -12,9 +12,10 @@ namespace MessengerRando.GameOverrideManagers
     public static class RandoLevelManager
     {
         private static bool teleporting;
-        public static ELevel LastLevel;
-        public static ELevel CurrentLevel;
+        private static ELevel lastLevel;
+        private static ELevel currentLevel;
 
+        // ReSharper disable once UnassignedField.Global
         public static Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel> RandoLevelMapping;
 
         public static void LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
@@ -26,8 +27,8 @@ namespace MessengerRando.GameOverrideManagers
             #endif
             orig(self, levelInfo);
             if (teleporting) return;
-            LastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
-            CurrentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelInfo.levelName);
+            lastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
+            currentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelInfo.levelName);
         }
 
         static bool WithinRange(float pos1, float pos2)
@@ -37,22 +38,21 @@ namespace MessengerRando.GameOverrideManagers
             return comparison <= 10;
         }
 
-        public static LevelConstants.RandoLevel FindEntrance()
+        private static LevelConstants.RandoLevel FindEntrance()
         {
             try
             {
                 Console.WriteLine("looking for entrance we just entered");
                 var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
-                Console.WriteLine(LastLevel);
-                Console.WriteLine(CurrentLevel);
+                Console.WriteLine(lastLevel);
+                Console.WriteLine(currentLevel);
                 if (!LevelConstants.TransitionToEntranceName.TryGetValue(
-                        new LevelConstants.Transition(LastLevel, CurrentLevel), out var entrance))
+                        new LevelConstants.Transition(lastLevel, currentLevel), out var entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
                 Console.WriteLine(entrance);
                 LevelConstants.RandoLevel oldLevel = default;
                 if (LevelConstants.SpecialEntranceNames.Contains(entrance))
                 {
-
                     Vector3 comparePos;
                     switch (entrance)
                     {

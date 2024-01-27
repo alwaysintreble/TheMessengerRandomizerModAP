@@ -11,15 +11,12 @@ namespace MessengerRando.RO
         public EItems Item { get; }
         //amount to give
         public int Quantity { get; }
-        //player name for other players' items
-        public string RecipientName { get; }
 
-        public RandoItemRO(string name, EItems item, int quantity = 1, string recipient = null)
+        public RandoItemRO(string name, EItems item, int quantity = 1)
         {
             Name = name;
             Item = item;
             Quantity = quantity;
-            RecipientName = recipient;
         }
 
         public override string ToString()
@@ -57,12 +54,11 @@ namespace MessengerRando.RO
 
             if(itemToParse == null)
             {
-                throw new ArgumentNullException("Attempted to parse null!");
+                throw new ArgumentNullException(nameof(itemToParse));
             }
 
             string[] randoItemDetails = itemToParse.Split('-');
-            int quantity = 0;
-            if (randoItemDetails.Length == 3 && Enum.IsDefined(typeof(EItems), randoItemDetails[1]) && int.TryParse(randoItemDetails[2], out quantity))
+            if (randoItemDetails.Length == 3 && Enum.IsDefined(typeof(EItems), randoItemDetails[1]) && int.TryParse(randoItemDetails[2], out var quantity))
             {
                 return new RandoItemRO(randoItemDetails[0], (EItems)Enum.Parse(typeof(EItems), randoItemDetails[1], true), quantity);
             }

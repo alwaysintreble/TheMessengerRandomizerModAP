@@ -49,6 +49,7 @@ namespace MessengerRando.Archipelago
             return ArchipelagoClient.ServerData.loadData(slot);
         }
 
+        // ReSharper disable once InconsistentNaming
         private bool loadData(int slot)
         {
             if (!RandomizerStateManager.Instance.APSave.TryGetValue(slot, out var tempServerData) ||

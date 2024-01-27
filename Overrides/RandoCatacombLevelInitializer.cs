@@ -6,7 +6,7 @@ namespace MessengerRando.Overrides
 	/// <summary>
 	/// This class is meant to override functions of CatacombLevelInitializer for ease of access.
 	/// </summary>
-	class RandoCatacombLevelInitializer
+	static class RandoCatacombLevelInitializer
     {
 		/// <summary>
 		/// Overriding FixPlayerStuckInChallengeRoom method that is private in orig code. No changes made to orig code.

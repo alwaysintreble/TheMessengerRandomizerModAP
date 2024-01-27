@@ -8,8 +8,8 @@ namespace MessengerRando.GameOverrideManagers
     public static class RandoRoomManager
     {
         public static bool RoomRando;
-        public static bool RoomOverride;
-        public static Dictionary<string, string> RoomMap; // old room name - new room name
+        private static bool roomOverride;
+        private static Dictionary<string, string> roomMap; // old room name - new room name
         
         static string GetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top)
         {
@@ -57,9 +57,9 @@ namespace MessengerRando.GameOverrideManagers
             //if we're in a room, it leaves the current room then enters the new room with the teleported bool
             //no idea what the teleported bool does currently
             orig(self, leftEdge, rightEdge, bottomEdge, topEdge, teleportedInRoom);
-            if (RoomOverride)
+            if (roomOverride)
             {
-                RoomOverride = false;
+                roomOverride = false;
                 return;
             }
 
@@ -75,7 +75,7 @@ namespace MessengerRando.GameOverrideManagers
                 if (newRoom.RoomKey.IsNullOrEmpty() || transition.Direction.IsNullOrEmpty()) return;
                 
                 SetRoomKey(leftEdge, rightEdge, bottomEdge, topEdge, newRoom.RoomKey);
-                RoomOverride = true;
+                roomOverride = true;
                 if (newRoom.Region.Equals(currentLevel))
                     Manager<Level>.Instance.ChangeRoom(leftEdge, rightEdge, bottomEdge, topEdge, teleportedInRoom);
                 else
@@ -96,7 +96,7 @@ namespace MessengerRando.GameOverrideManagers
             if (!RoomConstants.RoomNameLookup.TryGetValue(new RoomConstants.RandoRoom(oldRoomKey, currentLevel),
                     out var oldRoomName)
                 || !RoomConstants.TransitionLookup.TryGetValue(oldRoomName, out var oldTransitions)
-                || !RoomMap.TryGetValue(oldRoomName, out var newName)
+                || !roomMap.TryGetValue(oldRoomName, out var newName)
                 || !RoomConstants.TransitionLookup.TryGetValue(newName, out var newTransitions))
                 return new RoomConstants.RandoRoom();
             

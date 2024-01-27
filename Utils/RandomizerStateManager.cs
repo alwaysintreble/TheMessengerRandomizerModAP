@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AdvancedInspector;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
-using MonoMod.Utils;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
-using Random = System.Random;
+// ReSharper disable StringLiteralTypo
+// ReSharper disable CommentTypo
 
 namespace MessengerRando.Utils
 {
@@ -21,14 +18,18 @@ namespace MessengerRando.Utils
         public int CurrentFileSlot { set; get; }
 
         public RandoPowerSealManager PowerSealManager;
+        // ReSharper disable once UnassignedField.Global
+        // gets assigned externally
         public RandoBossManager BossManager;
         public static List<NetworkItem> SeenHints = new List<NetworkItem>();
 
         public bool SkipMusicBox;
+        // ReSharper disable once UnassignedField.Global
+        // useful for debugging
         public bool SkipPhantom;
 
         public Dictionary<long, NetworkItem> ScoutedLocations;
-        public Dictionary<int, ArchipelagoData> APSave;
+        public readonly Dictionary<int, ArchipelagoData> APSave;
 
         public RandomizerStateManager()
         {
@@ -132,7 +133,7 @@ namespace MessengerRando.Utils
                          Manager<PlayerManager>.Instance.Player.InputBlocked() ||
                          Manager<PlayerManager>.Instance.Player.IsKnockedBack);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }
@@ -211,26 +212,26 @@ namespace MessengerRando.Utils
             invManager.AllTimeItemQuantityByItemId = invManager.ItemQuantityByItemId;
             
             progManager.secondQuest = true;
-            var discoveredLevels = new List<ELevel>
-            {
-                // ELevel.Level_01_NinjaVillage,
-                // ELevel.Level_02_AutumnHills,
-                // ELevel.Level_03_ForlornTemple,
-                // ELevel.Level_04_Catacombs,
-                // ELevel.Level_06_A_BambooCreek,
-                // ELevel.Level_05_A_HowlingGrotto,
-                // ELevel.Level_07_QuillshroomMarsh,
-                // ELevel.Level_08_SearingCrags,
-                // ELevel.Level_09_A_GlacialPeak,
-                // ELevel.Level_10_A_TowerOfTime,
-                // ELevel.Level_11_A_CloudRuins,
-                // ELevel.Level_12_UnderWorld,
-                // ELevel.Level_13_TowerOfTimeHQ,
-                // ELevel.Level_04_C_RiviereTurquoise,
-                // ELevel.Level_05_B_SunkenShrine,
-            };
-            progManager.levelsDiscovered.AddRange(discoveredLevels);
-            progManager.allTimeDiscoveredLevels.AddRange(discoveredLevels);
+            // var discoveredLevels = new List<ELevel>
+            // {
+            //     ELevel.Level_01_NinjaVillage,
+            //     ELevel.Level_02_AutumnHills,
+            //     ELevel.Level_03_ForlornTemple,
+            //     ELevel.Level_04_Catacombs,
+            //     ELevel.Level_06_A_BambooCreek,
+            //     ELevel.Level_05_A_HowlingGrotto,
+            //     ELevel.Level_07_QuillshroomMarsh,
+            //     ELevel.Level_08_SearingCrags,
+            //     ELevel.Level_09_A_GlacialPeak,
+            //     ELevel.Level_10_A_TowerOfTime,
+            //     ELevel.Level_11_A_CloudRuins,
+            //     ELevel.Level_12_UnderWorld,
+            //     ELevel.Level_13_TowerOfTimeHQ,
+            //     ELevel.Level_04_C_RiviereTurquoise,
+            //     ELevel.Level_05_B_SunkenShrine,
+            // };
+            // progManager.levelsDiscovered.AddRange(discoveredLevels);
+            // progManager.allTimeDiscoveredLevels.AddRange(discoveredLevels);
             progManager.isLevelDiscoveredAwarded = true;
             
             var skipCutscenes = new List<string>

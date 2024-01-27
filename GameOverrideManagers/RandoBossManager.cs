@@ -6,15 +6,16 @@ using MessengerRando.RO;
 using MessengerRando.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
+// ReSharper disable StringLiteralTypo
 
 namespace MessengerRando.GameOverrideManagers
 {
-    public class RandoBossManager
+    public abstract class RandoBossManager
     {
         public static List<string> DefeatedBosses = new List<string>();
 
-        private Dictionary<string, string> origToNewBoss;
-        private static bool BossOverride;
+        private readonly Dictionary<string, string> origToNewBoss;
+        private static bool bossOverride;
 
         private struct BossLocation
         {
@@ -30,7 +31,7 @@ namespace MessengerRando.GameOverrideManagers
             }
         }
 
-        private static readonly List<string> vanillaBossNames = new List<string>
+        private static readonly List<string> VanillaBossNames = new List<string>
         {
             "LeafGolem",
             "Necromancer",
@@ -54,7 +55,7 @@ namespace MessengerRando.GameOverrideManagers
             { 11391078, "QueenOfQuills" },
         };
 
-        public static readonly Dictionary<string, string> bossCutscenes = new Dictionary<string, string>
+        public static readonly Dictionary<string, string> BossCutscenes = new Dictionary<string, string>
         {
             { "LeafGolem", "LeafGolemIntroCutscene" },
             { "Necromancer", "NecromancerIntroCutscene" },
@@ -69,7 +70,7 @@ namespace MessengerRando.GameOverrideManagers
             { "Phantom", "PhantomIntroCutscene" }
         };
 
-        private static readonly Dictionary<string, string> roomToVanillBoss = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> RoomToVanillaBoss = new Dictionary<string, string>
         {
             { "908940-28-12", "LeafGolem" },
             { "748780-76-60", "Necromancer" },
@@ -83,7 +84,7 @@ namespace MessengerRando.GameOverrideManagers
             { "-308-276420", "ButterflyMatriarch" }
         };
 
-        private static readonly Dictionary<string, BossLocation> bossLocations = new Dictionary<string, BossLocation> 
+        private static readonly Dictionary<string, BossLocation> BossLocations = new Dictionary<string, BossLocation> 
         {
             { "LeafGolem", new BossLocation(ELevel.Level_02_AutumnHills, new Vector2(908, -27), EBits.BITS_8) },
             { "Necromancer", new BossLocation(ELevel.Level_04_Catacombs, new Vector2(752, -75), EBits.BITS_8) },
@@ -113,12 +114,12 @@ namespace MessengerRando.GameOverrideManagers
 
         private static string GetVanillaBoss(string roomKey)
         {
-            return roomToVanillBoss[roomKey];
+            return RoomToVanillaBoss[roomKey];
         }
 
         private static void AdjustPlayerInBossRoom(string bossName)
         {
-            var newLocation = bossLocations[bossName];
+            var newLocation = BossLocations[bossName];
             if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(newLocation.BossRegion))
             {
                 Manager<PlayerManager>.Instance.Player.transform.position = newLocation.PlayerPosition;
@@ -126,7 +127,7 @@ namespace MessengerRando.GameOverrideManagers
             }
             else
             {
-                BossOverride = true;
+                bossOverride = true;
                 RandoLevelManager.TeleportInArea(newLocation.BossRegion, newLocation.PlayerPosition,
                     newLocation.PlayerDimension);
             }
@@ -134,13 +135,13 @@ namespace MessengerRando.GameOverrideManagers
         
         public static bool HasBossDefeated(string bossName)
         {
-            if (BossOverride)
+            if (bossOverride)
                 bossName = RandomizerStateManager.Instance.BossManager.origToNewBoss
                     .First(name => name.Value.Equals(bossName)).Key;
             Console.WriteLine($"Checking if {bossName} is defeated.");
             try
             {
-                return !vanillaBossNames.Contains(bossName) || DefeatedBosses.Contains(bossName);
+                return !VanillaBossNames.Contains(bossName) || DefeatedBosses.Contains(bossName);
             }
             catch (Exception e)
             {
@@ -153,15 +154,15 @@ namespace MessengerRando.GameOverrideManagers
         {
             if (DefeatedBosses.Contains(bossName))
                 return;
-            if (BossOverride)
+            if (bossOverride)
             {
                 bossName = RandomizerStateManager.Instance.BossManager.origToNewBoss[bossName];
-                BossOverride = false;
+                bossOverride = false;
             }
             if (ArchipelagoClient.HasConnected)
             {
                 ArchipelagoClient.ServerData.DefeatedBosses.Add(bossName);
-                if (bossLocations.ContainsKey(bossName))
+                if (BossLocations.ContainsKey(bossName))
                 {
                     var bossLoc = new LocationRO(bossName);
                     ItemsAndLocationsHandler.SendLocationCheck(bossLoc);
@@ -170,7 +171,7 @@ namespace MessengerRando.GameOverrideManagers
             DefeatedBosses.Add(bossName);
             if (RandomizerStateManager.Instance.BossManager != null)
             {
-                var newPosition = bossLocations[bossName];
+                var newPosition = BossLocations[bossName];
                 
                 RandoLevelManager.TeleportInArea(newPosition.BossRegion, newPosition.PlayerPosition,
                     newPosition.PlayerDimension);
@@ -179,10 +180,10 @@ namespace MessengerRando.GameOverrideManagers
 
         public static bool ShouldFightBoss(string bossName)
         {
-            if (BossOverride) return false;
+            if (bossOverride) return false;
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             Console.WriteLine($"Entered {bossName}'s room. Has Defeated: {HasBossDefeated(bossName)}");
-            if (HasBossDefeated(bossName) || !currentLevel.Equals(bossLocations[bossName].BossRegion)) return false;
+            if (HasBossDefeated(bossName) || !currentLevel.Equals(BossLocations[bossName].BossRegion)) return false;
             
             var teleporting = RandomizerStateManager.Instance.BossManager != null;
             Console.WriteLine($"Should teleport: {teleporting}");
@@ -240,7 +241,7 @@ namespace MessengerRando.GameOverrideManagers
             }
         }
 
-        public RandoBossManager(Dictionary<string, string> bossMapping)
+        protected RandoBossManager(Dictionary<string, string> bossMapping)
         {
             Manager<ProgressionManager>.Instance.bossesDefeated =
                 Manager<ProgressionManager>.Instance.allTimeBossesDefeated = new List<string>();

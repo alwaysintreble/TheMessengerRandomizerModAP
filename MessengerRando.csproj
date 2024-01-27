@@ -102,11 +102,15 @@
     <Compile Include="Overrides\RandoCatacombLevelInitializer.cs" />
     <Compile Include="RO\RandoItemRO.cs" />
     <Compile Include="RO\LocationRO.cs" />
+    <Compile Include="Utils\OptionsExporter.cs" />
+    <Compile Include="Utils\SeedGenerator.cs" />
     <Compile Include="Utils\HintMenu.cs" />
     <Compile Include="Utils\Constants\BossConstants.cs" />
     <Compile Include="Utils\Constants\LevelConstants.cs" />
     <Compile Include="Utils\Constants\RoomConstants.cs" />
     <Compile Include="Utils\ArchipelagoMenu.cs" />
+    <Compile Include="Utils\RandoMenu.cs" />
+    <Compile Include="Utils\RandomizerOptions.cs" />
     <Compile Include="Utils\RandoSave.cs" />
     <Compile Include="Utils\LocationInfo.cs" />
     <Compile Include="Utils\DialogChanger.cs" />

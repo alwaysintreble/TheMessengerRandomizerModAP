@@ -13,48 +13,48 @@ using UnityEngine.UI;
 namespace MessengerRando.Utils
 {
     /// <summary>
-    /// Options menu for various archipelago stuff. has options to connect to a multiworld, teleporting while playing etc
+    /// Options menu for solo rando stuff. allows player to select various options to generate with, then either
+    /// export a yaml for use with AP, or generate a solo seed directly.
+    /// Should only exist from the main menu since the archipelago menu can be used for everything else.
     /// </summary>
-    public class ArchipelagoMenu
+    public class RandoMenu
     {
-        public static OptionsButtonInfo ArchipelagoMenuButton;
-        public static ArchipelagoScreen archipelagoScreen;
+        public static OptionsButtonInfo SoloRandoMenuButton;
+        public static RandoScreen randoScreen;
 
-        public static SubMenuButtonInfo VersionButton;
+        // customizable seed input
         public static SubMenuButtonInfo SeedNumButton;
-
-        public static SubMenuButtonInfo WindmillShurikenToggleButton;
-        public static SubMenuButtonInfo TeleportToHqButton;
-        public static SubMenuButtonInfo TeleportToNinjaVillage;
-        public static SubMenuButtonInfo ShuffleMusicButton;
-
-        public static SubMenuButtonInfo ArchipelagoHostButton;
-        public static SubMenuButtonInfo ArchipelagoPortButton;
-        public static SubMenuButtonInfo ArchipelagoNameButton;
-        public static SubMenuButtonInfo ArchipelagoPassButton;
-        public static SubMenuButtonInfo ArchipelagoConnectButton;
+        public static SubMenuButtonInfo BlankSpaceOne;
+        // options
+        public static SubMenuButtonInfo Accessibility;
+        public static SubMenuButtonInfo Logic;
+        public static SubMenuButtonInfo Shards;
+        public static SubMenuButtonInfo LimitedMovement;
+        public static SubMenuButtonInfo EarlyMed;
+        public static SubMenuButtonInfo AvailablePortals;
+        public static SubMenuButtonInfo ShufflePortals;
+        public static SubMenuButtonInfo Goal;
+        public static SubMenuButtonInfo MusicBox;
+        public static SubMenuButtonInfo NotesNeeded;
+        public static SubMenuButtonInfo AmountSeals;
+        public static SubMenuButtonInfo RequiredSeals;
+        public static SubMenuButtonInfo ShopPrices;
+        public static SubMenuButtonInfo BlankSpaceTwo;
         
-        public static SubMenuButtonInfo ArchipelagoReleaseButton;
-        public static SubMenuButtonInfo ArchipelagoCollectButton;
-        public static SubMenuButtonInfo ArchipelagoToggleMessagesButton;
-        public static SubMenuButtonInfo ArchipelagoToggleFilterMessagesButton;
-        public static SubMenuButtonInfo ArchipelagoToggleHintPopupButton;
-        public static SubMenuButtonInfo ArchipelagoStatusButton;
-        public static SubMenuButtonInfo ArchipelagoDeathLinkButton;
-        public static SubMenuButtonInfo ArchipelagoMessageTimerButton;
+        // generate/export
+        public static SubMenuButtonInfo GenerateButton;
+        public static SubMenuButtonInfo ExportButton;
 
-
-
-        public static void DisplayArchipelagoMenu()
+        public static void DisplayRandoMenu()
         {
             Manager<UIManager>.Instance.GetView<OptionScreen>().gameObject.SetActive(false);
-            if (!ArchipelagoScreen.RandoScreenLoaded)
-                archipelagoScreen = ArchipelagoScreen.BuildModOptionScreen(Manager<UIManager>.Instance.GetView<OptionScreen>());
+            if (!RandoScreen.RandoScreenLoaded)
+                randoScreen = RandoScreen.BuildModOptionScreen(Manager<UIManager>.Instance.GetView<OptionScreen>());
 
-            Courier.UI.ShowView(archipelagoScreen, EScreenLayers.PROMPT, null, false);
+            Courier.UI.ShowView(randoScreen, EScreenLayers.PROMPT, null, false);
         }
 
-        public class ArchipelagoScreen : ModOptionScreen
+        public class RandoScreen : ModOptionScreen
         {
             public static bool RandoScreenLoaded;
             public static readonly List<OptionsButtonInfo> OptionButtons = new List<OptionsButtonInfo>();
@@ -133,43 +133,43 @@ namespace MessengerRando.Utils
                 parent.Find("Back")?.SetAsLastSibling();
             }
 
-            public new static ArchipelagoScreen BuildModOptionScreen(OptionScreen optionScreen)
+            public new static RandoScreen BuildModOptionScreen(OptionScreen optionScreen)
             {
                 GameObject gameObject = new GameObject();
-                ArchipelagoScreen archipelagoScreen = gameObject.AddComponent<ArchipelagoScreen>();
+                RandoScreen randoScreen = gameObject.AddComponent<RandoScreen>();
                 OptionScreen newScreen = Instantiate(optionScreen);
-                archipelagoScreen.name = "RandoScreen";
+                randoScreen.name = "RandoScreen";
                 // Swap everything under the option screen to the mod option screen
                 // Iterate backwards so elements don't shift as lower ones are removed
                 for (int i = newScreen.transform.childCount - 1; i >= 0; i--)
                 {
-                    newScreen.transform.GetChild(i).SetParent(archipelagoScreen.transform, false);
+                    newScreen.transform.GetChild(i).SetParent(randoScreen.transform, false);
                 }
 
-                archipelagoScreen.optionMenuButtons = archipelagoScreen.transform.Find("Container").Find("BackgroundFrame")
+                randoScreen.optionMenuButtons = randoScreen.transform.Find("Container").Find("BackgroundFrame")
                     .Find("OptionsFrame").Find("OptionMenuButtons");
-                archipelagoScreen.backButton = archipelagoScreen.optionMenuButtons.Find("Back");
+                randoScreen.backButton = randoScreen.optionMenuButtons.Find("Back");
                 // Delete OptionScreen buttons except for the Back button
-                foreach (Transform child in archipelagoScreen.optionMenuButtons.GetChildren())
+                foreach (Transform child in randoScreen.optionMenuButtons.GetChildren())
                 {
-                    if (!child.Equals(archipelagoScreen.backButton))
+                    if (!child.Equals(randoScreen.backButton))
                         Destroy(child.gameObject);
                 }
 
                 //TODO put back if things brake
                 // randoScreen.optionMenuButtons.DetachChildren();
-                archipelagoScreen.backButton.SetParent(archipelagoScreen.optionMenuButtons);
+                randoScreen.backButton.SetParent(randoScreen.optionMenuButtons);
 
                 // Make back button take you to the OptionScreen instead of the pause menu
-                Button button = archipelagoScreen.backButton.GetComponentInChildren<Button>();
+                Button button = randoScreen.backButton.GetComponentInChildren<Button>();
                 button.onClick = new Button.ButtonClickedEvent();
-                button.onClick.AddListener(archipelagoScreen.BackToOptionMenu);
+                button.onClick.AddListener(randoScreen.BackToOptionMenu);
 
-                archipelagoScreen.InitStuffUnityWouldDo();
+                randoScreen.InitStuffUnityWouldDo();
 
-                archipelagoScreen.gameObject.SetActive(false);
+                randoScreen.gameObject.SetActive(false);
                 RandoScreenLoaded = true;
-                return archipelagoScreen;
+                return randoScreen;
             }
 
             private void InitStuffUnityWouldDo()
@@ -410,15 +410,16 @@ namespace MessengerRando.Utils
                 }
             }
 
+            // ReSharper disable Unity.PerformanceAnalysis
             public new void BackToOptionMenu()
             {
                 Close(false);
                 Manager<UIManager>.Instance.GetView<OptionScreen>().gameObject.SetActive(true);
-                ArchipelagoMenuButton.gameObject.transform.Find("Button").GetComponent<UIObjectAudioHandler>()
+                SoloRandoMenuButton.gameObject.transform.Find("Button").GetComponent<UIObjectAudioHandler>()
                     .playAudio = false;
-                EventSystem.current.SetSelectedGameObject(ArchipelagoMenuButton.gameObject.transform.Find("Button")
+                EventSystem.current.SetSelectedGameObject(SoloRandoMenuButton.gameObject.transform.Find("Button")
                     .gameObject);
-                ArchipelagoMenuButton.gameObject.transform.Find("Button").GetComponent<UIObjectAudioHandler>()
+                SoloRandoMenuButton.gameObject.transform.Find("Button").GetComponent<UIObjectAudioHandler>()
                     .playAudio = true;
             }
 
@@ -430,7 +431,7 @@ namespace MessengerRando.Utils
         }
 
         private static void RegisterRandoButton(OptionsButtonInfo buttonInfo) =>
-            ArchipelagoScreen.OptionButtons.Add(buttonInfo);
+            RandoScreen.OptionButtons.Add(buttonInfo);
 
         public static SubMenuButtonInfo RegisterSubRandoButton(Func<string> GetText, UnityAction onClick)
         {

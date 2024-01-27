@@ -45,7 +45,7 @@ namespace MessengerRando.GameOverrideManagers
 
         public static bool LeftHQPortal;
         public static List<string> StartingPortals;
-        public static Dictionary<string, Portal> PortalMapping;
+        public static List<Portal> PortalMapping;
 
         static readonly List<List<List<LevelConstants.RandoLevel>>> AreaCheckpoints =
             new List<List<List<LevelConstants.RandoLevel>>>
@@ -296,7 +296,7 @@ namespace MessengerRando.GameOverrideManagers
                 }
             };
 
-        public static readonly List<string> Portals = new List<string>
+        private static readonly List<string> Portals = new List<string>
         {
             "Autumn Hills - Portal",
             "Riviere Turquoise - Portal",
@@ -305,11 +305,11 @@ namespace MessengerRando.GameOverrideManagers
             "Searing Crags - Portal",
             "Glacial Peak - Portal",
         };
-        
-        public static LevelConstants.RandoLevel GetPortalExit(string enteredPortal)
+
+        private static LevelConstants.RandoLevel GetPortalExit(string enteredPortal)
         {
             Console.WriteLine($"getting portal. entered {enteredPortal}");
-            var portalExit = PortalMapping[enteredPortal];
+            var portalExit = PortalMapping[Portals.IndexOf(enteredPortal)];
             Console.WriteLine($"{portalExit.Region}, {portalExit.PortalType}, {portalExit.Index}");
             return AreaCheckpoints[portalExit.Region][portalExit.PortalType][portalExit.Index];
         }

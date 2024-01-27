@@ -49,10 +49,6 @@ namespace MessengerRando.GameOverrideManagers
                         new LevelConstants.Transition(LastLevel, CurrentLevel), out var entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
                 Console.WriteLine(entrance);
-                if (entrance.Contains("Portal"))
-                    return RandoPortalManager.PortalMapping == null
-                        ? new LevelConstants.RandoLevel(ELevel.NONE, new Vector3())
-                        : RandoPortalManager.GetPortalExit(entrance);
                 LevelConstants.RandoLevel oldLevel = default;
                 if (LevelConstants.SpecialEntranceNames.Contains(entrance))
                 {

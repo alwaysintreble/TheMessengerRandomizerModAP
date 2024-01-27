@@ -88,11 +88,10 @@ namespace MessengerRando.Utils
                 }
 
                 var portalExits = ((JArray)slotData["portal_exits"]).ToObject<List<int>>();
-                RandoPortalManager.PortalMapping = new Dictionary<string, RandoPortalManager.Portal>();
-                for (int i = 0; i < RandoPortalManager.Portals.Count; i++)
+                RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
+                for (int i = 0; i < 5; i++)
                 {
-                    RandoPortalManager.PortalMapping[RandoPortalManager.Portals[i]] =
-                        new RandoPortalManager.Portal(portalExits[i]);
+                    RandoPortalManager.PortalMapping.Add(new RandoPortalManager.Portal(portalExits[i]));
                 }
             }
             else

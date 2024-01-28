@@ -138,7 +138,7 @@ namespace MessengerRando.Utils
                 GameObject gameObject = new GameObject();
                 ArchipelagoScreen archipelagoScreen = gameObject.AddComponent<ArchipelagoScreen>();
                 OptionScreen newScreen = Instantiate(optionScreen);
-                archipelagoScreen.name = "RandoScreen";
+                archipelagoScreen.name = "ArchipelagoScreen";
                 // Swap everything under the option screen to the mod option screen
                 // Iterate backwards so elements don't shift as lower ones are removed
                 for (int i = newScreen.transform.childCount - 1; i >= 0; i--)
@@ -245,7 +245,7 @@ namespace MessengerRando.Utils
                     }
                     catch (Exception e)
                     {
-                        CourierLogger.Log(LogType.Exception, "RandoScreen",
+                        CourierLogger.Log(LogType.Exception, "ArchipelagoScreen",
                             "Image not Read/Writeable when recoloring selection frames in ModOptionScreen");
                         e.LogDetailed();
                     }
@@ -384,7 +384,7 @@ namespace MessengerRando.Utils
                     }
                     catch (Exception e)
                     {
-                        CourierLogger.Log(LogType.Exception, "RandoScreen",
+                        CourierLogger.Log(LogType.Exception, "ArchipelagoScreen",
                             "Image not Read/Writeable when recoloring selection frames in ModOptionScreen");
                         CourierLogger.LogDetailed(e);
                     }

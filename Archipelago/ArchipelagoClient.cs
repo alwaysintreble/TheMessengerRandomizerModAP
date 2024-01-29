@@ -92,24 +92,67 @@ namespace MessengerRando.Archipelago
         private static ArchipelagoSession CreateSession()
         {
             var session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
+            SetupSession(session);
+            return session;
+        }
+
+        private static ArchipelagoSession CreateSession(Uri uri)
+        {
+            var session = ArchipelagoSessionFactory.CreateSession(uri);
+            SetupSession(session);
+            return session;
+        }
+
+        private static void SetupSession(ArchipelagoSession session)
+        {
             session.MessageLog.OnMessageReceived += OnMessageReceived;
             session.Items.ItemReceived += OnItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
             session.Socket.SocketClosed += SessionSocketClosed;
-            return session;
+        }
+
+        public static string Connect(Uri uri)
+        {
+            if (Authenticated) return "already connected";
+            
+            try
+            {
+                Session = CreateSession(uri);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
+                return e.ToString();
+            }
+
+            return TryConnect();
         }
 
         public static string Connect()
         {
             if (Authenticated) return "already connected";
-            if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
-            var needSlotData = ServerData.SlotData == null;
-
-            LoginResult result;
 
             try
             {
                 Session = CreateSession();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
+                return e.ToString();
+            }
+
+            return TryConnect();
+        }
+
+        private static string TryConnect()
+        {
+            if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
+            var needSlotData = ServerData.SlotData == null;
+            LoginResult result;
+
+            try
+            {
                 result = Session.TryConnectAndLogin(
                     "The Messenger",
                     ServerData.SlotName,
@@ -121,11 +164,15 @@ namespace MessengerRando.Archipelago
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.Write($"Error: {e}");
                 result = new LoginFailure(e.GetBaseException().Message);
             }
-            
 
+            return HandleConnectResult(result, needSlotData);
+        }
+
+        private static string HandleConnectResult(LoginResult result, bool needSlotData)
+        {
             string outputText;
             if (result.Successful)
             {
@@ -137,7 +184,7 @@ namespace MessengerRando.Archipelago
 
                 try
                 {
-                    RandomizerStateManager.InitializeMultiSeed();
+                    RandomizerStateManager.InitializeSeed();
                 }
                 catch (Exception e)
                 {

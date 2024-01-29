@@ -143,6 +143,12 @@ namespace MessengerRando.GameOverrideManagers
             //         return;
             //     }
             // }
+            if (self.GetCurrentLevelEnum().Equals(ELevel.Level_05_A_HowlingGrotto))
+            {
+                var progManager = Manager<ProgressionManager>.Instance;
+                progManager.levelsDiscovered.Remove(ELevel.Level_05_B_SunkenShrine);
+                progManager.allTimeDiscoveredLevels.Remove(ELevel.Level_05_B_SunkenShrine);
+            }
             if (teleporting)
             {
                 teleporting = false;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
@@ -231,7 +232,7 @@ namespace MessengerRando
                 ArchipelagoMenu.ArchipelagoCollectButton.IsEnabled = ArchipelagoClient.CanCollect;
             }
 
-            BuildRandoMenu();
+            // BuildRandoMenu();
 
             void BuildRandoMenu()
             {
@@ -369,7 +370,9 @@ namespace MessengerRando
                 (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
             // level teleporting etc management
             On.Level.ChangeRoom += RandoRoomManager.Level_ChangeRoom;
+            On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
             // On.PortalOpeningCutscene.OnOpenPortalEvent += RandoPortalManager.OpenPortalEvent;
+            On.TotHQ.LeaveToLevel += RandoPortalManager.LeaveHQ;
             //These functions let us override and manage power seals ourselves with 'fake' items
             On.ProgressionManager.TotalPowerSealCollected += ProgressionManager_TotalPowerSealCollected;
             On.ShopChestOpenCutscene.OnChestOpened += (orig, self) =>
@@ -386,8 +389,6 @@ namespace MessengerRando
             // On.MegaTimeShard.ReceiveHit += RandoTimeShardManager.ReceiveHit;
             On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
-            On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
-            On.TotHQ.LeaveToLevel += RandoPortalManager.LeaveHQ;
             On.Cutscene.Play += Cutscene_Play;
             //temp add
             #if DEBUG
@@ -626,6 +627,31 @@ namespace MessengerRando
         {
             if (ArchipelagoClient.Authenticated)
                 RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+            else if (Environment.GetCommandLineArgs().Length > 0)
+            {
+                Console.WriteLine("loading new game save... found command line args");
+                foreach (var arg in Environment.GetCommandLineArgs())
+                {
+                    Console.WriteLine(arg);
+                    if (!arg.MaybeUri()) continue;
+                    var uri = arg.ToUri();
+                    ArchipelagoClient.ServerData = new ArchipelagoData();
+                    var userInfo = uri.UserInfo.Split(':');
+                    ArchipelagoClient.ServerData.SlotName = userInfo[0];
+                    ArchipelagoClient.ServerData.Password = userInfo[1];
+                    ArchipelagoClient.ServerData.Uri = uri.Host;
+                    ArchipelagoClient.ServerData.Port = uri.Port;
+                    var result = ArchipelagoClient.Connect(uri);
+                    if (result == "success")
+                    {
+                        RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+                        return;
+                    }
+                    break;
+                }
+
+                orig(self, slot);
+            }
             else
                 orig(self, slot);
         }

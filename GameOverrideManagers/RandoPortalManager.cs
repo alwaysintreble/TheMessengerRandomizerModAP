@@ -306,6 +306,44 @@ namespace MessengerRando.GameOverrideManagers
             "Glacial Peak - Portal",
         };
 
+        private static readonly List<string> AccessedStartingPortals = new List<string>();
+        public static bool ShouldPortalBeOpen(string portal)
+        {
+            return AccessedStartingPortals.Contains(portal);
+        }
+
+        public static void OpenPortalEvent(On.PortalOpeningCutscene.orig_OnOpenPortalEvent orig,
+            PortalOpeningCutscene self, string eventid)
+        {
+            switch (eventid)
+            {
+                case "AutumnHills":
+                    if (StartingPortals.Contains("Autumn Hills Portal"))
+                    {
+                        orig(self, eventid);
+                        AccessedStartingPortals.Add(eventid);
+                    }
+                    break;
+                case "HowlingGrotto":
+                    if (StartingPortals.Contains("Howling Grotto Portal"))
+                    {
+                        orig(self, eventid);
+                        AccessedStartingPortals.Add(eventid);
+                    }
+                    break;
+                case "GlacialPeak":
+                    if (StartingPortals.Contains("Glacial Peak Portal"))
+                    {
+                        orig(self, eventid);
+                        AccessedStartingPortals.Add(eventid);
+                    }
+                    break;
+                default:
+                    orig(self, eventid);
+                    break;
+            }
+        }
+        
         private static LevelConstants.RandoLevel GetPortalExit(string enteredPortal)
         {
             Console.WriteLine($"getting portal. entered {enteredPortal}");

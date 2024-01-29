@@ -58,6 +58,10 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Messenger\TheMessenger_Data\Managed\MonoMod.Utils.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Messenger\TheMessenger_Data\Managed\System.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Archipelago.MultiClient.Net.5.0.6\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>

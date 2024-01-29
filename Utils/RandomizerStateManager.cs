@@ -46,11 +46,11 @@ namespace MessengerRando.Utils
                     { 2, new ArchipelagoData() },
                     { 3, new ArchipelagoData() },
                 };
-                if (ArchipelagoClient.Authenticated) InitializeMultiSeed();   
+                if (ArchipelagoClient.Authenticated) InitializeSeed();   
             } catch (Exception e) {Console.WriteLine(e);}
         }
 
-        public static void InitializeMultiSeed()
+        public static void InitializeSeed()
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
             SeenHints = new List<NetworkItem>();
@@ -83,9 +83,14 @@ namespace MessengerRando.Utils
                 RandoPortalManager.StartingPortals = new List<string>();
                 foreach (var portal in startingPortals)
                 {
-                    var scene = $"{portal}OpeningCutscene".Replace(" ", "");
-                    Console.WriteLine(scene);
-                    RandoPortalManager.StartingPortals.Add(scene);
+                    if (portal.StartsWith("Autumn") || portal.StartsWith("Howling") || portal.StartsWith("Glacial"))
+                        RandoPortalManager.StartingPortals.Add(portal);
+                    else
+                    {
+                        var scene = $"{portal}OpeningCutscene".Replace(" ", "");
+                        Console.WriteLine(scene);
+                        RandoPortalManager.StartingPortals.Add(scene);
+                    }
                 }
 
                 var portalExits = ((JArray)slotData["portal_exits"]).ToObject<List<int>>();
@@ -99,9 +104,12 @@ namespace MessengerRando.Utils
             {
                 RandoPortalManager.StartingPortals = new List<string>
                 {
-                    "RiviereTurquoisePortalOpeningCutscene",
-                    "SunkenShrinePortalOpeningCutscene",
-                    "SearingCragsPortalOpeningCutscene",
+                    "AutumnHillsPortal",
+                    "RiviereTurquoisePortal",
+                    "HowlingGrottoPortal",
+                    "SunkenShrinePortal",
+                    "SearingCragsPortal",
+                    "GlacialPeakPortal",
                 };
             }
         }
@@ -259,27 +267,38 @@ namespace MessengerRando.Utils
                 // "QuibbleIntroCutscene",
                 // "TowerOfTimeBossIntroCutscene",
                 // "TowerOfTimeBossOutroCutscene",
-                "Teleport16BitsRoomCutscene",
-                "To16BitsCutscene",
-                "TowerOfTimeTeleportToCloudRuinsCutscene",
+                // "Teleport16BitsRoomCutscene",
+                // "To16BitsCutscene",
+                // "TowerOfTimeTeleportToCloudRuinsCutscene",
                 // "CloudRuinsTowerEntranceCutscene",
                 // "ManfredBossIntroCutscene",
                 // "ManfredBossOutroCutscene",
                 // "DemonGeneralBossIntroCutscene",
                 // "DemonGeneralBossOutroCutscene",
-                "UnderworldManfredEscapeCutscene",
+                // "UnderworldManfredEscapeCutscene",
                 "FutureMessengerCutscene",
                 "SecondQuestStartShopCutscene",
                 "ArmoireOpeningCutscene",
                 "DialogCutscene",
                 "GoToTotMageDialog",
                 "ProphetIntroCutscene",
-                "ExitPortalAwardMapCutscene"
+                "ProphetHeyCutscene",
+                // "PortalOpeningCutscene",
+                "ExitPortalAwardMapCutscene",
             };
             progManager.cutscenesPlayed.AddRange(skipCutscenes);
 
             if (RandoPortalManager.StartingPortals != null)
-                progManager.cutscenesPlayed.AddRange(RandoPortalManager.StartingPortals);
+            {
+                foreach (var portal in RandoPortalManager.StartingPortals.Where(
+                             portal => !portal.StartsWith("Autumn")
+                                       && !portal.StartsWith("Howling")
+                                       && !portal.StartsWith("Glacial")))
+                {
+                    var cutsceneName = $"{portal.Remove(' ')}OpeningCutscene";
+                    progManager.cutscenesPlayed.Add(cutsceneName);
+                }
+            }
             progManager.actionSequenceDone.AddRange(new []{
                 "AwardGrimplouSequence(Clone)",
                 "AwardGlidouSequence(Clone)",

@@ -86,21 +86,15 @@ namespace MessengerRando.Utils
                 RandoPortalManager.StartingPortals = new List<string>();
                 foreach (var portal in startingPortals)
                 {
-                    if (portal.StartsWith("Autumn") || portal.StartsWith("Howling") || portal.StartsWith("Glacial"))
-                        RandoPortalManager.StartingPortals.Add(portal);
-                    else
-                    {
-                        var scene = $"{portal}OpeningCutscene".Replace(" ", "");
-                        Console.WriteLine(scene);
-                        RandoPortalManager.StartingPortals.Add(scene);
-                    }
+                    Console.WriteLine(portal);
+                    RandoPortalManager.StartingPortals.Add(portal);
                 }
 
                 var portalExits = ((JArray)slotData["portal_exits"]).ToObject<List<int>>();
                 RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
-                for (int i = 0; i < 5; i++)
+                foreach (var portalExit in portalExits)
                 {
-                    RandoPortalManager.PortalMapping.Add(new RandoPortalManager.Portal(portalExits[i]));
+                    RandoPortalManager.PortalMapping.Add(new RandoPortalManager.Portal(portalExit));
                 }
             }
             else
@@ -301,7 +295,7 @@ namespace MessengerRando.Utils
                                        && !portal.StartsWith("Howling")
                                        && !portal.StartsWith("Glacial")))
                 {
-                    var cutsceneName = $"{portal.Remove(' ')}OpeningCutscene";
+                    var cutsceneName = $"{portal.Replace(" ", "")}OpeningCutscene";
                     progManager.cutscenesPlayed.Add(cutsceneName);
                 }
             }
@@ -325,6 +319,8 @@ namespace MessengerRando.Utils
 
         public static void StartOfflineSeed()
         {
+            if (ItemsAndLocationsHandler.ItemsLookup == null)
+                ItemsAndLocationsHandler.Initialize();
             var filePath = Directory.GetCurrentDirectory() + "\\Archipelago\\output";
             DateTime latestTime = new DateTime();
             string gameFile = "";
@@ -350,6 +346,14 @@ namespace MessengerRando.Utils
                 var gameData = JObject.Parse(fileData);
                 Console.WriteLine("Creating new server data");
                 ArchipelagoClient.ServerData = new ArchipelagoData();
+                ArchipelagoClient.ServerData.StartNewSeed();
+                var fileNameParts = gameFile.Split('_');
+                foreach (var part in fileNameParts)
+                {
+                    if (!double.TryParse(part, out var num)) continue;
+                    ArchipelagoClient.ServerData.SeedName = part;
+                    break;
+                }
                 Console.WriteLine("casting slot data");
                 ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
                 Console.WriteLine("casting loc data");

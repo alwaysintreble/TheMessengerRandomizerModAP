@@ -153,13 +153,16 @@ namespace MessengerRando.GameOverrideManagers
             {
                 teleporting = false;
                 // put the region we just loaded into in AP data storage for tracking
-                if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
-                    ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
-                        ELevel.Level_13_TowerOfTimeHQ.ToString();
-                else
-                    ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
-                        self.GetCurrentLevelEnum().ToString();
-                return;
+                if (ArchipelagoClient.Authenticated)
+                {
+                    if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
+                        ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
+                            ELevel.Level_13_TowerOfTimeHQ.ToString();
+                    else
+                        ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
+                            self.GetCurrentLevelEnum().ToString();
+                    return;
+                }
             }
             
             if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
@@ -191,6 +194,8 @@ namespace MessengerRando.GameOverrideManagers
                     oldLevel.Dimension
                     );
             }
+
+            if (!ArchipelagoClient.Authenticated) return;
             // put the region we just loaded into in AP data storage for tracking
             if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =

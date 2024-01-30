@@ -656,7 +656,16 @@ namespace MessengerRando
             if (ArchipelagoClient.Authenticated)
                 RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
             else if (ArchipelagoClient.offline)
-                RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+            {
+                try
+                {
+                    RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
             else if (Environment.GetCommandLineArgs().Length > 0)
             {
                 Console.WriteLine("loading new game save... found command line args");
@@ -712,6 +721,7 @@ namespace MessengerRando
             {
                 ArchipelagoClient.Disconnect();
                 ArchipelagoClient.HasConnected = false;
+                ArchipelagoClient.offline = false;
                 RandoBossManager.DefeatedBosses = new List<string>();
                 Manager<ProgressionManager>.Instance.powerSealTotal = 0;
             }

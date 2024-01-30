@@ -35,7 +35,6 @@ namespace MessengerRando.Archipelago
             DefeatedBosses = new List<string>();
             CheckedLocations = new List<long>();
             ReceivedItems = new Dictionary<long, int>();
-            //if we aren't able to create a save file fail here
         }
         
         public override string ToString()
@@ -100,10 +99,16 @@ namespace MessengerRando.Archipelago
                 ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
                 RandomizerStateManager.Instance.ScoutedLocations = 
                     ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
-                LocationData = tempServerData.LocationData;
+                LocationData = tempServerData.LocationData ?? new Dictionary<long, Dictionary<long, string>>();
 
                 //Attempt to connect to the server and save the new data
-                Debug.Log("Rando save found! Attempting to connect...");
+                Console.WriteLine("Rando save found!");
+                if (LocationData != null && LocationData.Count > 0)
+                {
+                    Console.WriteLine("continuing offline seed");
+                    RandomizerStateManager.InitializeSeed();
+                    return ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
+                }
                 ArchipelagoClient.Connect();
                 if (ArchipelagoClient.ItemQueue.Count > 0 && Index > 0)
                 {

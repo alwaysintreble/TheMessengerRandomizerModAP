@@ -23,7 +23,9 @@ namespace MessengerRando.Utils
         public static RandoScreen randoScreen;
 
         // customizable seed input
+        public static SubMenuButtonInfo Name;
         public static SubMenuButtonInfo SeedNumButton;
+        public static SubMenuButtonInfo SpoilerLevel;
         public static SubMenuButtonInfo BlankSpaceOne;
         // options
         public static SubMenuButtonInfo Accessibility;

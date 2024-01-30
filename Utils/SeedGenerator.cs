@@ -1,11 +1,18 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading;
+using MessengerRando.Archipelago;
+using Microsoft.Win32;
 using Mod.Courier.UI;
+using WebSocketSharp;
 
 namespace MessengerRando.Utils
 {
     public static class SeedGenerator
     {
+        public static string ArchipelagoPath = "";
         private delegate void OnGenerateAttempt(bool result);
         private static bool generating;
 
@@ -24,7 +31,58 @@ namespace MessengerRando.Utils
 
         private static bool Generate()
         {
-            return true;
+            // find archipelago install path
+            if (ArchipelagoPath.IsNullOrEmpty())
+            {
+                var key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
+                var path = "";
+                foreach (var subkeyName in key.GetSubKeyNames())
+                {
+                    var subkey = key.OpenSubKey(subkeyName);
+                    var displayName = subkey.GetValue("DisplayName");
+                    if (displayName != null && displayName.ToString().Contains("Archipelago "))
+                    {
+                        Console.WriteLine(displayName);
+                        path = subkey.GetValue("InstallLocation").ToString();
+                        break;
+                    }
+                }
+                if (path.IsNullOrEmpty()) return false;
+                ArchipelagoPath = path;
+            }
+
+            var outDirectory = Directory.GetCurrentDirectory() + "\\Archipelago";
+            if (!Directory.Exists(outDirectory) || !File.Exists(outDirectory + "\\The Messenger.json"))
+                return false;
+            
+            var archipelago = new Process();
+            
+            archipelago.StartInfo.FileName = $"{ArchipelagoPath}\\ArchipelagoGenerate.exe";
+
+            var args =
+                "--multi 1 " +
+                $"--spoiler {RandomizerOptions.SpoilerLevel} " +
+                $"--player_files_path \"{outDirectory}\" " +
+                $"--outputpath \"{outDirectory}\\output\"";
+            if (!RandomizerOptions.Seed.IsNullOrEmpty())
+                args += $" --seed {RandomizerOptions.Seed}";
+            archipelago.StartInfo.Arguments = args;
+            
+            Console.WriteLine("attempting to generate...");
+            Console.WriteLine(archipelago.StartInfo.FileName);
+            Console.WriteLine(archipelago.StartInfo.Arguments);
+            
+            archipelago.Start();
+            archipelago.WaitForExit();
+            
+            Console.WriteLine(archipelago.ExitCode);
+            if (archipelago.ExitCode == 0)
+            {
+                RandomizerStateManager.StartOfflineSeed();
+                return true;
+            }
+
+            return false;
         }
 
         private static void OnGenerated(bool result, SubMenuButtonInfo generateButton)
@@ -37,7 +95,7 @@ namespace MessengerRando.Utils
                 null,
                 TextEntryButtonInfo.CharsetFlags.Space);
             
-            generatePopup.Init(result ? "Seed successfully generated!" : "Seed generation failed");
+            generatePopup.Init(result ? "Seed successfully generated!" : "Seed generation failed.");
             generatePopup.gameObject.SetActive(true);
             generating = false;
         }

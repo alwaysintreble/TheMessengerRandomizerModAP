@@ -3,6 +3,7 @@ using MessengerRando.Archipelago;
 using Mod.Courier.Save;
 using Newtonsoft.Json;
 using UnityEngine;
+using WebSocketSharp;
 
 namespace MessengerRando.Utils
 {
@@ -36,7 +37,8 @@ namespace MessengerRando.Utils
             var output =
                 $"{RandomizerStateManager.Instance.APSave[1]}|" +
                 $"{RandomizerStateManager.Instance.APSave[2]}|" +
-                $"{RandomizerStateManager.Instance.APSave[3]}";
+                $"{RandomizerStateManager.Instance.APSave[3]}|" +
+                $"{SeedGenerator.ArchipelagoPath}";
             return output;
         }
         
@@ -53,13 +55,14 @@ namespace MessengerRando.Utils
             try
             {
                 var loadedData = load.Split(SplitConst);
-                var index = 1;
-                foreach (var dataString in loadedData)
+                for (var i = 1; i < 4; i++)
                 {
-                    var loadedAPData = JsonConvert.DeserializeObject<ArchipelagoData>(dataString);
-                    RandomizerStateManager.Instance.APSave[index] = loadedAPData;
-                    index++;
+                    var loadedAPData = JsonConvert.DeserializeObject<ArchipelagoData>(loadedData[i - 1]);
+                    RandomizerStateManager.Instance.APSave[i] = loadedAPData;
                 }
+
+                if (loadedData.Length > 3 && !loadedData[3].IsNullOrEmpty())
+                    SeedGenerator.ArchipelagoPath = loadedData[3];
             }
             catch (Exception e)
             {

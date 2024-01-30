@@ -232,7 +232,7 @@ namespace MessengerRando
                 ArchipelagoMenu.ArchipelagoCollectButton.IsEnabled = ArchipelagoClient.CanCollect;
             }
 
-            // BuildRandoMenu();
+            BuildRandoMenu();
 
             void BuildRandoMenu()
             {
@@ -242,6 +242,14 @@ namespace MessengerRando
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.NONE) &&
                     !ArchipelagoClient.HasConnected;
 
+                RandoMenu.Name = RandoMenu.RegisterTextRandoButton(
+                    () => $"Name: {RandomizerOptions.Name}",
+                    RandomizerOptions.OnNameEntry,
+                    16,
+                    () => "Enter name to be used for generation",
+                    charset: CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter |
+                             CharsetFlags.Number | CharsetFlags.Space);
+                
                 RandoMenu.SeedNumButton = RandoMenu.RegisterTextRandoButton(
                     () => $"Seed: {RandomizerOptions.Seed}",
                     RandomizerOptions.OnSeedEntry,
@@ -249,6 +257,10 @@ namespace MessengerRando
                     () => "Enter seed to be used for generation",
                     charset: CharsetFlags.Number);
 
+                RandoMenu.SpoilerLevel = RandoMenu.RegisterSubRandoButton(
+                    RandomizerOptions.GetSpoilerText,
+                    RandomizerOptions.ChangeSpoiler);
+                
                 RandoMenu.BlankSpaceOne = RandoMenu.RegisterSubRandoButton(null, null);
                 
                 RandoMenu.Accessibility = RandoMenu.RegisterSubRandoButton(
@@ -349,6 +361,7 @@ namespace MessengerRando
             On.DialogCutscene.Play += DialogCutscene_Play;
             On.CatacombLevelInitializer.OnBeforeInitDone += CatacombLevelInitializer_OnBeforeInitDone;
             On.DialogManager.LoadDialogs_ELanguage += DialogChanger.LoadDialogs_Elanguage;
+            On.OptionScreen.OnEnable += OnOptionScreenEnable;
             // shop management
             On.UpgradeButtonData.GetPrice += RandoShopManager.GetPrice;
             On.BuyMoneyWrenchCutscene.OnBuyWrenchChoice += RandoShopManager.BuyMoneyWrench;
@@ -400,6 +413,12 @@ namespace MessengerRando
             #endif
 
             Console.WriteLine("Randomizer finished loading!");
+        }
+
+        private void OnOptionScreenEnable(On.OptionScreen.orig_OnEnable orig, OptionScreen self)
+        {
+            RandoSave.TryLoad(Save.APSaveData);
+            orig(self);
         }
 
         public override void Initialize()
@@ -625,6 +644,15 @@ namespace MessengerRando
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
+            Console.WriteLine("trying to load new game");
+            try
+            {
+                Environment.GetCommandLineArgs();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             if (ArchipelagoClient.Authenticated)
                 RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
             else if (Environment.GetCommandLineArgs().Length > 0)
@@ -633,23 +661,26 @@ namespace MessengerRando
                 foreach (var arg in Environment.GetCommandLineArgs())
                 {
                     Console.WriteLine(arg);
-                    if (!arg.MaybeUri()) continue;
-                    var uri = arg.ToUri();
+                    if (!arg.Contains("archipelago")) continue;
+                    var uri = new Uri(arg);
                     ArchipelagoClient.ServerData = new ArchipelagoData();
                     var userInfo = uri.UserInfo.Split(':');
                     ArchipelagoClient.ServerData.SlotName = userInfo[0];
-                    ArchipelagoClient.ServerData.Password = userInfo[1];
+                    ArchipelagoClient.ServerData.Password = userInfo[1] == "None" ? "" : userInfo[1];
                     ArchipelagoClient.ServerData.Uri = uri.Host;
                     ArchipelagoClient.ServerData.Port = uri.Port;
-                    var result = ArchipelagoClient.Connect(uri);
-                    if (result == "success")
+                    Console.WriteLine(ArchipelagoClient.ServerData.SlotName);
+                    Console.WriteLine(ArchipelagoClient.ServerData.Password);
+                    Console.WriteLine(ArchipelagoClient.ServerData.Uri);
+                    Console.WriteLine(ArchipelagoClient.ServerData.Port);
+                    var result = ArchipelagoClient.Connect();
+                    if (ArchipelagoClient.Authenticated)
                     {
                         RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
                         return;
                     }
                     break;
                 }
-
                 orig(self, slot);
             }
             else

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -7,6 +9,8 @@ using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using WebSocketSharp;
+
 // ReSharper disable StringLiteralTypo
 // ReSharper disable CommentTypo
 
@@ -317,6 +321,32 @@ namespace MessengerRando.Utils
             }
         }
 
+        public static void StartOfflineSeed()
+        {
+            var filePath = Directory.GetCurrentDirectory() + "\\Archipelago\\output";
+            DateTime latestTime = new DateTime();
+            string gameFile = "";
+            foreach (var file in Directory.GetFiles(filePath))
+            {
+                if (File.GetCreationTime(file) > latestTime && file.EndsWith("aptm"))
+                {
+                    latestTime = File.GetCreationTime(file);
+                    gameFile = file;
+                }
+            }
+
+            if (gameFile.IsNullOrEmpty())
+            {
+                Console.WriteLine("unable to find file");
+                return;
+            }
+
+            var gameData = (JObject)File.ReadAllText(gameFile);
+            ArchipelagoClient.ServerData = new ArchipelagoData();
+            ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
+            ArchipelagoClient.ServerData.LocationData = gameData["loc_data"].ToObject<Dictionary<long, long>>();
+            ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
+        }
         public static int ReceivedItemsCount()
         {
             return ArchipelagoClient.ServerData.ReceivedItems.Sum(item => item.Value);

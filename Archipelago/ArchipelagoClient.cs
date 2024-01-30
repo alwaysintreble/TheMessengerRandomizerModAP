@@ -25,6 +25,7 @@ namespace MessengerRando.Archipelago
         public static bool Authenticated;
         public static bool HasConnected;
         private static bool attemptingConnection;
+        public static bool offline;
 
         public static bool DisplayAPMessages = true;
         public static bool FilterAPMessages = true;

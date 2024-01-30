@@ -78,7 +78,7 @@ namespace MessengerRando
                     | CharsetFlags.Number | CharsetFlags.Space);
                 ArchipelagoMenu.ArchipelagoHostButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
-                    !ArchipelagoClient.Authenticated;
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
                 
                 //Add Archipelago port button
                 ArchipelagoMenu.ArchipelagoPortButton = ArchipelagoMenu.RegisterTextRandoButton(
@@ -89,7 +89,7 @@ namespace MessengerRando
                     () => ArchipelagoClient.ServerData?.Port.ToString(),
                     CharsetFlags.Number);
                 ArchipelagoMenu.ArchipelagoPortButton.IsEnabled =
-                    () => !ArchipelagoClient.Authenticated &&
+                    () => (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline) &&
                           (Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE ||
                            (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
                             ArchipelagoClient.HasConnected));
@@ -104,7 +104,7 @@ namespace MessengerRando
                     | CharsetFlags.Number | CharsetFlags.Space);
                 ArchipelagoMenu.ArchipelagoNameButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
-                    !ArchipelagoClient.Authenticated;
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
                 
                 //Add archipelago password button
                 ArchipelagoMenu.ArchipelagoPassButton = ArchipelagoMenu.RegisterTextRandoButton(
@@ -115,7 +115,7 @@ namespace MessengerRando
                     () => ArchipelagoClient.ServerData?.Password);
                 ArchipelagoMenu.ArchipelagoPassButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
-                    !ArchipelagoClient.Authenticated;
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
                 
                 //Add Archipelago connection button
                 ArchipelagoMenu.ArchipelagoConnectButton = ArchipelagoMenu.RegisterSubRandoButton(
@@ -123,7 +123,7 @@ namespace MessengerRando
                     OnSelectArchipelagoConnect);
                 ArchipelagoMenu.ArchipelagoConnectButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
-                    !ArchipelagoClient.Authenticated;
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
 
                 // only visible while actually in the game
                 //Add current seed number button
@@ -654,6 +654,8 @@ namespace MessengerRando
                 Console.WriteLine(e);
             }
             if (ArchipelagoClient.Authenticated)
+                RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+            else if (ArchipelagoClient.offline)
                 RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
             else if (Environment.GetCommandLineArgs().Length > 0)
             {

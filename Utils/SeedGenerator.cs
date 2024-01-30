@@ -20,7 +20,6 @@ namespace MessengerRando.Utils
         {
             if (generating) return;
             generating = true;
-            Console.WriteLine("Attempting to generate");
             Generate(result => OnGenerated(result, generateButton));
         }
 

@@ -414,6 +414,7 @@ namespace MessengerRando.Archipelago
             }
             if (!Authenticated)
             {
+                if (offline) return;
                 Console.WriteLine("Attempting to reconnect to Archipelago Server...");
                 ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
                 return;
@@ -496,6 +497,10 @@ namespace MessengerRando.Archipelago
                 {
                     text += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
                 }
+            }
+            else if (offline)
+            {
+                text = "";
             }
             else if (HasConnected)
             {

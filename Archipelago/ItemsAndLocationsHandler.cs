@@ -443,6 +443,12 @@ namespace MessengerRando.Archipelago
                 ThreadPool.QueueUserWorkItem(o =>
                     ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
+            else if (ArchipelagoClient.offline)
+            {
+                var itemToUnlock = ArchipelagoClient.ServerData.LocationData[locationID];
+                Unlock(itemToUnlock.Keys.First());
+                DialogChanger.CreateDialogBox($"Found {itemToUnlock.Values.First()}!");
+            }
             Manager<SaveManager>.Instance.SaveGame();
         }
 

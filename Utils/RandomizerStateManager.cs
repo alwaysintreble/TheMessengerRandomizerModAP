@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -59,7 +58,7 @@ namespace MessengerRando.Utils
             var slotData = ArchipelagoClient.ServerData.SlotData;
             SeenHints = new List<NetworkItem>();
 
-            if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
+            if ((Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1) && ArchipelagoClient.Authenticated)
             {
                 var index = ItemsAndLocationsHandler.BaseOffset;
                 var scoutIDs = new List<long>();
@@ -168,7 +167,9 @@ namespace MessengerRando.Utils
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
                 if (locationID == 0) return false;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
-                return ArchipelagoClient.Session.Locations.AllLocations.Contains(locationID);
+                return ArchipelagoClient.offline
+                    ? ArchipelagoClient.ServerData.LocationData.ContainsKey(locationID)
+                    : ArchipelagoClient.Session.Locations.AllLocations.Contains(locationID);
             }
             catch (Exception e)
             {
@@ -190,8 +191,9 @@ namespace MessengerRando.Utils
             var saveManager = Manager<SaveManager>.Instance;
             saveManager.SelectSaveGameSlot(slot);
             saveManager.NewGame();
-            saveManager.GetCurrentSaveGameSlot().SlotName =
-                ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
+            saveManager.GetCurrentSaveGameSlot().SlotName = ArchipelagoClient.offline
+                ? RandomizerOptions.Name.IsNullOrEmpty() ? "The Messenger" : RandomizerOptions.Name
+                : ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
             // add everything to the various managers that we need for our save slot, following the order in SaveGameSlot.UpdateSaveGameData()
             var progManager = Manager<ProgressionManager>.Instance;
             progManager.lastSaveTime = Time.time;
@@ -341,11 +343,25 @@ namespace MessengerRando.Utils
                 return;
             }
 
-            var gameData = (JObject)File.ReadAllText(gameFile);
-            ArchipelagoClient.ServerData = new ArchipelagoData();
-            ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
-            ArchipelagoClient.ServerData.LocationData = gameData["loc_data"].ToObject<Dictionary<long, long>>();
-            ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
+            try
+            {
+                var fileData = File.ReadAllText(gameFile);
+                Console.WriteLine(fileData.GetType());
+                var gameData = JObject.Parse(fileData);
+                Console.WriteLine("Creating new server data");
+                ArchipelagoClient.ServerData = new ArchipelagoData();
+                Console.WriteLine("casting slot data");
+                ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
+                Console.WriteLine("casting loc data");
+                ArchipelagoClient.ServerData.LocationData =
+                    gameData["loc_data"].ToObject<Dictionary<long, Dictionary<long, string>>>();
+                ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
+                InitializeSeed();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
         public static int ReceivedItemsCount()
         {

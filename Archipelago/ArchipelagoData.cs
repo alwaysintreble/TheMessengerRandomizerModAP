@@ -25,7 +25,7 @@ namespace MessengerRando.Archipelago
         public List<long> CheckedLocations;
         public Dictionary<long, int> ReceivedItems;
         public Dictionary<long, NetworkItem> ScoutedLocations;
-        public Dictionary<long, long> LocationData;
+        public Dictionary<long, Dictionary<long, string>> LocationData;
 
         public void StartNewSeed()
         {

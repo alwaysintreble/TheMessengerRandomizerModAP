@@ -55,7 +55,8 @@ namespace MessengerRando.Utils
 
                 foreach (var oldFile in Directory.GetFiles(folder))
                 {
-                    File.Delete(oldFile);
+                    if (oldFile.EndsWith("json"))
+                        File.Delete(oldFile);
                 }
                 var file = folder;
                 file += $"\\{RandomizerOptions.Name}.json";

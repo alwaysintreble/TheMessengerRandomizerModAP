@@ -66,7 +66,12 @@ namespace MessengerRando.Utils
             if (!RandomizerOptions.Seed.IsNullOrEmpty())
                 args += $" --seed {RandomizerOptions.Seed}";
             archipelago.StartInfo.Arguments = args;
-            
+            // archipelago.StartInfo.UseShellExecute = false;
+            // archipelago.StartInfo.RedirectStandardInput = true;
+            // archipelago.StartInfo.RedirectStandardOutput = true;
+            // archipelago.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
+            // archipelago.StartInfo.RedirectStandardError = true;
+            // archipelago.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
             Console.WriteLine("attempting to generate...");
             Console.WriteLine(archipelago.StartInfo.FileName);
             Console.WriteLine(archipelago.StartInfo.Arguments);

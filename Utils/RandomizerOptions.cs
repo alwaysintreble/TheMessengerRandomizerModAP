@@ -127,7 +127,7 @@ namespace MessengerRando.Utils
         public static bool Goal;
         
         // music box gauntlet
-        public static bool MusicBox;
+        public static bool MusicBox = true;
         
         // needed notes
         private static int notes = 6;

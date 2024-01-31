@@ -57,6 +57,7 @@ namespace MessengerRando.Archipelago
                 return false;
             try
             {
+                var i = 0;
                 if (ArchipelagoClient.Authenticated)
                 {
                     //we're already connected to an archipelago server so check if the file is valid
@@ -75,9 +76,9 @@ namespace MessengerRando.Archipelago
                         ThreadPool.QueueUserWorkItem(o =>
                             ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                                 CheckedLocations.ToArray()));
-                        if (ArchipelagoClient.ItemQueue.Count <= 0 || Index <= 0) return true;
-                        for (var i = 0; i < Index; i++)
+                        while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)
                         {
+                            i += 1;
                             ArchipelagoClient.ItemQueue.Dequeue();
                         }
                         return true;
@@ -111,12 +112,10 @@ namespace MessengerRando.Archipelago
                     return ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
                 }
                 ArchipelagoClient.Connect();
-                if (ArchipelagoClient.ItemQueue.Count > 0 && Index > 0)
+                while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)
                 {
-                    for (var i = 0; i < Index; i++)
-                    {
-                        ArchipelagoClient.ItemQueue.Dequeue();
-                    }
+                    i += 1;
+                    ArchipelagoClient.ItemQueue.Dequeue();
                 }
                 return ArchipelagoClient.HasConnected = true;
             }

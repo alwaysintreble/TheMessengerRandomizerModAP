@@ -51,7 +51,8 @@ namespace MessengerRando.Utils
             }
 
             var outDirectory = Directory.GetCurrentDirectory() + "\\Archipelago";
-            if (!Directory.Exists(outDirectory) || Directory.GetFiles(outDirectory).Length <= 0)
+            if (!Directory.Exists(outDirectory) || Directory.GetFiles(outDirectory).Length <= 0 ||
+                Directory.GetFiles(outDirectory).Length > 1)
                 return false;
             
             var archipelago = new Process();

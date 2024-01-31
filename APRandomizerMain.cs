@@ -10,6 +10,7 @@ using MessengerRando.GameOverrideManagers;
 using MessengerRando.Overrides;
 using MessengerRando.RO;
 using MessengerRando.Utils;
+using MessengerRando.Utils.Constants;
 using Mod.Courier;
 using Mod.Courier.Module;
 using MonoMod.Cil;
@@ -723,6 +724,10 @@ namespace MessengerRando
                 ArchipelagoClient.HasConnected = false;
                 ArchipelagoClient.offline = false;
                 RandoBossManager.DefeatedBosses = new List<string>();
+                RandoPortalManager.StartingPortals = new List<string>();
+                RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
+                RandoLevelManager.RandoLevelMapping =
+                    new Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel>();
                 Manager<ProgressionManager>.Instance.powerSealTotal = 0;
             }
             randoStateManager = new RandomizerStateManager();

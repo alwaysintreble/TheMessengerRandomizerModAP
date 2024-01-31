@@ -6,7 +6,7 @@ namespace MessengerRando.Utils
     public static class RandomizerOptions
     {
         // name
-        public static string Name;
+        public static string Name = "Ninja";
         public static bool OnNameEntry(string input)
         {
             Name = input;

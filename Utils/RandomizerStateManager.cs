@@ -186,7 +186,7 @@ namespace MessengerRando.Utils
             saveManager.SelectSaveGameSlot(slot);
             saveManager.NewGame();
             saveManager.GetCurrentSaveGameSlot().SlotName = ArchipelagoClient.offline
-                ? RandomizerOptions.Name.IsNullOrEmpty() ? "The Messenger" : RandomizerOptions.Name
+                ? RandomizerOptions.Name
                 : ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
             // add everything to the various managers that we need for our save slot, following the order in SaveGameSlot.UpdateSaveGameData()
             var progManager = Manager<ProgressionManager>.Instance;
@@ -344,7 +344,6 @@ namespace MessengerRando.Utils
                 var fileData = File.ReadAllText(gameFile);
                 Console.WriteLine(fileData.GetType());
                 var gameData = JObject.Parse(fileData);
-                Console.WriteLine("Creating new server data");
                 ArchipelagoClient.ServerData = new ArchipelagoData();
                 ArchipelagoClient.ServerData.StartNewSeed();
                 var fileNameParts = gameFile.Split('_');
@@ -357,6 +356,7 @@ namespace MessengerRando.Utils
                 Console.WriteLine("casting slot data");
                 ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
                 Console.WriteLine("casting loc data");
+                Console.WriteLine(gameData["loc_data"].GetType());
                 ArchipelagoClient.ServerData.LocationData =
                     gameData["loc_data"].ToObject<Dictionary<long, Dictionary<long, string>>>();
                 ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;

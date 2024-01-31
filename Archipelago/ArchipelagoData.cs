@@ -99,6 +99,7 @@ namespace MessengerRando.Archipelago
                 ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
                 RandomizerStateManager.Instance.ScoutedLocations = 
                     ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
+                SlotData = tempServerData.SlotData;
                 LocationData = tempServerData.LocationData ?? new Dictionary<long, Dictionary<long, string>>();
 
                 //Attempt to connect to the server and save the new data

@@ -793,7 +793,7 @@ namespace MessengerRando
 #if DEBUG
             Console.WriteLine($"Playing cutscene: {eventName}");
 #endif
-            if (ArchipelagoClient.EventsICareAbout.Contains(eventName))
+            if (ArchipelagoClient.EventsICareAbout.Contains(eventName) && ArchipelagoClient.Authenticated)
             {
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"] +=
                     new List<string> { eventName };

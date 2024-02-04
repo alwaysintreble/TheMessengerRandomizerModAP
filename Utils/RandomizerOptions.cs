@@ -123,6 +123,23 @@ namespace MessengerRando.Utils
             portalShuffle = portalShuffle == 3 ? 0 : portalShuffle + 1;
         }
         
+        // transition shuffle
+        private static int transitionShuffle;
+        private static readonly List<string> TransitionShuffleText = new List<string>
+        {
+            "No Transition Shuffle",
+            "Couple Shuffled Transitions",
+            "De-Coupled Shuffled Transitions",
+        };
+        public static string GetTransitionText()
+        {
+            return TransitionShuffleText[transitionShuffle];
+        }
+        public static void ChangeTransitionShuffle()
+        {
+            transitionShuffle = transitionShuffle == 2 ? 0 : transitionShuffle + 1;
+        }
+        
         // goal
         public static bool Goal;
         
@@ -175,6 +192,7 @@ namespace MessengerRando.Utils
                 {"early_meditation", EarlyMed ? "true" : "false"},
                 {"available_portals", availablePortals.ToString()},
                 {"shuffle_portals", portalShuffle.ToString()},
+                {"shuffle_transitions", transitionShuffle.ToString()},
                 {"goal", Goal ? "1" : "0"},
                 {"music_box", MusicBox ? "true" : "false"},
                 {"notes_needed", notes.ToString()},

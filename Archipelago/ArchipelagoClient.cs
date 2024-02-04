@@ -276,11 +276,6 @@ namespace MessengerRando.Archipelago
                     case ItemSendLogMessage itemSendMessage:
                         if (itemSendMessage.IsRelatedToActivePlayer)
                         {
-                            if (!ItemsAndLocationsHandler.HasDialog(itemSendMessage.Item.Location))
-                            {
-                                Console.WriteLine($"adding {itemSendMessage.Item.ToReadableString()} to dialog queue.");
-                                DialogQueue.Enqueue(itemSendMessage.Item.ToReadableString(itemSendMessage.Receiver.Alias));
-                            }
                             messageQueue.Enqueue(itemSendMessage.ToString());
                         }
                         break;

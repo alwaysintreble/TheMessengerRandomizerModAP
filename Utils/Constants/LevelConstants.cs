@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace MessengerRando.Utils.Constants
@@ -231,13 +232,13 @@ namespace MessengerRando.Utils.Constants
                     new RandoLevel(ELevel.Level_11_B_MusicBox, new Vector3(-428, -55))
                 },
                 {
-                    "Underworld - Top Left",
+                    "Underworld - Left",
                     new RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-337.5526f, -25f), EBits.BITS_8)
                 }, // Force 8 bit
-                {
-                    "Underworld - Bottom Left",
-                    new RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-431.7626f, -57f), EBits.BITS_16)
-                }, // force 16 bit - one time and one way only - after defeating manfred - might be able to force it by calling ManfredBossOutroCutscene?
+                // {
+                //     "Underworld - Bottom Left",
+                //     new RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-431.7626f, -57f), EBits.BITS_16)
+                // }, // force 16 bit - one time and one way only - after defeating manfred - might be able to force it by calling ManfredBossOutroCutscene?
                 {
                     "Corrupted Future - Portal",
                     new RandoLevel(ELevel.Level_14_CorruptedFuture, new Vector3(-19971.98f, -20011f))
@@ -441,6 +442,11 @@ namespace MessengerRando.Utils.Constants
                 },
             };
 
+        public static Transition TransitionFromName(string name)
+        {
+            return TransitionToEntranceName.FirstOrDefault(x => x.Value == name).Key;
+        }
+
         /// <summary>
         /// I'm doing the magic by determining where the player teleported from as that's definitely the easiest way to
         /// do this. These areas connect to each other twice so I need to use the player pos to determine which one
@@ -450,6 +456,46 @@ namespace MessengerRando.Utils.Constants
         {
             "Howling Grotto - Right", "Quillshroom Marsh - Left",
             "Quillshroom Marsh - Right", "Searing Crags - Left"
+        };
+
+        public static readonly List<string> TransitionNames = new List<string>
+        {
+            "Ninja Village - Right",
+            "Autumn Hills - Left",
+            "Autumn Hills - Right",
+            "Autumn Hills - Bottom",
+            "Forlorn Temple - Left",
+            "Forlorn Temple - Bottom",
+            "Forlorn Temple - Right",
+            "Catacombs - Top Left",
+            "Catacombs - Right",
+            "Catacombs - Bottom",
+            "Catacombs - Bottom Left",
+            "Dark Cave - Right",
+            "Dark Cave - Left",
+            "Riviere Turquoise - Right",
+            "Howling Grotto - Left",
+            "Howling Grotto - Right",
+            "Howling Grotto - Top",
+            "Howling Grotto - Bottom",
+            "Sunken Shrine - Left",
+            "Bamboo Creek - Top Left",
+            "Bamboo Creek - Bottom Left",
+            "Bamboo Creek - Right",
+            "Quillshroom Marsh - Top Left",
+            "Quillshroom Marsh - Bottom Left",
+            "Quillshroom Marsh - Top Right",
+            "Quillshroom Marsh - Bottom Right",
+            "Searing Crags - Left",
+            "Searing Crags - Bottom",
+            "Searing Crags - Right",
+            "Searing Crags - Top",
+            "Glacial Peak - Bottom",
+            "Glacial Peak - Top",
+            "Tower HQ",
+            "Tower of Time - Left",
+            "Cloud Ruins - Left",
+            "Underworld - Left",
         };
     }
 }

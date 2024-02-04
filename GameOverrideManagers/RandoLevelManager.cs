@@ -16,7 +16,7 @@ namespace MessengerRando.GameOverrideManagers
         private static ELevel currentLevel;
 
         // ReSharper disable once UnassignedField.Global
-        public static Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel> RandoLevelMapping;
+        public static Dictionary<string, LevelConstants.RandoLevel> RandoLevelMapping;
 
         public static void LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
         {
@@ -25,10 +25,24 @@ namespace MessengerRando.GameOverrideManagers
             Console.WriteLine($"Loading Level: {levelInfo.levelName}");
             Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}");
             #endif
+            try
+            {
+                if (!teleporting)
+                {
+                    lastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
+                    var levelName = levelInfo.levelName.Contains("_Build")
+                        ? levelInfo.levelName.Replace("_Build", "")
+                        : levelInfo.levelName;
+                    currentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelName);
+                }
+                Console.WriteLine(lastLevel);
+                Console.WriteLine(currentLevel);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             orig(self, levelInfo);
-            if (teleporting) return;
-            lastLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
-            currentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelInfo.levelName);
         }
 
         static bool WithinRange(float pos1, float pos2)
@@ -46,10 +60,14 @@ namespace MessengerRando.GameOverrideManagers
                 var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
                 Console.WriteLine(lastLevel);
                 Console.WriteLine(currentLevel);
+                
+                if (RandoLevelMapping == null) return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
+                
                 if (!LevelConstants.TransitionToEntranceName.TryGetValue(
                         new LevelConstants.Transition(lastLevel, currentLevel), out var entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
                 Console.WriteLine(entrance);
+                
                 LevelConstants.RandoLevel oldLevel = default;
                 if (LevelConstants.SpecialEntranceNames.Contains(entrance))
                 {
@@ -61,12 +79,10 @@ namespace MessengerRando.GameOverrideManagers
                             if (WithinRange(playerPos.x, comparePos.x))
                             {
                                 entrance = "Howling Grotto - Right";
-                                oldLevel = LevelConstants.EntranceNameToRandoLevel[entrance];
                             }
                             else
                             {
                                 entrance = "Howling Grotto - Bottom";
-                                oldLevel = LevelConstants.EntranceNameToRandoLevel[entrance];
                             }
 
                             break;
@@ -75,12 +91,10 @@ namespace MessengerRando.GameOverrideManagers
                             if (WithinRange(playerPos.x, comparePos.x))
                             {
                                 entrance = "Quillshroom Marsh - Top Left";
-                                oldLevel = LevelConstants.EntranceNameToRandoLevel[entrance];
                             }
                             else
                             {
                                 entrance = "Quillshroom Marsh - Bottom Left";
-                                oldLevel = LevelConstants.EntranceNameToRandoLevel[entrance];
                             }
 
                             break;
@@ -89,12 +103,10 @@ namespace MessengerRando.GameOverrideManagers
                             if (WithinRange(playerPos.x, comparePos.x))
                             {
                                 entrance = "Quillshroom Marsh - Top Right";
-                                oldLevel = LevelConstants.EntranceNameToRandoLevel[entrance];
                             }
                             else
                             {
                                 entrance = "Quillshroom Marsh - Bottom Right";
-                                oldLevel = LevelConstants.EntranceNameToRandoLevel[entrance];
                             }
 
                             break;
@@ -103,20 +115,17 @@ namespace MessengerRando.GameOverrideManagers
                             if (WithinRange(playerPos.x, comparePos.x))
                             {
                                 entrance = "Searing Crags - Left";
-                                oldLevel = LevelConstants.EntranceNameToRandoLevel[entrance];
                             }
                             else
                             {
                                 entrance = "Searing Crags - Bottom";
-                                oldLevel = LevelConstants.EntranceNameToRandoLevel[entrance];
                             }
 
                             break;
                     }
                 }
-                else LevelConstants.EntranceNameToRandoLevel.TryGetValue(entrance, out oldLevel);
-                
-                return oldLevel;
+
+                return RandoLevelMapping[entrance];
             } catch (Exception e){ Console.WriteLine(e);}
             return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
         }
@@ -171,7 +180,7 @@ namespace MessengerRando.GameOverrideManagers
                 SkipMusicBox();
                 return;
             }
-#if DEBUG
+            
             Console.WriteLine("loaded into level...");
             Console.WriteLine(self.lastLevelLoaded);
             Console.WriteLine(self.GetCurrentLevelEnum());
@@ -180,20 +189,12 @@ namespace MessengerRando.GameOverrideManagers
                 // we just teleported into HQ
                 
             }
-            var oldLevel = FindEntrance();
-            if (RandoLevelMapping != null && RandoLevelMapping.TryGetValue(oldLevel, out var newLevel))
+            var newLevel = FindEntrance();
+            if (RandoLevelMapping != null && !newLevel.LevelName.Equals(ELevel.NONE))
                 TeleportInArea(
                     newLevel.LevelName,
                     newLevel.PlayerPos,
                     newLevel.Dimension);
-            else if (RandoPortalManager.PortalMapping != null && !oldLevel.Equals(ELevel.NONE))
-            {
-                TeleportInArea(
-                    oldLevel.LevelName,
-                    oldLevel.PlayerPos,
-                    oldLevel.Dimension
-                    );
-            }
 
             if (!ArchipelagoClient.Authenticated) return;
             // put the region we just loaded into in AP data storage for tracking
@@ -203,7 +204,6 @@ namespace MessengerRando.GameOverrideManagers
             else
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
                     self.GetCurrentLevelEnum().ToString();
-#endif
         }
         
         public static void SkipMusicBox()

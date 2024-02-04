@@ -447,8 +447,9 @@ namespace MessengerRando.Archipelago
             {
                 var itemToUnlock = ArchipelagoClient.ServerData.LocationData[locationID];
                 Unlock(itemToUnlock.Keys.First());
-                DialogChanger.CreateDialogBox($"Found {itemToUnlock.Values.First()}!");
             }
+            if (!HasDialog(locationID))
+                DialogChanger.CreateDialogBox(RandoStateManager.ScoutedLocations[locationID].ToReadableString());
             Manager<SaveManager>.Instance.SaveGame();
         }
 

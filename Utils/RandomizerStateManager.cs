@@ -6,6 +6,7 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
+using MessengerRando.Utils.Constants;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using WebSocketSharp;
@@ -60,16 +61,9 @@ namespace MessengerRando.Utils
 
             if ((Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1) && ArchipelagoClient.Authenticated)
             {
-                var index = ItemsAndLocationsHandler.BaseOffset;
-                var scoutIDs = new List<long>();
-                foreach (var unused in DialogChanger.ItemDialogID)
-                {
-                    scoutIDs.Add(index);
-                    index++;
-                }
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
-                    scoutIDs.ToArray()
+                    ArchipelagoClient.Session.Locations.AllLocations.ToArray()
                 );
             }
 
@@ -96,6 +90,24 @@ namespace MessengerRando.Utils
                 {
                     RandoPortalManager.PortalMapping.Add(new RandoPortalManager.Portal(portalExit));
                 }
+
+                if (slotData.TryGetValue("transitions", out var transitions))
+                {
+                    RandoLevelManager.RandoLevelMapping =
+                        new Dictionary<string, LevelConstants.RandoLevel>();
+                    var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
+                    foreach (var pairing in transitionPairs)
+                    {
+                        Console.WriteLine(pairing[0]);
+                        Console.WriteLine(pairing[1]);
+                        var orig = LevelConstants.TransitionNames[pairing[0]];
+                        Console.WriteLine(orig);
+                        var replacement =
+                            LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
+                        Console.WriteLine(replacement.LevelName);
+                        RandoLevelManager.RandoLevelMapping[orig] = replacement;
+                    }
+                }
             }
             else
             {
@@ -114,11 +126,10 @@ namespace MessengerRando.Utils
         private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)
         {
             Instance.ScoutedLocations = new Dictionary<long, NetworkItem>();
+            Console.WriteLine("scouting done");
             foreach (var networkItem in scoutedLocationInfo.Locations)
             {
-                // janky workaround due to scouted locations all having a player of 1 for some reason?
                 var item = networkItem;
-                item.Player = ArchipelagoClient.Session.ConnectionInfo.Slot;
                 Instance.ScoutedLocations.Add(item.Location, item);
             }
 

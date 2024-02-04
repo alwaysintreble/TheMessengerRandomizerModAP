@@ -35,6 +35,7 @@ namespace MessengerRando.Utils
         public static SubMenuButtonInfo EarlyMed;
         public static SubMenuButtonInfo AvailablePortals;
         public static SubMenuButtonInfo ShufflePortals;
+        public static SubMenuButtonInfo ShuffleTransitions;
         public static SubMenuButtonInfo Goal;
         public static SubMenuButtonInfo MusicBox;
         public static SubMenuButtonInfo NotesNeeded;

@@ -291,6 +291,10 @@ namespace MessengerRando
                     RandomizerOptions.GetPortalShuffleText,
                     RandomizerOptions.ChangePortalShuffle);
 
+                RandoMenu.ShuffleTransitions = RandoMenu.RegisterSubRandoButton(
+                    RandomizerOptions.GetTransitionText,
+                    RandomizerOptions.ChangeTransitionShuffle);
+                
                 RandoMenu.Goal = RandoMenu.RegisterSubRandoButton(
                     () => RandomizerOptions.Goal ? "Power Seal Hunt" : "Open Music Box",
                     () => RandomizerOptions.Goal = !RandomizerOptions.Goal);
@@ -727,7 +731,7 @@ namespace MessengerRando
                 RandoPortalManager.StartingPortals = new List<string>();
                 RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
                 RandoLevelManager.RandoLevelMapping =
-                    new Dictionary<LevelConstants.RandoLevel, LevelConstants.RandoLevel>();
+                    new Dictionary<string, LevelConstants.RandoLevel>();
                 Manager<ProgressionManager>.Instance.powerSealTotal = 0;
             }
             randoStateManager = new RandomizerStateManager();

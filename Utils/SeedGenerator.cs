@@ -33,18 +33,26 @@ namespace MessengerRando.Utils
             // find archipelago install path
             if (ArchipelagoPath.IsNullOrEmpty())
             {
-                var key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
                 var path = "";
-                foreach (var subkeyName in key.GetSubKeyNames())
+                try
                 {
-                    var subkey = key.OpenSubKey(subkeyName);
-                    var displayName = subkey.GetValue("DisplayName");
-                    if (displayName != null && displayName.ToString().Contains("Archipelago "))
+                    var key = Registry.LocalMachine.OpenSubKey(
+                        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
+                    foreach (var subkeyName in key.GetSubKeyNames())
                     {
-                        Console.WriteLine(displayName);
-                        path = subkey.GetValue("InstallLocation").ToString();
-                        break;
+                        var subkey = key.OpenSubKey(subkeyName);
+                        var displayName = subkey.GetValue("DisplayName");
+                        if (displayName != null && displayName.ToString().Contains("Archipelago "))
+                        {
+                            Console.WriteLine(displayName);
+                            path = subkey.GetValue("InstallLocation").ToString();
+                            break;
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
                 if (path.IsNullOrEmpty()) return false;
                 ArchipelagoPath = path;

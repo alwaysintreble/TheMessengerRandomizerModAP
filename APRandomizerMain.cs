@@ -1101,6 +1101,18 @@ namespace MessengerRando
             {
                 Console.WriteLine(e);
             }
+
+            if (RandoLevelManager.RandoLevelMapping != null &&
+                Manager<ProgressionManager>.Instance.levelsDiscovered.Contains(ELevel.Level_05_A_HowlingGrotto))
+            {
+                if (!RandoLevelManager.WithinRange(Manager<PlayerManager>.Instance.Player.transform.position.x,
+                        LevelConstants.EntranceNameToRandoLevel["Howling Grotto - Bottom"].PlayerPos.x))
+                {
+                    var progManager = Manager<ProgressionManager>.Instance;
+                    progManager.levelsDiscovered.Remove(ELevel.Level_05_A_HowlingGrotto);
+                    progManager.allTimeDiscoveredLevels.Remove(ELevel.Level_05_A_HowlingGrotto);
+                }
+            }
                 
             // The game calls the save method after the ending cutscene before rolling credits
             if (ArchipelagoClient.Authenticated

@@ -46,7 +46,7 @@ namespace MessengerRando.GameOverrideManagers
             orig(self, levelInfo);
         }
 
-        static bool WithinRange(float pos1, float pos2)
+        public static bool WithinRange(float pos1, float pos2)
         {
             var comparison = pos2 - pos1;
             if (comparison < 0) comparison *= -1;
@@ -114,7 +114,10 @@ namespace MessengerRando.GameOverrideManagers
                             break;
                     }
                 }
-
+                if (entrance.Equals("Howling Grotto - Bottom"))
+                {
+                    Manager<ProgressionManager>.Instance.levelsDiscovered.Add(ELevel.Level_05_B_SunkenShrine);
+                }
                 return RandoLevelMapping[entrance];
             } catch (Exception e){ Console.WriteLine(e);}
             return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
@@ -146,8 +149,8 @@ namespace MessengerRando.GameOverrideManagers
             if (self.GetCurrentLevelEnum().Equals(ELevel.Level_05_A_HowlingGrotto))
             {
                 var progManager = Manager<ProgressionManager>.Instance;
-                progManager.levelsDiscovered.Remove(ELevel.Level_05_B_SunkenShrine);
-                progManager.allTimeDiscoveredLevels.Remove(ELevel.Level_05_B_SunkenShrine);
+                // progManager.levelsDiscovered.Remove(ELevel.Level_05_B_SunkenShrine);
+                // progManager.allTimeDiscoveredLevels.Remove(ELevel.Level_05_B_SunkenShrine);
             }
             if (teleporting)
             {

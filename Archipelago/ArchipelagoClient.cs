@@ -368,6 +368,8 @@ namespace MessengerRando.Archipelago
 
             ServerData.Index++;
             ItemQueue.Enqueue(itemToUnlock.Item);
+            if (itemToUnlock.Player != Session.ConnectionInfo.Slot)
+                DialogQueue.Enqueue(itemToUnlock.ToReadableString());
         }
 
         private static void SessionErrorReceived(Exception e, string message)

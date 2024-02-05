@@ -449,7 +449,11 @@ namespace MessengerRando.Archipelago
                 Unlock(itemToUnlock.Keys.First());
             }
             if (!HasDialog(locationID))
-                DialogChanger.CreateDialogBox(RandoStateManager.ScoutedLocations[locationID].ToReadableString());
+                if (RandomizerStateManager.IsSafeTeleportState())
+                    DialogChanger.CreateDialogBox(RandoStateManager.ScoutedLocations[locationID].ToReadableString());
+                else
+                    ArchipelagoClient.DialogQueue.Enqueue(RandoStateManager.ScoutedLocations[locationID]
+                        .ToReadableString());
             Manager<SaveManager>.Instance.SaveGame();
         }
 

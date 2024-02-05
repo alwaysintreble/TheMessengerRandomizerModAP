@@ -107,7 +107,7 @@ namespace MessengerRando.Utils.Constants
                 },
                 {
                     "Forlorn Temple - Bottom",
-                    new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(36.87273f, -20.98116f), EBits.BITS_16)
+                    new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(30, -20), EBits.BITS_16)
                 }, // Must be 16
                 {
                     "Forlorn Temple - Right",
@@ -208,7 +208,7 @@ namespace MessengerRando.Utils.Constants
                 },
                 {
                     "Glacial Peak - Bottom",
-                    new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(194.9839f, -517.7611f))
+                    new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(202, -519))
                 },
                 // { "Glacial Peak - Left", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(), ELevelEntranceID.NONE) }, // This is one way to ES so no actual entrance here
                 {
@@ -245,7 +245,7 @@ namespace MessengerRando.Utils.Constants
                 // }, // force 16 bit - one time and one way only - after defeating manfred - might be able to force it by calling ManfredBossOutroCutscene?
                 {
                     "Corrupted Future",
-                    new RandoLevel(ELevel.Level_14_CorruptedFuture, new Vector3(-19971.98f, -20011f), EBits.BITS_16)
+                    new RandoLevel(ELevel.Level_14_CorruptedFuture, new Vector3(-100, -9.5f), EBits.BITS_16)
                 }, // 16
                 {
                     "Ruxxtin Surfin'",

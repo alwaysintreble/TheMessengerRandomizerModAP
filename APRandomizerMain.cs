@@ -885,33 +885,25 @@ namespace MessengerRando
 
         void OnSelectTeleportToHq()
         {
-
-            //Properly close out of the mod options and get the game state back together
-            Manager<PauseManager>.Instance.Resume();
-            Manager<UIManager>.Instance.GetView<OptionScreen>().Close(false);                
-            Console.WriteLine("Teleporting to HQ!");
+            Console.WriteLine("Teleporting to HQ!");       
+#if DEBUG
+            var position = Manager<PlayerManager>.Instance.Player.transform.position;
+            Console.WriteLine($"{position.x} {position.y} {position.z}");
+#endif
             ArchipelagoMenu.archipelagoScreen.Close(false);
 
-            //Fade the music out because musicception is annoying
-            Manager<AudioManager>.Instance.FadeMusicVolume(1f, 0f, true);
-
+            RandoLevelManager.CleanupBeforeTeleport();
             //Load the HQ
             Manager<TowerOfTimeHQManager>.Instance.TeleportInToTHQ(true, ELevelEntranceID.ENTRANCE_A, null);
         }
 
         void OnSelectTeleportToNinjaVillage()
         {
-            Console.WriteLine("Attempting to teleport to Ninja Village.");
-            
-            // Properly close out of the mod options and get the game state back together
-            Manager<PauseManager>.Instance.Resume();
-            Manager<UIManager>.Instance.GetView<OptionScreen>().Close(false);
+            Console.WriteLine("Teleporting to Ninja Village.");
             ArchipelagoMenu.archipelagoScreen.Close(false);
             EBits dimension = Manager<DimensionManager>.Instance.currentDimension;
 
-            //Fade the music out because musicception is annoying
-            Manager<AudioManager>.Instance.FadeMusicVolume(1f, 0f, true);
-
+            RandoLevelManager.CleanupBeforeTeleport();
             //Load to Ninja Village
             Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition = new Vector2(-153.3f, -56.5f);
             LevelLoadingInfo levelLoadingInfo = new LevelLoadingInfo("Level_01_NinjaVillage_Build", false, true, LoadSceneMode.Single, ELevelEntranceID.NONE, dimension);
@@ -1101,9 +1093,6 @@ namespace MessengerRando
             {
                 if (RandoPortalManager.LeftHQPortal)
                 {
-                    Manager<UIManager>.Instance.CloseAllScreensOfType<TransitionScreen>(false);
-                    Manager<UIManager>.Instance.CloseAllScreensOfType<SavingScreen>(false);
-                    Manager<UIManager>.Instance.CloseAllScreensOfType<LoadingAnimation>(false);
                     RandoPortalManager.Teleport();
                     return;
                 }

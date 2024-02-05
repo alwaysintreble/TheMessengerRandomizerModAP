@@ -212,7 +212,7 @@ namespace MessengerRando.GameOverrideManagers
             #if DEBUG
             Console.WriteLine($"Attempting to teleport to {area}, ({position.x}, {position.y}), {dimension}");
             #endif
-            Manager<AudioManager>.Instance.StopMusic();
+            CleanupBeforeTeleport();
             Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition = position;
             if (dimension.Equals(EBits.NONE)) dimension = Manager<DimensionManager>.Instance.currentDimension;
             LevelLoadingInfo levelLoadingInfo = new LevelLoadingInfo(area + "_Build",
@@ -228,6 +228,17 @@ namespace MessengerRando.GameOverrideManagers
             // self.startOnManfred = false;
             self.startOnManfred = !RandoPortalManager.LeftHQPortal && teleporting;
             orig(self);
+        }
+
+        public static void CleanupBeforeTeleport()
+        {
+            Manager<AudioManager>.Instance.StopMusic();
+            Manager<PauseManager>.Instance.Resume();
+            Manager<UIManager>.Instance.CloseAllScreensOfType<OptionScreen>(false);
+            Manager<UIManager>.Instance.CloseAllScreensOfType<CinematicBordersScreen>(false);
+            Manager<UIManager>.Instance.CloseAllScreensOfType<TransitionScreen>(false);
+            Manager<UIManager>.Instance.CloseAllScreensOfType<SavingScreen>(false);
+            Manager<UIManager>.Instance.CloseAllScreensOfType<LoadingAnimation>(false);
         }
     }
 }

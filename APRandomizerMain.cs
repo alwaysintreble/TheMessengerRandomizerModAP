@@ -803,6 +803,21 @@ namespace MessengerRando
 #if DEBUG
             Console.WriteLine($"Playing cutscene: {eventName}");
 #endif
+            if (eventName == "PortalOpeningCutscene")
+            {
+                if (RandoPortalManager.StartingPortals != null)
+                {
+                    var progManager = Manager<ProgressionManager>.Instance;
+                    foreach (var portal in RandoPortalManager.StartingPortals.Where(
+                                 portal => !portal.StartsWith("Autumn")
+                                           && !portal.StartsWith("Howling")
+                                           && !portal.StartsWith("Glacial")))
+                    {
+                        var cutsceneName = $"{portal.Replace(" ", "")}OpeningCutscene";
+                        progManager.cutscenesPlayed.Add(cutsceneName);
+                    }
+                }
+            }
             if (ArchipelagoClient.EventsICareAbout.Contains(eventName) && ArchipelagoClient.Authenticated)
             {
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"] +=

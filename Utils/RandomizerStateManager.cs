@@ -295,17 +295,6 @@ namespace MessengerRando.Utils
             };
             progManager.cutscenesPlayed.AddRange(skipCutscenes);
 
-            if (RandoPortalManager.StartingPortals != null)
-            {
-                foreach (var portal in RandoPortalManager.StartingPortals.Where(
-                             portal => !portal.StartsWith("Autumn")
-                                       && !portal.StartsWith("Howling")
-                                       && !portal.StartsWith("Glacial")))
-                {
-                    var cutsceneName = $"{portal.Replace(" ", "")}OpeningCutscene";
-                    progManager.cutscenesPlayed.Add(cutsceneName);
-                }
-            }
             progManager.actionSequenceDone.AddRange(new []{
                 "AwardGrimplouSequence(Clone)",
                 "AwardGlidouSequence(Clone)",

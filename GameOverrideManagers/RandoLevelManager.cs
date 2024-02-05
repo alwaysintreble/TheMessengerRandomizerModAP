@@ -1,6 +1,7 @@
 ﻿using System;
 using MessengerRando.Utils;
 using System.Collections.Generic;
+using System.Linq;
 using Archipelago.MultiClient.Net.Enums;
 using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
@@ -141,6 +142,7 @@ namespace MessengerRando.GameOverrideManagers
             //         return;
             //     }
             // }
+
             if (self.GetCurrentLevelEnum().Equals(ELevel.Level_05_A_HowlingGrotto))
             {
                 var progManager = Manager<ProgressionManager>.Instance;

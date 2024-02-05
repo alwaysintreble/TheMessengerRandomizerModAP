@@ -215,17 +215,21 @@ namespace MessengerRando.Utils.Constants
                     "Glacial Peak - Top",
                     new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(176.04f, -13.71676f))
                 },
+                {
+                    "Elemental Skylands - Air Shmup",
+                    new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-37.4f, 359.5f), EBits.BITS_16)
+                }, // 16 - This will probably be really difficult since it uses a different controller
                 // {
-                //     "Elemental Skylands - Left",
-                //     new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-424.9693f, 366.5677f), EBits.BITS_16)
-                // }, // 16 - This will probably be really difficult since it uses a different controller
+                //     "Elemental Skylands - Air Shmup",
+                //     new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-35, 359), EBits.BITS_16)
+                // },
                 {
                     "Tower of Time - Left",
                     new RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(-18f, -11f), EBits.BITS_8)
                 }, // 8
                 {
                     "Cloud Ruins - Left",
-                    new RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-486f, -57f))
+                    new RandoLevel(ELevel.Level_11_A_CloudRuins, new Vector3(-486f, -57f), EBits.BITS_16)
                 },
                 {
                     "Music Box - Left",
@@ -240,8 +244,8 @@ namespace MessengerRando.Utils.Constants
                 //     new RandoLevel(ELevel.Level_12_UnderWorld, new Vector3(-431.7626f, -57f), EBits.BITS_16)
                 // }, // force 16 bit - one time and one way only - after defeating manfred - might be able to force it by calling ManfredBossOutroCutscene?
                 {
-                    "Corrupted Future - Portal",
-                    new RandoLevel(ELevel.Level_14_CorruptedFuture, new Vector3(-19971.98f, -20011f))
+                    "Corrupted Future",
+                    new RandoLevel(ELevel.Level_14_CorruptedFuture, new Vector3(-19971.98f, -20011f), EBits.BITS_16)
                 }, // 16
                 {
                     "Ruxxtin Surfin'",
@@ -374,7 +378,7 @@ namespace MessengerRando.Utils.Constants
                 },
                 {
                     new Transition(ELevel.Level_08_SearingCrags, ELevel.Level_12_UnderWorld),
-                    "Underworld - Top Left"
+                    "Underworld - Left"
                 },
                 {
                     new Transition(ELevel.Level_11_A_CloudRuins, ELevel.Level_12_UnderWorld),
@@ -386,7 +390,7 @@ namespace MessengerRando.Utils.Constants
                 }, // not sure if I can make these transitions require seashell
                 {
                     new Transition(ELevel.Level_09_A_GlacialPeak, ELevel.Level_09_B_ElementalSkylands),
-                    "Elemental Skylands - Left"
+                    "Elemental Skylands - Air Shmup"
                 },
                 {
                     new Transition(ELevel.Level_13_TowerOfTimeHQ, ELevel.Level_11_B_MusicBox),
@@ -422,7 +426,7 @@ namespace MessengerRando.Utils.Constants
                 },
                 {
                     new Transition(ELevel.Level_13_TowerOfTimeHQ, ELevel.Level_14_CorruptedFuture),
-                    "Corrupted Future - Portal"
+                    "Corrupted Future"
                 },
                 {
                     new Transition(ELevel.Level_01_NinjaVillage, ELevel.Level_15_Surf),
@@ -492,8 +496,12 @@ namespace MessengerRando.Utils.Constants
             "Searing Crags - Top",
             "Glacial Peak - Bottom",
             "Glacial Peak - Top",
+            "Glacial Peak - Left",
+            "Elemental Skylands - Air Shmup",
+            "Elemental Skylands - Right",
             "Tower HQ",
             "Tower of Time - Left",
+            "Corrupted Future",
             "Cloud Ruins - Left",
             "Underworld - Left",
         };

@@ -98,13 +98,9 @@ namespace MessengerRando.Utils
                     var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
                     foreach (var pairing in transitionPairs)
                     {
-                        Console.WriteLine(pairing[0]);
-                        Console.WriteLine(pairing[1]);
                         var orig = LevelConstants.TransitionNames[pairing[0]];
-                        Console.WriteLine(orig);
                         var replacement =
                             LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
-                        Console.WriteLine(replacement.LevelName);
                         RandoLevelManager.RandoLevelMapping[orig] = replacement;
                     }
                 }

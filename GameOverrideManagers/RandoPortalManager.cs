@@ -44,6 +44,7 @@ namespace MessengerRando.GameOverrideManagers
         }
 
         public static bool LeftHQPortal;
+        public static bool EnteredTower;
         public static List<string> StartingPortals;
         public static List<Portal> PortalMapping;
 
@@ -274,6 +275,26 @@ namespace MessengerRando.GameOverrideManagers
                 },
                 new List<List<LevelConstants.RandoLevel>>
                 {
+                    new List<LevelConstants.RandoLevel>(),
+                    new List<LevelConstants.RandoLevel>
+                    {
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-35, 359)),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(87.5f, 407)),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(864.5f, 381)),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(966.3f, 409.4f)),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(1763.5f, 381)),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(1909, 411)),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(2755.5f, 376), EBits.BITS_8),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(2926.5f, 406)),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-22.5f, 417)),
+                    },
+                    new List<LevelConstants.RandoLevel>
+                    {
+                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-22.5f, 417)),
+                    }
+                },
+                new List<List<LevelConstants.RandoLevel>>
+                {
                     new List<LevelConstants.RandoLevel>
                     {
                         new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(29f, -55f)),
@@ -347,6 +368,10 @@ namespace MessengerRando.GameOverrideManagers
         private static LevelConstants.RandoLevel GetPortalExit(string enteredPortal)
         {
             Console.WriteLine($"getting portal. entered {enteredPortal}");
+            if (enteredPortal.Equals("Tower of Time - Left"))
+            {
+                EnteredTower = true;
+            }
             var portalExit = PortalMapping[Portals.IndexOf(enteredPortal)];
             Console.WriteLine($"{portalExit.Region}, {portalExit.PortalType}, {portalExit.Index}");
             return AreaCheckpoints[portalExit.Region][portalExit.PortalType][portalExit.Index];
@@ -354,7 +379,6 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void Teleport()
         {
-            LeftHQPortal = false;
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             if (LevelConstants.TransitionToEntranceName.TryGetValue(
                     new LevelConstants.Transition(ELevel.Level_13_TowerOfTimeHQ,
@@ -367,6 +391,7 @@ namespace MessengerRando.GameOverrideManagers
             {
                 Console.WriteLine($"unable to find portal for {currentLevel}");
             }
+            LeftHQPortal = false;
         }
 
         public static void LeaveHQ(On.TotHQ.orig_LeaveToLevel orig, TotHQ self, bool playLevelMusic, bool loadingNewLevel)

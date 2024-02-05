@@ -62,13 +62,22 @@ namespace MessengerRando.GameOverrideManagers
                 Console.WriteLine(currentLevel);
                 
                 if (RandoLevelMapping == null) return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
-                
-                if (!LevelConstants.TransitionToEntranceName.TryGetValue(
-                        new LevelConstants.Transition(lastLevel, currentLevel), out var entrance))
+
+                string entrance;
+                if (currentLevel.Equals(ELevel.Level_14_CorruptedFuture))
+                {
+                    entrance = "Corrupted Future";
+                }
+                else if (RandoPortalManager.EnteredTower)
+                {
+                    entrance = "Tower of Time - Left";
+                    RandoPortalManager.EnteredTower = false;
+                }
+                else if (!LevelConstants.TransitionToEntranceName.TryGetValue(
+                        new LevelConstants.Transition(lastLevel, currentLevel), out entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
                 Console.WriteLine(entrance);
                 
-                LevelConstants.RandoLevel oldLevel = default;
                 if (LevelConstants.SpecialEntranceNames.Contains(entrance))
                 {
                     Vector3 comparePos;
@@ -76,50 +85,30 @@ namespace MessengerRando.GameOverrideManagers
                     {
                         case "Howling Grotto - Right":
                             comparePos = LevelConstants.EntranceNameToRandoLevel["Howling Grotto - Right"].PlayerPos;
-                            if (WithinRange(playerPos.x, comparePos.x))
-                            {
-                                entrance = "Howling Grotto - Right";
-                            }
-                            else
-                            {
-                                entrance = "Howling Grotto - Bottom";
-                            }
+                            entrance = WithinRange(playerPos.x, comparePos.x)
+                                ? "Howling Grotto - Right"
+                                : "Howling Grotto - Bottom";
 
                             break;
                         case "Quillshroom Marsh - Left":
                             comparePos = LevelConstants.EntranceNameToRandoLevel["Quillshroom Marsh - Top Left"].PlayerPos;
-                            if (WithinRange(playerPos.x, comparePos.x))
-                            {
-                                entrance = "Quillshroom Marsh - Top Left";
-                            }
-                            else
-                            {
-                                entrance = "Quillshroom Marsh - Bottom Left";
-                            }
+                            entrance = WithinRange(playerPos.x, comparePos.x)
+                                ? "Quillshroom Marsh - Top Left"
+                                : "Quillshroom Marsh - Bottom Left";
 
                             break;
                         case "Quillshroom Marsh - Right":
                             comparePos = LevelConstants.EntranceNameToRandoLevel["Quillshroom Marsh - Top Right"].PlayerPos;
-                            if (WithinRange(playerPos.x, comparePos.x))
-                            {
-                                entrance = "Quillshroom Marsh - Top Right";
-                            }
-                            else
-                            {
-                                entrance = "Quillshroom Marsh - Bottom Right";
-                            }
+                            entrance = WithinRange(playerPos.x, comparePos.x)
+                                ? "Quillshroom Marsh - Top Right"
+                                : "Quillshroom Marsh - Bottom Right";
 
                             break;
                         case "Searing Crags - Left":
                             comparePos = LevelConstants.EntranceNameToRandoLevel["Searing Crags - Left"].PlayerPos;
-                            if (WithinRange(playerPos.x, comparePos.x))
-                            {
-                                entrance = "Searing Crags - Left";
-                            }
-                            else
-                            {
-                                entrance = "Searing Crags - Bottom";
-                            }
+                            entrance = WithinRange(playerPos.x, comparePos.x)
+                                ? "Searing Crags - Left"
+                                : "Searing Crags - Bottom";
 
                             break;
                     }
@@ -170,8 +159,8 @@ namespace MessengerRando.GameOverrideManagers
                     else
                         ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
                             self.GetCurrentLevelEnum().ToString();
-                    return;
                 }
+                return;
             }
             
             if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
@@ -208,14 +197,6 @@ namespace MessengerRando.GameOverrideManagers
         
         public static void SkipMusicBox()
         {
-            #if DEBUG
-            Console.WriteLine($"attempting to skip music box. already teleporting : {teleporting}");
-            #endif
-            if (teleporting)
-            {
-                teleporting = false;
-                return;
-            }
             Manager<AudioManager>.Instance.StopMusic();
             var playerPosition = RandomizerStateManager.Instance.SkipMusicBox
                 ? new Vector2(125, 40)
@@ -226,11 +207,6 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void TeleportInArea(ELevel area, Vector2 position, EBits dimension = EBits.NONE)
         {
-            if (teleporting)
-            {
-                teleporting = false;
-                return;
-            }
             #if DEBUG
             Console.WriteLine($"Attempting to teleport to {area}, ({position.x}, {position.y}), {dimension}");
             #endif
@@ -242,6 +218,14 @@ namespace MessengerRando.GameOverrideManagers
                 ELevelEntranceID.NONE, dimension);
             teleporting = true;
             Manager<LevelManager>.Instance.LoadLevel(levelLoadingInfo);
+        }
+
+        public static void ElementalSkylandsInit(On.ElementalSkylandsLevelInitializer.orig_OnBeforeInitDone orig,
+            ElementalSkylandsLevelInitializer self)
+        {
+            // self.startOnManfred = false;
+            self.startOnManfred = !RandoPortalManager.LeftHQPortal && teleporting;
+            orig(self);
         }
     }
 }

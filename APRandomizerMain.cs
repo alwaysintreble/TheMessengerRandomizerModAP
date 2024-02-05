@@ -389,6 +389,7 @@ namespace MessengerRando
             // level teleporting etc management
             On.Level.ChangeRoom += RandoRoomManager.Level_ChangeRoom;
             On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
+            On.ElementalSkylandsLevelInitializer.OnBeforeInitDone += RandoLevelManager.ElementalSkylandsInit;
             // On.PortalOpeningCutscene.OnOpenPortalEvent += RandoPortalManager.OpenPortalEvent;
             On.TotHQ.LeaveToLevel += RandoPortalManager.LeaveHQ;
             //These functions let us override and manage power seals ourselves with 'fake' items

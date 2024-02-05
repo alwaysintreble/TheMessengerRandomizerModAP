@@ -115,15 +115,15 @@ namespace MessengerRando.Utils.Constants
                 },
                 {
                     "Catacombs - Top Left",
-                    new RandoLevel(ELevel.Level_04_Catacombs, new Vector3())
+                    new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(48.5f, -11))
                 },
                 {
                     "Catacombs - Right",
-                    new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(-177.0621f, -11f))
+                    new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(809.5f, -74.5f))
                 },
                 {
                     "Catacombs - Bottom",
-                    new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(511.0319f, -123f), EBits.BITS_16)
+                    new RandoLevel(ELevel.Level_04_Catacombs, new Vector3(511, -123), EBits.BITS_16)
                 }, // Must be 16
                 {
                     "Catacombs - Bottom Left",
@@ -164,7 +164,7 @@ namespace MessengerRando.Utils.Constants
                 }, // This needs to be forced to 16 bit
                 {
                     "Bamboo Creek - Top Left",
-                    new RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(-50.09212f, 45f))
+                    new RandoLevel(ELevel.Level_06_A_BambooCreek, new Vector3(-50.09212f, 45f), EBits.BITS_16)
                 },
                 {
                     "Bamboo Creek - Bottom Left",

@@ -95,6 +95,7 @@
     <Compile Include="Archipelago\DeathLinkInterface.cs" />
     <Compile Include="Archipelago\ItemsAndLocationsHandler.cs" />
     <Compile Include="Exceptions\RandomizerException.cs" />
+    <Compile Include="GameOverrideManagers\LostWoodsManager.cs" />
     <Compile Include="GameOverrideManagers\RandoBossManager.cs" />
     <Compile Include="GameOverrideManagers\RandoMusicManager.cs" />
     <Compile Include="GameOverrideManagers\RandoPortalManager.cs" />

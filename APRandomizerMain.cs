@@ -367,6 +367,7 @@ namespace MessengerRando
             On.CatacombLevelInitializer.OnBeforeInitDone += CatacombLevelInitializer_OnBeforeInitDone;
             On.DialogManager.LoadDialogs_ELanguage += DialogChanger.LoadDialogs_Elanguage;
             On.OptionScreen.OnEnable += OnOptionScreenEnable;
+            On.LostWoods.SetAsSolved += LostWoodsManager.OnSetAsSolved;
             // shop management
             On.UpgradeButtonData.GetPrice += RandoShopManager.GetPrice;
             On.BuyMoneyWrenchCutscene.OnBuyWrenchChoice += RandoShopManager.BuyMoneyWrench;
@@ -377,8 +378,8 @@ namespace MessengerRando
             On.SousSol.UnlockFigurine += RandoShopManager.UnlockFigurine;
             On.Shop.Init += RandoShopManager.ShopInit;
             On.JukeboxTrack.IsUnlocked += (orig, self) => true;
-            On.AudioManager.PlayMusic += RandoMusicManager.OnPlayMusic;
             On.UpgradeButtonData.IsStoryUnlocked += RandoShopManager.IsStoryUnlocked;
+            On.AudioManager.PlayMusic += RandoMusicManager.OnPlayMusic;
             // boss management
             On.ProgressionManager.HasDefeatedBoss +=
                 (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
@@ -1102,16 +1103,14 @@ namespace MessengerRando
                 Console.WriteLine(e);
             }
 
-            if (RandoLevelManager.RandoLevelMapping != null &&
-                Manager<ProgressionManager>.Instance.levelsDiscovered.Contains(ELevel.Level_05_A_HowlingGrotto))
+            if (LostWoodsManager.NeedsUnsolved)
             {
-                if (!RandoLevelManager.WithinRange(Manager<PlayerManager>.Instance.Player.transform.position.x,
-                        LevelConstants.EntranceNameToRandoLevel["Howling Grotto - Bottom"].PlayerPos.x))
-                {
-                    var progManager = Manager<ProgressionManager>.Instance;
-                    progManager.levelsDiscovered.Remove(ELevel.Level_05_A_HowlingGrotto);
-                    progManager.allTimeDiscoveredLevels.Remove(ELevel.Level_05_A_HowlingGrotto);
-                }
+                LostWoodsManager.UnsolveLostWoods();
+            }
+            else if (LostWoodsManager.NeedsSolved)
+            {
+                // just keep trying to solve it until it eventually works lmao
+                LostWoodsManager.SolveLostWoods();
             }
                 
             // The game calls the save method after the ending cutscene before rolling credits

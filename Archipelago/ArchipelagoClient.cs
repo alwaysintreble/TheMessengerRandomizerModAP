@@ -416,7 +416,6 @@ namespace MessengerRando.Archipelago
                 ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
                 return;
             }
-            Debug.Log("checking if we need to re-sync");
             
             if (ServerData.Index == Session.Items.AllItemsReceived.Count)
                 return;

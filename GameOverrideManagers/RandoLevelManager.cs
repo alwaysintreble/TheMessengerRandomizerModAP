@@ -114,10 +114,6 @@ namespace MessengerRando.GameOverrideManagers
                             break;
                     }
                 }
-                if (entrance.Equals("Howling Grotto - Bottom"))
-                {
-                    Manager<ProgressionManager>.Instance.levelsDiscovered.Add(ELevel.Level_05_B_SunkenShrine);
-                }
                 return RandoLevelMapping[entrance];
             } catch (Exception e){ Console.WriteLine(e);}
             return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
@@ -184,6 +180,16 @@ namespace MessengerRando.GameOverrideManagers
                 
             }
             var newLevel = FindEntrance();
+            switch (newLevel.LevelName)
+            {
+                // case ELevel.Level_05_A_HowlingGrotto:
+                //     LostWoodsManager.SolveLostWoods();
+                //     break;
+                case ELevel.Level_05_B_SunkenShrine:
+                    LostWoodsManager.ShouldBeSolved = true;
+                    LostWoodsManager.SolveLostWoods();
+                    break;
+            }
             if (RandoLevelMapping != null && !newLevel.LevelName.Equals(ELevel.NONE))
                 TeleportInArea(
                     newLevel.LevelName,

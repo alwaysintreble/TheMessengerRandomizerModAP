@@ -25,6 +25,7 @@ namespace MessengerRando.Archipelago
         public List<long> CheckedLocations;
         public Dictionary<long, int> ReceivedItems;
         public Dictionary<long, NetworkItem> ScoutedLocations;
+        public Dictionary<long, Dictionary<string, List<long>>> LocationData;
 
         public void StartNewSeed()
         {
@@ -101,6 +102,7 @@ namespace MessengerRando.Archipelago
                 RandomizerStateManager.Instance.ScoutedLocations = 
                     ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
                 SlotData = tempServerData.SlotData;
+                LocationData = tempServerData.LocationData;
 
                 //Attempt to connect to the server and save the new data
                 Console.WriteLine("Rando save found!");

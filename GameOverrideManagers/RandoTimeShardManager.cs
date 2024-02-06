@@ -100,8 +100,6 @@ namespace MessengerRando.GameOverrideManagers
                      ArchipelagoClient.ServerData.CheckedLocations.Contains(
                          ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Quick Restock Mega Shard 1")]))
                 location = new LocationRO("Quick Restock Mega Shard 2");
-            if (ArchipelagoClient.ServerData.CheckedLocations.Contains(
-                    ItemsAndLocationsHandler.LocationsLookup[location])) return;
             ItemsAndLocationsHandler.SendLocationCheck(location);
         }
 

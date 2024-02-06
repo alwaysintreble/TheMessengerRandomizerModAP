@@ -112,5 +112,26 @@ namespace MessengerRando.Utils
             generatePopup.gameObject.SetActive(true);
             generating = false;
         }
+
+        public static string GetOfflineDialog(long locId)
+        {
+            var color = UserConfig.FillerColor;
+            var itemInfo = ArchipelagoClient.ServerData.LocationData[locId];
+            var itemName = itemInfo.Keys.First();
+            switch (itemInfo[itemName][1])
+            {
+                case 1:
+                    color = UserConfig.AdvancementColor;
+                    break;
+                case 2:
+                    color = UserConfig.UsefulColor;
+                    break;
+                case 4:
+                    color = UserConfig.TrapColor;
+                    break;
+            }
+
+            return $"Found <color=#{color}>{itemName}</color>";
+        }
     }
 }

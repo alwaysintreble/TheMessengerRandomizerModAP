@@ -633,6 +633,8 @@ namespace MessengerRando
                 }
                 else if (ArchipelagoClient.offline)
                 {
+                    if (ItemsAndLocationsHandler.ItemsLookup == null)
+                        ItemsAndLocationsHandler.Initialize();
                     Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
                 }
             }

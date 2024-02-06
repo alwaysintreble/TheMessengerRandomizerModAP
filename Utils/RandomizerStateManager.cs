@@ -169,7 +169,8 @@ namespace MessengerRando.Utils
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
                 if (locationID == 0) return false;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
-                return ArchipelagoClient.ServerData.ScoutedLocations.ContainsKey(locationID);
+                return ArchipelagoClient.ServerData.ScoutedLocations.ContainsKey(locationID) ||
+                       ArchipelagoClient.ServerData.LocationData.ContainsKey(locationID);
             }
             catch (Exception e)
             {
@@ -337,7 +338,6 @@ namespace MessengerRando.Utils
             try
             {
                 var fileData = File.ReadAllText(gameFile);
-                Console.WriteLine(fileData.GetType());
                 var gameData = JObject.Parse(fileData);
                 ArchipelagoClient.ServerData = new ArchipelagoData();
                 ArchipelagoClient.ServerData.StartNewSeed();
@@ -354,13 +354,9 @@ namespace MessengerRando.Utils
                 Console.WriteLine("casting slot data");
                 ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
                 Console.WriteLine("casting loc data");
-                Instance.ScoutedLocations =
-                    ArchipelagoClient.ServerData.ScoutedLocations = new Dictionary<long, NetworkItem>();
-                var locData = gameData["loc_data"].ToObject<Dictionary<long, string>>();
-                foreach (var kvp in locData)
-                {
-                    Instance.ScoutedLocations.Add(kvp.Key, JsonConvert.DeserializeObject<NetworkItem>(kvp.Value));
-                }
+                ArchipelagoClient.ServerData.ScoutedLocations = new Dictionary<long, NetworkItem>();
+                ArchipelagoClient.ServerData.LocationData =
+                    gameData["loc_data"].ToObject<Dictionary<long, Dictionary<string, List<long>>>>();
                 ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
                 InitializeSeed();
             }

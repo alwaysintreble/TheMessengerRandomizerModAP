@@ -398,7 +398,7 @@ namespace MessengerRando.GameOverrideManagers
         public static void LeaveHQ(On.TotHQ.orig_LeaveToLevel orig, TotHQ self, bool playLevelMusic, bool loadingNewLevel)
         {
             Console.WriteLine($"leaving hq.. should be teleporting: {PortalMapping != null}");
-            LeftHQPortal = PortalMapping != null;
+            LeftHQPortal = PortalMapping != null && PortalMapping.Count > 0;
             orig(self, playLevelMusic, loadingNewLevel);
         }
     }

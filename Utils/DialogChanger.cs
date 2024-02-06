@@ -87,13 +87,14 @@ namespace MessengerRando.Utils
                         LocCopy[replaceableKey][0].forcedPortraitOrientation = 0;
                         LocCopy[replaceableKey][0].position = EDialogPosition.CENTER;
                         LocCopy[replaceableKey][0].skippable = true;
-                        if (RandomizerStateManager.Instance.ScoutedLocations != null &&
+                        if ((RandomizerStateManager.Instance.ScoutedLocations != null || ArchipelagoClient.offline) &&
                             RandomizerStateManager.Instance.IsLocationRandomized(
                                 ItemDialogID.First(x => x.Value.Equals(replaceableKey)).Key,
                                 out var locationID))
                         {
-                            LocCopy[replaceableKey][0].text =
-                                RandomizerStateManager.Instance.ScoutedLocations[locationID].ToReadableString();
+                            LocCopy[replaceableKey][0].text = ArchipelagoClient.offline
+                                ? SeedGenerator.GetOfflineDialog(locationID)
+                                : RandomizerStateManager.Instance.ScoutedLocations[locationID].ToReadableString();
                         }
 
                         //This will remove all additional dialog that comes after the initial reward text

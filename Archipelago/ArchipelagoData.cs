@@ -25,7 +25,6 @@ namespace MessengerRando.Archipelago
         public List<long> CheckedLocations;
         public Dictionary<long, int> ReceivedItems;
         public Dictionary<long, NetworkItem> ScoutedLocations;
-        public Dictionary<long, Dictionary<long, string>> LocationData;
 
         public void StartNewSeed()
         {
@@ -44,6 +43,7 @@ namespace MessengerRando.Archipelago
 
         public static bool LoadData(int slot)
         {
+            if (ArchipelagoClient.offline) return false;
             Console.WriteLine($"Loading Archipelago data for slot {slot}");
             if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
             return ArchipelagoClient.ServerData.loadData(slot);
@@ -101,11 +101,10 @@ namespace MessengerRando.Archipelago
                 RandomizerStateManager.Instance.ScoutedLocations = 
                     ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
                 SlotData = tempServerData.SlotData;
-                LocationData = tempServerData.LocationData ?? new Dictionary<long, Dictionary<long, string>>();
 
                 //Attempt to connect to the server and save the new data
                 Console.WriteLine("Rando save found!");
-                if (LocationData != null && LocationData.Count > 0)
+                if (Uri == "offline")
                 {
                     Console.WriteLine("continuing offline seed");
                     RandomizerStateManager.InitializeSeed();

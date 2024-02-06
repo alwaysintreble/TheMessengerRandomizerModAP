@@ -168,9 +168,7 @@ namespace MessengerRando.Utils
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
                 if (locationID == 0) return false;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
-                return ArchipelagoClient.offline
-                    ? ArchipelagoClient.ServerData.LocationData.ContainsKey(locationID)
-                    : ArchipelagoClient.Session.Locations.AllLocations.Contains(locationID);
+                return ArchipelagoClient.ServerData.ScoutedLocations.ContainsKey(locationID);
             }
             catch (Exception e)
             {
@@ -349,12 +347,14 @@ namespace MessengerRando.Utils
                     ArchipelagoClient.ServerData.SeedName = part;
                     break;
                 }
+
+                ArchipelagoClient.ServerData.Uri = "offline";
+                ArchipelagoClient.ServerData.SlotName = gameData["name"].ToObject<string>();
                 Console.WriteLine("casting slot data");
                 ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
                 Console.WriteLine("casting loc data");
-                Console.WriteLine(gameData["loc_data"].GetType());
-                ArchipelagoClient.ServerData.LocationData =
-                    gameData["loc_data"].ToObject<Dictionary<long, Dictionary<long, string>>>();
+                Instance.ScoutedLocations = ArchipelagoClient.ServerData.ScoutedLocations =
+                    gameData["loc_data"].ToObject<Dictionary<long, NetworkItem>>();
                 ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
                 InitializeSeed();
             }

@@ -631,6 +631,10 @@ namespace MessengerRando
                         Console.WriteLine(e);
                     }
                 }
+                else if (ArchipelagoClient.offline)
+                {
+                    Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
+                }
             }
             catch (Exception e)
             {

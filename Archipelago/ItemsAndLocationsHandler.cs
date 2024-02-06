@@ -445,8 +445,7 @@ namespace MessengerRando.Archipelago
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
             else if (ArchipelagoClient.offline)
             {
-                var itemToUnlock = ArchipelagoClient.ServerData.LocationData[locationID];
-                Unlock(itemToUnlock.Keys.First());
+                Unlock(RandoStateManager.ScoutedLocations[locationID].Item);
             }
             if (!HasDialog(locationID))
                 if (RandomizerStateManager.IsSafeTeleportState())

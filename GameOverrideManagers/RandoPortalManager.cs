@@ -379,6 +379,7 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void Teleport()
         {
+            Console.WriteLine("trying to teleport to portal exit");
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             if (LevelConstants.TransitionToEntranceName.TryGetValue(
                     new LevelConstants.Transition(ELevel.Level_13_TowerOfTimeHQ,

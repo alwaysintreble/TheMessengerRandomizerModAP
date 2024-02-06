@@ -7,6 +7,7 @@ using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils.Constants;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using WebSocketSharp;
@@ -353,8 +354,13 @@ namespace MessengerRando.Utils
                 Console.WriteLine("casting slot data");
                 ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
                 Console.WriteLine("casting loc data");
-                Instance.ScoutedLocations = ArchipelagoClient.ServerData.ScoutedLocations =
-                    gameData["loc_data"].ToObject<Dictionary<long, NetworkItem>>();
+                Instance.ScoutedLocations =
+                    ArchipelagoClient.ServerData.ScoutedLocations = new Dictionary<long, NetworkItem>();
+                var locData = gameData["loc_data"].ToObject<Dictionary<long, string>>();
+                foreach (var kvp in locData)
+                {
+                    Instance.ScoutedLocations.Add(kvp.Key, JsonConvert.DeserializeObject<NetworkItem>(kvp.Value));
+                }
                 ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
                 InitializeSeed();
             }

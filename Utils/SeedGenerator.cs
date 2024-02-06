@@ -116,9 +116,9 @@ namespace MessengerRando.Utils
         public static string GetOfflineDialog(long locId)
         {
             var color = UserConfig.FillerColor;
-            var itemInfo = ArchipelagoClient.ServerData.LocationData[locId];
-            var itemName = itemInfo.Keys.First();
-            switch (itemInfo[itemName][1])
+            var itemInfo = ArchipelagoClient.ServerData.LocationData[locId].First();
+            var itemName = itemInfo.Key;
+            switch (itemInfo.Value[1])
             {
                 case 1:
                     color = UserConfig.AdvancementColor;

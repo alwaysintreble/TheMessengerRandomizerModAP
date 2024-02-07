@@ -192,9 +192,7 @@ namespace MessengerRando.Utils
             var saveManager = Manager<SaveManager>.Instance;
             saveManager.SelectSaveGameSlot(slot);
             saveManager.NewGame();
-            saveManager.GetCurrentSaveGameSlot().SlotName = ArchipelagoClient.offline
-                ? RandomizerOptions.Name
-                : ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
+            saveManager.GetCurrentSaveGameSlot().SlotName = ArchipelagoClient.ServerData.SlotName;
             // add everything to the various managers that we need for our save slot, following the order in SaveGameSlot.UpdateSaveGameData()
             var progManager = Manager<ProgressionManager>.Instance;
             progManager.lastSaveTime = Time.time;

@@ -463,7 +463,12 @@ namespace MessengerRando.Archipelago
             }
             else if (ArchipelagoClient.offline)
             {
-                Unlock(ArchipelagoClient.ServerData.LocationData[locationID].First().Value[0]);
+                var itemToUnlock = ArchipelagoClient.ServerData.LocationData[locationID].First().Value[0];
+                if (RandomizerStateManager.IsSafeTeleportState())
+                    Unlock(itemToUnlock);
+                else
+                    ArchipelagoClient.ItemQueue.Enqueue(itemToUnlock);
+                
                 if (!HasDialog(locationID))
                 {
                     var dialog = SeedGenerator.GetOfflineDialog(locationID);

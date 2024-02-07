@@ -379,13 +379,14 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void Teleport()
         {
-            Console.WriteLine("trying to teleport to portal exit");
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             if (LevelConstants.TransitionToEntranceName.TryGetValue(
                     new LevelConstants.Transition(ELevel.Level_13_TowerOfTimeHQ,
                         currentLevel), out var portal))
             {
                 var newLevel = GetPortalExit(portal);
+                if (newLevel.LevelName.Equals(ELevel.Level_09_B_ElementalSkylands))
+                    RandoLevelManager.KillManfred = true;
                 RandoLevelManager.TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newLevel.Dimension);
             }
             else

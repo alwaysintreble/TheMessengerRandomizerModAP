@@ -1,7 +1,6 @@
 ﻿using System;
 using MessengerRando.Utils;
 using System.Collections.Generic;
-using System.Linq;
 using Archipelago.MultiClient.Net.Enums;
 using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
@@ -13,6 +12,7 @@ namespace MessengerRando.GameOverrideManagers
     public static class RandoLevelManager
     {
         private static bool teleporting;
+        public static bool KillManfred;
         private static ELevel lastLevel;
         private static ELevel currentLevel;
 
@@ -234,8 +234,7 @@ namespace MessengerRando.GameOverrideManagers
         public static void ElementalSkylandsInit(On.ElementalSkylandsLevelInitializer.orig_OnBeforeInitDone orig,
             ElementalSkylandsLevelInitializer self)
         {
-            // self.startOnManfred = false;
-            self.startOnManfred = !RandoPortalManager.LeftHQPortal && teleporting;
+            self.startOnManfred = !KillManfred && teleporting;
             orig(self);
         }
 

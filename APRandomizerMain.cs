@@ -389,6 +389,7 @@ namespace MessengerRando
                 (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
             // level teleporting etc management
             On.Level.ChangeRoom += RandoRoomManager.Level_ChangeRoom;
+            On.LevelManager.LoadLevel += RandoLevelManager.LoadLevel;
             On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
             On.ElementalSkylandsLevelInitializer.OnBeforeInitDone += RandoLevelManager.ElementalSkylandsInit;
             // On.PortalOpeningCutscene.OnOpenPortalEvent += RandoPortalManager.OpenPortalEvent;
@@ -416,7 +417,6 @@ namespace MessengerRando
             On.UIManager.ShowView += UIManager_ShowView;
             On.MusicBox.SetNotesState += MusicBox_SetNotesState;
             On.PowerSeal.OnEnterRoom += PowerSeal_OnEnterRoom;
-            On.LevelManager.LoadLevel += RandoLevelManager.LoadLevel;
             #endif
 
             Console.WriteLine("Randomizer finished loading!");
@@ -1044,10 +1044,10 @@ namespace MessengerRando
         private void PlayerController_OnUpdate(PlayerController controller)
         {
             if (!ArchipelagoClient.HasConnected || randoStateManager.CurrentFileSlot == 0) return;
-            ArchipelagoClient.DeathLinkHandler.Player = controller;
-            if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
+            if (ArchipelagoClient.Authenticated && ArchipelagoClient.DeathLinkHandler.Player == null)
+                ArchipelagoClient.DeathLinkHandler.Player = controller;
+            if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused && ArchipelagoClient.Authenticated)
                 ArchipelagoClient.DeathLinkHandler.KillPlayer();
-            // ItemsAndLocationsHandler.UnlockItems();
             //This updates every {updateTime} seconds
             updateTimer += Time.deltaTime;
             if (!(updateTimer >= updateTime)) return;

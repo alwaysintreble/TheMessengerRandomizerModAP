@@ -371,6 +371,7 @@ namespace MessengerRando.GameOverrideManagers
             if (enteredPortal.Equals("Tower of Time - Left"))
             {
                 EnteredTower = true;
+                return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
             }
             var portalExit = PortalMapping[Portals.IndexOf(enteredPortal)];
             Console.WriteLine($"{portalExit.Region}, {portalExit.PortalType}, {portalExit.Index}");
@@ -384,10 +385,24 @@ namespace MessengerRando.GameOverrideManagers
                     new LevelConstants.Transition(ELevel.Level_13_TowerOfTimeHQ,
                         currentLevel), out var portal))
             {
-                var newLevel = GetPortalExit(portal);
-                if (newLevel.LevelName.Equals(ELevel.Level_09_B_ElementalSkylands))
-                    RandoLevelManager.KillManfred = true;
-                RandoLevelManager.TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newLevel.Dimension);
+                try
+                {
+                    var newLevel = GetPortalExit(portal);
+                    switch (newLevel.LevelName)
+                    {
+                        case ELevel.Level_09_B_ElementalSkylands:
+                            RandoLevelManager.KillManfred = true;
+                            break;
+                        case ELevel.NONE:
+                            LeftHQPortal = false;
+                            return;
+                    }
+                    RandoLevelManager.TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newLevel.Dimension);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
             else
             {

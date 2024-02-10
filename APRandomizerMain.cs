@@ -1018,10 +1018,7 @@ namespace MessengerRando
         /// <returns></returns>
         private EItems GetRandoItemByItem(EItems item)
         {
-            if (!randoStateManager.IsLocationRandomized(item, out var ruxxAmuletLocation)) return item;
-            Console.WriteLine($"IL Wackiness -- Checking for Item '{item}' | Rando item to return '{randoStateManager.ScoutedLocations[ruxxAmuletLocation].Item}'");
-
-            return EItems.POTION;
+            return !randoStateManager.IsLocationRandomized(item, out var ruxxAmuletLocation) ? item : EItems.POTION;
         }
 
         private string GetCurrentSeedNum()

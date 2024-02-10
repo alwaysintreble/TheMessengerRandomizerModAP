@@ -166,6 +166,10 @@ namespace MessengerRando.GameOverrideManagers
                 {
                     var bossLoc = new LocationRO(bossName);
                     ItemsAndLocationsHandler.SendLocationCheck(bossLoc);
+                    if (bossName.Equals("EmeraldGolem"))
+                    {
+                        Manager<ProgressionManager>.Instance.cutscenesPlayed.Add("EmeraldGolemOutroCutscene");
+                    }
                 }
             }
             DefeatedBosses.Add(bossName);

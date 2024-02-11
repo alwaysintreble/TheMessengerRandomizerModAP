@@ -111,7 +111,7 @@ namespace MessengerRando.Utils.Constants
                 }, // Must be 16
                 {
                     "Forlorn Temple - Right",
-                    new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(454.4301f, -11f))
+                    new RandoLevel(ELevel.Level_03_ForlornTemple, new Vector3(454.4301f, -11f), EBits.BITS_16)
                 },
                 {
                     "Catacombs - Top Left",
@@ -210,7 +210,9 @@ namespace MessengerRando.Utils.Constants
                     "Glacial Peak - Bottom",
                     new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(202, -519))
                 },
-                // { "Glacial Peak - Left", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(), ELevelEntranceID.NONE) }, // This is one way to ES so no actual entrance here
+                {
+                    "Glacial Peak - Left", new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(180, -307))
+                },
                 {
                     "Glacial Peak - Top",
                     new RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(176.04f, -13.71676f))
@@ -218,11 +220,7 @@ namespace MessengerRando.Utils.Constants
                 {
                     "Elemental Skylands - Air Shmup",
                     new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-37.4f, 359.5f), EBits.BITS_16)
-                }, // 16 - This will probably be really difficult since it uses a different controller
-                // {
-                //     "Elemental Skylands - Air Shmup",
-                //     new RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-35, 359), EBits.BITS_16)
-                // },
+                },
                 {
                     "Tower of Time - Left",
                     new RandoLevel(ELevel.Level_10_A_TowerOfTime, new Vector3(-18f, -11f), EBits.BITS_8)
@@ -367,6 +365,10 @@ namespace MessengerRando.Utils.Constants
                 {
                     new Transition(ELevel.Level_08_SearingCrags, ELevel.Level_09_A_GlacialPeak),
                     "Glacial Peak - Bottom"
+                },
+                {
+                    new Transition(ELevel.Level_09_B_ElementalSkylands, ELevel.Level_09_A_GlacialPeak),
+                    "Glacial Peak - Left"
                 },
                 {
                     new Transition(ELevel.Level_11_A_CloudRuins, ELevel.Level_09_A_GlacialPeak),

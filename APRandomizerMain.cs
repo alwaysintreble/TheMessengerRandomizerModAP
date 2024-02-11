@@ -67,6 +67,14 @@ namespace MessengerRando
                         null);
                 ArchipelagoMenu.VersionButton.IsEnabled = () => true;
                 
+                // only visible while actually in the game
+                //Add current seed number button
+                ArchipelagoMenu.SeedNumButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => "Current seed number: " + GetCurrentSeedNum(),
+                    null);
+                ArchipelagoMenu.SeedNumButton.IsEnabled = () =>
+                    ArchipelagoClient.HasConnected && Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
+
                 // these should only be visible from the main menu
                 //Add Archipelago host button
                 ArchipelagoMenu.ArchipelagoHostButton = ArchipelagoMenu.RegisterTextRandoButton(
@@ -123,14 +131,6 @@ namespace MessengerRando
                 ArchipelagoMenu.ArchipelagoConnectButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
                     (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
-
-                // only visible while actually in the game
-                //Add current seed number button
-                ArchipelagoMenu.SeedNumButton = ArchipelagoMenu.RegisterSubRandoButton(
-                    () => "Current seed number: " + GetCurrentSeedNum(),
-                    null);
-                ArchipelagoMenu.SeedNumButton.IsEnabled = () =>
-                    ArchipelagoClient.HasConnected && randoStateManager.CurrentFileSlot != 0;
 
                 //Add windmill shuriken toggle button
                 ArchipelagoMenu.WindmillShurikenToggleButton = ArchipelagoMenu.RegisterSubRandoButton(

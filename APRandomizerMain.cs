@@ -90,10 +90,8 @@ namespace MessengerRando
                     () => ArchipelagoClient.ServerData?.Port.ToString(),
                     CharsetFlags.Number);
                 ArchipelagoMenu.ArchipelagoPortButton.IsEnabled =
-                    () => (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline) &&
-                          (Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE ||
-                           (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
-                            ArchipelagoClient.HasConnected));
+                    () => ArchipelagoClient.HasConnected && !ArchipelagoClient.Authenticated && !ArchipelagoClient.offline &&
+                          Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
                 
                 //Add archipelago name button
                 ArchipelagoMenu.ArchipelagoNameButton = ArchipelagoMenu.RegisterTextRandoButton(

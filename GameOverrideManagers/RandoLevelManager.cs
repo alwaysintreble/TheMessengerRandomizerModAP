@@ -234,7 +234,12 @@ namespace MessengerRando.GameOverrideManagers
         public static void ElementalSkylandsInit(On.ElementalSkylandsLevelInitializer.orig_OnBeforeInitDone orig,
             ElementalSkylandsLevelInitializer self)
         {
-            self.startOnManfred = !KillManfred && teleporting;
+            if (RandoPortalManager.PortalMapping != null && RandoLevelMapping != null)
+                self.startOnManfred = !KillManfred && teleporting;
+            else if (RandoPortalManager.PortalMapping != null)
+                self.startOnManfred = !KillManfred;
+            else if (RandoLevelMapping != null)
+                self.startOnManfred = teleporting;
             orig(self);
         }
 

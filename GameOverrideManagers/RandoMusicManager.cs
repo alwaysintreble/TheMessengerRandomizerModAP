@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 using Random = System.Random;
 
 namespace MessengerRando.GameOverrideManagers
 {
-    public class RandoMusicManager
+    public static class RandoMusicManager
     {
         private static Random random;
         private static bool shuffleMusic;
@@ -45,16 +44,16 @@ namespace MessengerRando.GameOverrideManagers
         {
             if (audioObjectDefinition == null)
                 return null;
-            Debug.Log("playing music");
+            // Debug.Log("playing music");
             // Debug.Log(audioObjectDefinition.GetInstanceID());
             // Debug.Log(audioObjectDefinition.GetInstanceID());
-            var cantShuffleLevels = new List<ELevel> { ELevel.NONE, ELevel.Level_05_B_SunkenShrine };
             if (!audioObjectDefinition.IsMusic() || !shuffleMusic ||
-                cantShuffleLevels.Contains(Manager<LevelManager>.Instance.GetCurrentLevelEnum()))
+                !Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_13_TowerOfTimeHQ))
                 return orig(self, audioObjectDefinition, loop, fadeInDuration, playbackTime, customAudioObject);
             var newAudio = Manager<AudioManager>.Instance.GetRandomLevelTrack();
             var dimension = random.Next(0, 2);
             audioObjectDefinition = dimension == 0 ? newAudio.track_8 : newAudio.track_16;
+            Manager<AudioManager>.Instance.StopMusic();
             return orig(self, audioObjectDefinition, loop, fadeInDuration, playbackTime, customAudioObject);
         }
     }

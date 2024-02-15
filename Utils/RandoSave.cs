@@ -3,6 +3,7 @@ using MessengerRando.Archipelago;
 using Mod.Courier.Save;
 using Newtonsoft.Json;
 using UnityEngine;
+using WebSocketSharp;
 
 namespace MessengerRando.Utils
 {
@@ -17,25 +18,27 @@ namespace MessengerRando.Utils
 
         public void Update()
         {
-            if (ArchipelagoClient.HasConnected)
-            {
-                RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
-                    ArchipelagoClient.ServerData;
-                
-                if (ArchipelagoClient.Authenticated && RandomizerStateManager.IsSafeTeleportState())
-                    ArchipelagoClient.SyncLocations();
-                APSaveData = GetSaveData();
-            }
+            if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.NONE)) return;
+            RandomizerStateManager.Instance.APSave[RandomizerStateManager.Instance.CurrentFileSlot] =
+                ArchipelagoClient.ServerData;
+
+            if (ArchipelagoClient.Authenticated)
+                ArchipelagoClient.SyncLocations();
+            APSaveData = GetSaveData();
         }
 
-        public static string GetSaveData()
+        public void ForceUpdate()
         {
-            var output = "";
-            for (int i = 1; i <= 3; i++)
-            {
-                output += $"{RandomizerStateManager.Instance.APSave[i]}|";
-            }
+            APSaveData = GetSaveData();
+        }
 
+        private static string GetSaveData()
+        {
+            var output =
+                $"{RandomizerStateManager.Instance.APSave[1]}|" +
+                $"{RandomizerStateManager.Instance.APSave[2]}|" +
+                $"{RandomizerStateManager.Instance.APSave[3]}|" +
+                $"{SeedGenerator.ArchipelagoPath}";
             return output;
         }
         
@@ -52,13 +55,14 @@ namespace MessengerRando.Utils
             try
             {
                 var loadedData = load.Split(SplitConst);
-                var index = 1;
-                foreach (var dataString in loadedData)
+                for (var i = 1; i < 4; i++)
                 {
-                    var loadedAPData = JsonConvert.DeserializeObject<ArchipelagoData>(dataString);
-                    RandomizerStateManager.Instance.APSave[index] = loadedAPData;
-                    index++;
+                    var loadedAPData = JsonConvert.DeserializeObject<ArchipelagoData>(loadedData[i - 1]);
+                    RandomizerStateManager.Instance.APSave[i] = loadedAPData;
                 }
+
+                if (loadedData.Length > 3 && !loadedData[3].IsNullOrEmpty())
+                    SeedGenerator.ArchipelagoPath = loadedData[3];
             }
             catch (Exception e)
             {

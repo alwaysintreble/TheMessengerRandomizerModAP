@@ -8,22 +8,22 @@ namespace MessengerRando.GameOverrideManagers
     public static class RandoRoomManager
     {
         public static bool RoomRando;
-        public static bool RoomOverride;
-        public static Dictionary<string, string> RoomMap; // old room name - new room name
+        private static bool roomOverride;
+        private static Dictionary<string, string> roomMap; // old room name - new room name
         
-        private static string GetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top)
+        static string GetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top)
         {
             return $"{left.edgeIdX} {right.edgeIdX} {bottom.edgeIdY} {top.edgeIdY}";
         }
 
-        private static void SetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top,
+        static void SetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top,
             string roomKey)
         {
             var edges = roomKey.Split(' ');
             left.edgeIdX = edges[0]; right.edgeIdX = edges[1]; bottom.edgeIdY = edges[2]; top.edgeIdY = edges[3];
         }
 
-        public static bool IsBossRoom(string roomKey, out string bossName)
+        static bool IsBossRoom(string roomKey, out string bossName)
         {
             Console.WriteLine($"Checking if {roomKey} is a boss room");
             bossName = string.Empty;
@@ -57,12 +57,13 @@ namespace MessengerRando.GameOverrideManagers
             //if we're in a room, it leaves the current room then enters the new room with the teleported bool
             //no idea what the teleported bool does currently
             orig(self, leftEdge, rightEdge, bottomEdge, topEdge, teleportedInRoom);
-            if (RoomOverride)
+            if (roomOverride)
             {
-                RoomOverride = false;
+                roomOverride = false;
                 return;
             }
 
+            var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             var bossRoomKey = oldRoomKey.Replace(" ", string.Empty);
             if (IsBossRoom(bossRoomKey, out var bossName))
             {
@@ -70,12 +71,11 @@ namespace MessengerRando.GameOverrideManagers
             }
             else if (RoomRando)
             {
-                var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
                 var newRoom = PlaceInRoom(oldRoomKey, currentLevel, out var transition);
                 if (newRoom.RoomKey.IsNullOrEmpty() || transition.Direction.IsNullOrEmpty()) return;
                 
                 SetRoomKey(leftEdge, rightEdge, bottomEdge, topEdge, newRoom.RoomKey);
-                RoomOverride = true;
+                roomOverride = true;
                 if (newRoom.Region.Equals(currentLevel))
                     Manager<Level>.Instance.ChangeRoom(leftEdge, rightEdge, bottomEdge, topEdge, teleportedInRoom);
                 else
@@ -90,13 +90,13 @@ namespace MessengerRando.GameOverrideManagers
             return comparison <= 10;
         }
 
-        public static RoomConstants.RandoRoom PlaceInRoom(string oldRoomKey, ELevel currentLevel, out RoomConstants.RoomTransition newTransition)
+        static RoomConstants.RandoRoom PlaceInRoom(string oldRoomKey, ELevel currentLevel, out RoomConstants.RoomTransition newTransition)
         {
             newTransition = new RoomConstants.RoomTransition();
             if (!RoomConstants.RoomNameLookup.TryGetValue(new RoomConstants.RandoRoom(oldRoomKey, currentLevel),
                     out var oldRoomName)
                 || !RoomConstants.TransitionLookup.TryGetValue(oldRoomName, out var oldTransitions)
-                || !RoomMap.TryGetValue(oldRoomName, out var newName)
+                || !roomMap.TryGetValue(oldRoomName, out var newName)
                 || !RoomConstants.TransitionLookup.TryGetValue(newName, out var newTransitions))
                 return new RoomConstants.RandoRoom();
             

@@ -62,7 +62,7 @@ namespace MessengerRando.Archipelago
                 receivedDeathDialog.name = cause;
                 receivedDeathDialog.choices = new List<DialogSequenceChoice>();
                 AwardItemPopupParams receivedDeathParams = new AwardItemPopupParams(receivedDeathDialog, false);
-                Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, receivedDeathParams, true);
+                Manager<UIManager>.Instance.ShowView<AwardItemPopup>(EScreenLayers.PROMPT, receivedDeathParams);
                 Player.Kill(EDeathType.GENERIC, null);
                 deathLinks.RemoveAt(0);
                 receivedDeath = false;

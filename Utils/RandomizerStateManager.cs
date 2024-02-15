@@ -1,11 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
+using MessengerRando.Utils.Constants;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
+using WebSocketSharp;
+
+// ReSharper disable StringLiteralTypo
+// ReSharper disable CommentTypo
 
 namespace MessengerRando.Utils
 {
@@ -15,20 +23,23 @@ namespace MessengerRando.Utils
         public int CurrentFileSlot { set; get; }
 
         public RandoPowerSealManager PowerSealManager;
+        // ReSharper disable once UnassignedField.Global
+        // gets assigned externally
         public RandoBossManager BossManager;
         public static List<NetworkItem> SeenHints = new List<NetworkItem>();
 
         public bool SkipMusicBox;
+        // ReSharper disable once UnassignedField.Global
+        // useful for debugging
         public bool SkipPhantom;
-        public bool InGame;
 
         public Dictionary<long, NetworkItem> ScoutedLocations;
-        public Dictionary<int, ArchipelagoData> APSave;
+        public readonly Dictionary<int, ArchipelagoData> APSave;
 
         public RandomizerStateManager()
         {
             #if DEBUG
-            SkipPhantom = true;
+            // SkipPhantom = true;
             #endif
             try
             {
@@ -40,27 +51,20 @@ namespace MessengerRando.Utils
                     { 2, new ArchipelagoData() },
                     { 3, new ArchipelagoData() },
                 };
-                if (ArchipelagoClient.Authenticated) InitializeMultiSeed();   
+                if (ArchipelagoClient.Authenticated) InitializeSeed();   
             } catch (Exception e) {Console.WriteLine(e);}
         }
 
-        public static void InitializeMultiSeed()
+        public static void InitializeSeed()
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
             SeenHints = new List<NetworkItem>();
 
-            if (Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1)
+            if ((Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1) && ArchipelagoClient.Authenticated)
             {
-                var index = ItemsAndLocationsHandler.BaseOffset;
-                var scoutIDs = new List<long>();
-                foreach (var unused in DialogChanger.ItemDialogID)
-                {
-                    scoutIDs.Add(index);
-                    index++;
-                }
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
                     SetupScoutedLocations,
-                    scoutIDs.ToArray()
+                    ArchipelagoClient.Session.Locations.AllLocations.ToArray()
                 );
             }
 
@@ -71,16 +75,58 @@ namespace MessengerRando.Utils
             Instance.SkipMusicBox = !Convert.ToBoolean(slotData["music_box"]);
             RandoShopManager.ShopPrices = ((JObject)slotData["shop"]).ToObject<Dictionary<EShopUpgradeID, int>>();
             RandoShopManager.FigurePrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EFigurine, int>>();
+            if (slotData.TryGetValue("starting_portals", out var portals))
+            {
+                var startingPortals = ((JArray)portals).ToObject<List<string>>();
+                RandoPortalManager.StartingPortals = new List<string>();
+                foreach (var portal in startingPortals)
+                {
+                    Console.WriteLine(portal);
+                    RandoPortalManager.StartingPortals.Add(portal);
+                }
+
+                var portalExits = ((JArray)slotData["portal_exits"]).ToObject<List<int>>();
+                RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
+                foreach (var portalExit in portalExits)
+                {
+                    RandoPortalManager.PortalMapping.Add(new RandoPortalManager.Portal(portalExit));
+                }
+
+                if (slotData.TryGetValue("transitions", out var transitions))
+                {
+                    RandoLevelManager.RandoLevelMapping =
+                        new Dictionary<string, LevelConstants.RandoLevel>();
+                    var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
+                    foreach (var pairing in transitionPairs)
+                    {
+                        var orig = LevelConstants.TransitionNames[pairing[0]];
+                        var replacement =
+                            LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
+                        RandoLevelManager.RandoLevelMapping[orig] = replacement;
+                    }
+                }
+            }
+            else
+            {
+                RandoPortalManager.StartingPortals = new List<string>
+                {
+                    "AutumnHillsPortal",
+                    "RiviereTurquoisePortal",
+                    "HowlingGrottoPortal",
+                    "SunkenShrinePortal",
+                    "SearingCragsPortal",
+                    "GlacialPeakPortal",
+                };
+            }
         }
 
         private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)
         {
             Instance.ScoutedLocations = new Dictionary<long, NetworkItem>();
+            Console.WriteLine("scouting done");
             foreach (var networkItem in scoutedLocationInfo.Locations)
             {
-                // janky workaround due to scouted locations all having a player of 1 for some reason?
                 var item = networkItem;
-                item.Player = ArchipelagoClient.Session.ConnectionInfo.Slot;
                 Instance.ScoutedLocations.Add(item.Location, item);
             }
 
@@ -91,12 +137,19 @@ namespace MessengerRando.Utils
         public static bool IsSafeTeleportState()
         {
             //Unsafe teleport states are shops/hq/boss fights
-            return !(Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
-                     Manager<Shop>.Instance.gameObject.activeInHierarchy ||
-                     Manager<GameManager>.Instance.IsCutscenePlaying() ||
-                     Manager<PlayerManager>.Instance.Player.IsInvincible() ||
-                     Manager<PlayerManager>.Instance.Player.InputBlocked() ||
-                     Manager<PlayerManager>.Instance.Player.IsKnockedBack);
+            try
+            {
+                return !(Manager<TotHQ>.Instance.root.gameObject.activeInHierarchy ||
+                         Manager<Shop>.Instance.gameObject.activeInHierarchy ||
+                         Manager<GameManager>.Instance.IsCutscenePlaying() ||
+                         Manager<PlayerManager>.Instance.Player.IsInvincible() ||
+                         Manager<PlayerManager>.Instance.Player.InputBlocked() ||
+                         Manager<PlayerManager>.Instance.Player.IsKnockedBack);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -116,7 +169,8 @@ namespace MessengerRando.Utils
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
                 if (locationID == 0) return false;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
-                return ArchipelagoClient.Session.Locations.AllLocations.Contains(locationID);
+                return ArchipelagoClient.ServerData.ScoutedLocations.ContainsKey(locationID) ||
+                       ArchipelagoClient.ServerData.LocationData.ContainsKey(locationID);
             }
             catch (Exception e)
             {
@@ -132,6 +186,183 @@ namespace MessengerRando.Utils
                    ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID);
         }
 
+        public static void InitializeNewSecondQuest(SaveGameSelectionScreen saveScreen, int slot)
+        {
+            // create a fresh save slot
+            var saveManager = Manager<SaveManager>.Instance;
+            saveManager.SelectSaveGameSlot(slot);
+            saveManager.NewGame();
+            saveManager.GetCurrentSaveGameSlot().SlotName = ArchipelagoClient.ServerData.SlotName;
+            // add everything to the various managers that we need for our save slot, following the order in SaveGameSlot.UpdateSaveGameData()
+            var progManager = Manager<ProgressionManager>.Instance;
+            progManager.lastSaveTime = Time.time;
+            progManager.checkpointSaveInfo = new CheckpointSaveInfo
+            {
+                mana = 0,
+                loadedLevelDimension = EBits.BITS_16,
+                playerLocationDimension = EBits.BITS_16,
+                loadedLevelName = ELevel.Level_02_AutumnHills.ToString(),
+                playerLocationSceneName = ELevel.Level_13_TowerOfTimeHQ.ToString(),
+                loadedLevelPlayerPosition = new Vector3(485.03f, -101.5f, 0f),
+                loadedLevelCheckpointIndex = -1,
+                playerFacingDirection = 1
+            };
+            var flagsToSet = new[]
+            {
+                "CloudStepTutorialDone", "RuxxtinEncounter_1", "RuxxtinEncounter_2", "ManfredChase_1_Done",
+                "ManfredChase_2_Done", "ManfredChase_3_Done", "TOTHQ_SmallMageFirstInterractionDone"
+            };
+            foreach (var flag in flagsToSet)
+            {
+                progManager.SetFlag(flag, false);
+            }
+
+            var invManager = Manager<InventoryManager>.Instance;
+            invManager.ItemQuantityByItemId.Add(EItems.SCROLL_UPGRADE, 1);
+            invManager.ItemQuantityByItemId.Add(EItems.TIME_SHARD, 0);
+            invManager.ItemQuantityByItemId.Add(EItems.MAP, 1);
+            invManager.ItemQuantityByItemId.Add(EItems.CLIMBING_CLAWS, 1);
+            invManager.AllTimeItemQuantityByItemId = invManager.ItemQuantityByItemId;
+            
+            progManager.secondQuest = true;
+            // var discoveredLevels = new List<ELevel>
+            // {
+            //     ELevel.Level_01_NinjaVillage,
+            //     ELevel.Level_02_AutumnHills,
+            //     ELevel.Level_03_ForlornTemple,
+            //     ELevel.Level_04_Catacombs,
+            //     ELevel.Level_06_A_BambooCreek,
+            //     ELevel.Level_05_A_HowlingGrotto,
+            //     ELevel.Level_07_QuillshroomMarsh,
+            //     ELevel.Level_08_SearingCrags,
+            //     ELevel.Level_09_A_GlacialPeak,
+            //     ELevel.Level_10_A_TowerOfTime,
+            //     ELevel.Level_11_A_CloudRuins,
+            //     ELevel.Level_12_UnderWorld,
+            //     ELevel.Level_13_TowerOfTimeHQ,
+            //     ELevel.Level_04_C_RiviereTurquoise,
+            //     ELevel.Level_05_B_SunkenShrine,
+            // };
+            // progManager.levelsDiscovered.AddRange(discoveredLevels);
+            // progManager.allTimeDiscoveredLevels.AddRange(discoveredLevels);
+            progManager.isLevelDiscoveredAwarded = true;
+            
+            var skipCutscenes = new List<string>
+            {
+                "MessengerCutScene",
+                "CloudStepIntroCutScene",
+                "NinjaVillageElderCutScene",
+                "DemonGeneralCutScene",
+                "NinjaVillageIntroEndCutScene",
+                // "LeafGolemIntroCutScene",
+                // "LeafGolemOutroCutScene",
+                // "NecrophobicWorkerCutscene",
+                // "NecromancerIntroCutscene",
+                // "NecromancerOutroCutscene",
+                // "HowlingGrottoBossIntroCutscene",
+                // "HowlingGrottoBossOutroCutscene",
+                // "HowlingGrottoToQuillshroomFirstQuestCutScene",
+                // "QuillshroomMarshBossIntroCutscene",
+                // "QuillshroomMarshBossOutroCutscene",
+                // "SearingCragsBossIntroCutscene",
+                // "SearingCragsBossOutroCutscene",
+                // "SearagToGlacialPeakEntranceCutscene",
+                // "GlacialPeakTowerOfTimeCutscene",
+                // "GlacialPeakTowerOutCutscene",
+                // "QuibbleIntroCutscene",
+                // "TowerOfTimeBossIntroCutscene",
+                // "TowerOfTimeBossOutroCutscene",
+                // "Teleport16BitsRoomCutscene",
+                // "To16BitsCutscene",
+                // "TowerOfTimeTeleportToCloudRuinsCutscene",
+                // "CloudRuinsTowerEntranceCutscene",
+                // "ManfredBossIntroCutscene",
+                // "ManfredBossOutroCutscene",
+                // "DemonGeneralBossIntroCutscene",
+                // "DemonGeneralBossOutroCutscene",
+                // "UnderworldManfredEscapeCutscene",
+                "FutureMessengerCutscene",
+                "SecondQuestStartShopCutscene",
+                "ArmoireOpeningCutscene",
+                "DialogCutscene",
+                "GoToTotMageDialog",
+                "ProphetIntroCutscene",
+                "ProphetHeyCutscene",
+                // "PortalOpeningCutscene",
+                "ExitPortalAwardMapCutscene",
+            };
+            progManager.cutscenesPlayed.AddRange(skipCutscenes);
+
+            progManager.actionSequenceDone.AddRange(new []{
+                "AwardGrimplouSequence(Clone)",
+                "AwardGlidouSequence(Clone)",
+                "AwardGraplouSequence(Clone)"
+            });
+            // copy everything from the managers to the save slot
+            saveManager.GetCurrentSaveGameSlot().UpdateSaveGameData();
+            saveManager.Save();
+            try
+            {
+                saveScreen.OnLoadGame(slot);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        public static void StartOfflineSeed()
+        {
+            if (ItemsAndLocationsHandler.ItemsLookup == null)
+                ItemsAndLocationsHandler.Initialize();
+            var filePath = Directory.GetCurrentDirectory() + "\\Archipelago\\output";
+            DateTime latestTime = new DateTime();
+            string gameFile = "";
+            foreach (var file in Directory.GetFiles(filePath))
+            {
+                if (File.GetCreationTime(file) > latestTime && file.EndsWith("aptm"))
+                {
+                    latestTime = File.GetCreationTime(file);
+                    gameFile = file;
+                }
+            }
+
+            if (gameFile.IsNullOrEmpty())
+            {
+                Console.WriteLine("unable to find file");
+                return;
+            }
+
+            try
+            {
+                var fileData = File.ReadAllText(gameFile);
+                var gameData = JObject.Parse(fileData);
+                ArchipelagoClient.ServerData = new ArchipelagoData();
+                ArchipelagoClient.ServerData.StartNewSeed();
+                var fileNameParts = gameFile.Split('_');
+                foreach (var part in fileNameParts)
+                {
+                    if (!double.TryParse(part, out var num)) continue;
+                    ArchipelagoClient.ServerData.SeedName = part;
+                    break;
+                }
+
+                ArchipelagoClient.ServerData.Uri = "offline";
+                ArchipelagoClient.ServerData.SlotName = gameData["name"].ToObject<string>();
+                Console.WriteLine("casting slot data");
+                ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
+                Console.WriteLine("casting loc data");
+                ArchipelagoClient.ServerData.ScoutedLocations = new Dictionary<long, NetworkItem>();
+                ArchipelagoClient.ServerData.LocationData =
+                    gameData["loc_data"].ToObject<Dictionary<long, Dictionary<string, List<long>>>>();
+                ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
+                InitializeSeed();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
         public static int ReceivedItemsCount()
         {
             return ArchipelagoClient.ServerData.ReceivedItems.Sum(item => item.Value);

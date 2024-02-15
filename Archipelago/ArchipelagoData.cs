@@ -25,6 +25,7 @@ namespace MessengerRando.Archipelago
         public List<long> CheckedLocations;
         public Dictionary<long, int> ReceivedItems;
         public Dictionary<long, NetworkItem> ScoutedLocations;
+        public Dictionary<long, Dictionary<string, List<long>>> LocationData;
 
         public void StartNewSeed()
         {
@@ -34,7 +35,6 @@ namespace MessengerRando.Archipelago
             DefeatedBosses = new List<string>();
             CheckedLocations = new List<long>();
             ReceivedItems = new Dictionary<long, int>();
-            //if we aren't able to create a save file fail here
         }
         
         public override string ToString()
@@ -44,18 +44,21 @@ namespace MessengerRando.Archipelago
 
         public static bool LoadData(int slot)
         {
+            if (ArchipelagoClient.offline) return false;
             Console.WriteLine($"Loading Archipelago data for slot {slot}");
             if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
             return ArchipelagoClient.ServerData.loadData(slot);
         }
 
+        // ReSharper disable once InconsistentNaming
         private bool loadData(int slot)
         {
             if (!RandomizerStateManager.Instance.APSave.TryGetValue(slot, out var tempServerData) ||
-                string.IsNullOrEmpty(tempServerData.SlotName))
+                tempServerData.SeedName == null || tempServerData.SeedName.Equals("Unknown"))
                 return false;
             try
             {
+                var i = 0;
                 if (ArchipelagoClient.Authenticated)
                 {
                     //we're already connected to an archipelago server so check if the file is valid
@@ -74,10 +77,15 @@ namespace MessengerRando.Archipelago
                         ThreadPool.QueueUserWorkItem(o =>
                             ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                                 CheckedLocations.ToArray()));
-                        if (ArchipelagoClient.ItemQueue.Count <= 0) return true;
-                        for (var i = 0; i < Index; i++)
+                        while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)
                         {
+                            if (!ArchipelagoClient.Session.Items.AllItemsReceived[i].Player
+                                    .Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+                            {
+                                ArchipelagoClient.DialogQueue.Dequeue();
+                            }
                             ArchipelagoClient.ItemQueue.Dequeue();
+                            i += 1;
                         }
                         return true;
                     }
@@ -98,16 +106,27 @@ namespace MessengerRando.Archipelago
                 ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
                 RandomizerStateManager.Instance.ScoutedLocations = 
                     ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
+                SlotData = tempServerData.SlotData;
+                LocationData = tempServerData.LocationData;
 
                 //Attempt to connect to the server and save the new data
-                Debug.Log("Rando save found! Attempting to connect...");
-                ArchipelagoClient.Connect();
-                if (ArchipelagoClient.ItemQueue.Count > 0)
+                Console.WriteLine("Rando save found!");
+                if (Uri == "offline")
                 {
-                    for (var i = 0; i < Index; i++)
+                    Console.WriteLine("continuing offline seed");
+                    RandomizerStateManager.InitializeSeed();
+                    return ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
+                }
+                ArchipelagoClient.Connect();
+                while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)
+                {
+                    if (!ArchipelagoClient.Session.Items.AllItemsReceived[i].Player
+                            .Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
                     {
-                        ArchipelagoClient.ItemQueue.Dequeue();
+                        ArchipelagoClient.DialogQueue.Dequeue();
                     }
+                    ArchipelagoClient.ItemQueue.Dequeue();
+                    i += 1;
                 }
                 return ArchipelagoClient.HasConnected = true;
             }
@@ -115,17 +134,6 @@ namespace MessengerRando.Archipelago
             {
                 Console.WriteLine(ex.ToString());
                 return false; 
-            }
-        }
-
-        public static void ClearData()
-        {
-            for (int slot = 0; slot <= 3; slot++)
-            {
-                var filePath = Application.persistentDataPath + "ArchipelagoSlot{slot}.map";
-                if (File.Exists(filePath)) { File.Delete(filePath); }
-                var nextPath = Application.persistentDataPath + $"/ArchipelagoSlot{slot}.map";
-                if (File.Exists(nextPath)) { File.Delete(nextPath); }
             }
         }
     }

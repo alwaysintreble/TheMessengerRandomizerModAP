@@ -1,62 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using MessengerRando.Archipelago;
-using MessengerRando.Overrides;
-using MessengerRando.Utils;
-using MessengerRando.RO;
-using Mod.Courier;
-using Mod.Courier.Module;
-using Mod.Courier.UI;
-using MonoMod.Cil;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using static Mod.Courier.UI.TextEntryButtonInfo;
-using TMPro;
+using System.Globalization;
 using System.Linq;
+using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
+using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
+using MessengerRando.Overrides;
+using MessengerRando.RO;
+using MessengerRando.Utils;
+using MessengerRando.Utils.Constants;
+using Mod.Courier;
+using Mod.Courier.Module;
+using MonoMod.Cil;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 using WebSocketSharp;
+using static Mod.Courier.UI.TextEntryButtonInfo;
+using Object = UnityEngine.Object;
 
 namespace MessengerRando 
 {
     /// <summary>
     /// Where it all begins! This class defines and injects all the necessary for the mod.
     /// </summary>
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class APRandomizerMain : CourierModule
     {
         private float updateTimer;
         private float updateTime = 3.0f;
-        private bool clearedData = false;
 
         private RandomizerStateManager randoStateManager;
-
-        TextEntryButtonInfo resetRandoSaveFileButton;
-  
-        SubMenuButtonInfo versionButton;
-        SubMenuButtonInfo seedNumButton;
-
-        SubMenuButtonInfo windmillShurikenToggleButton;
-        SubMenuButtonInfo teleportToHqButton;
-        SubMenuButtonInfo teleportToNinjaVillage;
-        SubMenuButtonInfo shuffleMusicButton;
-
-        //Archipelago buttons
-        SubMenuButtonInfo archipelagoHostButton;
-        SubMenuButtonInfo archipelagoPortButton;
-        SubMenuButtonInfo archipelagoNameButton;
-        SubMenuButtonInfo archipelagoPassButton;
-        SubMenuButtonInfo archipelagoConnectButton;
-        SubMenuButtonInfo archipelagoReleaseButton;
-        SubMenuButtonInfo archipelagoCollectButton;
-        SubMenuButtonInfo archipelagoHintButton;
-        SubMenuButtonInfo archipelagoToggleMessagesButton;
-        SubMenuButtonInfo archipelagoToggleFilterMessagesButton;
-        SubMenuButtonInfo archipelagoToggleHintPopupButton;
-        SubMenuButtonInfo archipelagoStatusButton;
-        SubMenuButtonInfo archipelagoDeathLinkButton;
-        SubMenuButtonInfo archipelagoMessageTimerButton;
 
         private TextMeshProUGUI apTextDisplay8;
         private TextMeshProUGUI apTextDisplay16;
@@ -65,154 +41,313 @@ namespace MessengerRando
 
         //Set up save data
         public override Type ModuleSaveType => typeof(RandoSave);
+        // ReSharper disable once MemberCanBePrivate.Global
         public RandoSave Save => (RandoSave)ModuleSave;
 
         public override void Load()
         {
             Console.WriteLine("Randomizer loading and ready to try things!");
-          
+
             //Initialize the randomizer state manager
             randoStateManager = new RandomizerStateManager();
 
-            //Add Randomizer Version button
-            versionButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(),
-                null);
-
-            //Add current seed number button
-            seedNumButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => "Current seed number: " + GetCurrentSeedNum(),
-                null);
-
-            //Add Reset rando mod button
-            resetRandoSaveFileButton = Courier.UI.RegisterTextEntryModOptionButton(
-                () => "Reset Randomizer File Slot", OnRandoFileResetConfirmation,
-                1,
-                () => "Are you sure you wish to reset your save file for randomizer play?(y/n)",
-                () => "n",
-                CharsetFlags.Letter);
-
-            //Add windmill shuriken toggle button
-            windmillShurikenToggleButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => Manager<ProgressionManager>.Instance.useWindmillShuriken
-                    ? "Active Regular Shurikens"
-                    : "Active Windmill Shurikens",
-                OnToggleWindmillShuriken);
-
-            //Add teleport to HQ button
-            teleportToHqButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => "Teleport to HQ",
-                OnSelectTeleportToHq);
-
-            //Add teleport to Ninja Village button
-            teleportToNinjaVillage = Courier.UI.RegisterSubMenuModOptionButton(
-                () => "Teleport to Ninja Village",
-                OnSelectTeleportToNinjaVillage);
-
-            //Add Archipelago host button
-            archipelagoHostButton = Courier.UI.RegisterTextEntryModOptionButton(
-                () => "Enter Archipelago Host Name",
-                OnSelectArchipelagoHost,
-                30,
-                () => "Enter the Archipelago host name.",
-                () => ArchipelagoClient.ServerData?.Uri,
-                CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter
-                | CharsetFlags.Number | CharsetFlags.Space);
-
-            //Add Archipelago port button
-            archipelagoPortButton = Courier.UI.RegisterTextEntryModOptionButton(
-                () => "Enter Archipelago Port",
-                OnSelectArchipelagoPort,
-                5,
-                () => "Enter the port for the Archipelago session",
-                () => ArchipelagoClient.ServerData?.Port.ToString(),
-                CharsetFlags.Number);
-
-            //Add archipelago name button
-            archipelagoNameButton = Courier.UI.RegisterTextEntryModOptionButton(
-                () => "Enter Archipelago Slot Name", OnSelectArchipelagoName,
-                16,
-                () => "Enter player name:",
-                () => ArchipelagoClient.ServerData?.SlotName,
-                CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter
-                | CharsetFlags.Number | CharsetFlags.Space);
-
-            //Add archipelago password button
-            archipelagoPassButton = Courier.UI.RegisterTextEntryModOptionButton(
-                () => "Enter Archipelago Password", OnSelectArchipelagoPass,
-                30,
-                () => "Enter session password:",
-                () => ArchipelagoClient.ServerData?.Password);
-
-            //Add Archipelago connection button
-            archipelagoConnectButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => "Connect to Archipelago",
-                OnSelectArchipelagoConnect);
-
-            //Add Archipelago status button
-            archipelagoStatusButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => ArchipelagoClient.DisplayStatus
-                    ? "Hide status information"
-                    : "Display status information",
-                OnToggleAPStatus);
+            BuildArchipelagoMenu();
             
-            //Add Archipelago message button
-            archipelagoToggleMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => ArchipelagoClient.DisplayAPMessages
-                    ? "Hide server messages"
-                    : "Display server messages",
-                OnToggleAPMessages);
+            void BuildArchipelagoMenu()
+            {
+                ArchipelagoMenu.ArchipelagoMenuButton =
+                    Courier.UI.RegisterSubMenuOptionButton(
+                        () => "Archipelago Randomizer",
+                        ArchipelagoMenu.DisplayArchipelagoMenu);
+
+                // These should always be visible
+                ArchipelagoMenu.VersionButton =
+                    ArchipelagoMenu.RegisterSubRandoButton(
+                        () => "Messenger AP Randomizer: v" + ItemRandomizerUtil.GetModVersion(),
+                        null);
+                ArchipelagoMenu.VersionButton.IsEnabled = () => true;
+                
+                // only visible while actually in the game
+                //Add current seed number button
+                ArchipelagoMenu.SeedNumButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => "Current seed number: " + GetCurrentSeedNum(),
+                    null);
+                ArchipelagoMenu.SeedNumButton.IsEnabled = () =>
+                    ArchipelagoClient.HasConnected && Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
+
+                // these should only be visible from the main menu
+                //Add Archipelago host button
+                ArchipelagoMenu.ArchipelagoHostButton = ArchipelagoMenu.RegisterTextRandoButton(
+                    () => "Enter Archipelago Host Name",
+                    OnSelectArchipelagoHost,
+                    30,
+                    () => "Enter the Archipelago host name.",
+                    () => ArchipelagoClient.ServerData?.Uri,
+                    CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter
+                    | CharsetFlags.Number | CharsetFlags.Space);
+                ArchipelagoMenu.ArchipelagoHostButton.IsEnabled = () =>
+                    Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
+                
+                //Add Archipelago port button
+                ArchipelagoMenu.ArchipelagoPortButton = ArchipelagoMenu.RegisterTextRandoButton(
+                    () => "Enter Archipelago Port",
+                    OnSelectArchipelagoPort,
+                    5,
+                    () => "Enter the port for the Archipelago session",
+                    () => ArchipelagoClient.ServerData?.Port.ToString(),
+                    CharsetFlags.Number);
+                ArchipelagoMenu.ArchipelagoPortButton.IsEnabled =
+                    () => ArchipelagoClient.HasConnected && !ArchipelagoClient.Authenticated && !ArchipelagoClient.offline &&
+                          Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
+                
+                //Add archipelago name button
+                ArchipelagoMenu.ArchipelagoNameButton = ArchipelagoMenu.RegisterTextRandoButton(
+                    () => "Enter Archipelago Slot Name", OnSelectArchipelagoName,
+                    16,
+                    () => "Enter player name:",
+                    () => ArchipelagoClient.ServerData?.SlotName,
+                    CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter
+                    | CharsetFlags.Number | CharsetFlags.Space);
+                ArchipelagoMenu.ArchipelagoNameButton.IsEnabled = () =>
+                    Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
+                
+                //Add archipelago password button
+                ArchipelagoMenu.ArchipelagoPassButton = ArchipelagoMenu.RegisterTextRandoButton(
+                    () => "Enter Archipelago Password",
+                    OnSelectArchipelagoPass,
+                    30,
+                    () => "Enter session password:",
+                    () => ArchipelagoClient.ServerData?.Password);
+                ArchipelagoMenu.ArchipelagoPassButton.IsEnabled = () =>
+                    Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
+                
+                //Add Archipelago connection button
+                ArchipelagoMenu.ArchipelagoConnectButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => "Connect to Archipelago",
+                    OnSelectArchipelagoConnect);
+                ArchipelagoMenu.ArchipelagoConnectButton.IsEnabled = () =>
+                    Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
+
+                //Add windmill shuriken toggle button
+                ArchipelagoMenu.WindmillShurikenToggleButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => Manager<ProgressionManager>.Instance.useWindmillShuriken
+                        ? "Active Regular Shurikens"
+                        : "Active Windmill Shurikens",
+                    OnToggleWindmillShuriken);
+                ArchipelagoMenu.WindmillShurikenToggleButton.IsEnabled =
+                    () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
+                          ArchipelagoClient.ServerData?.ReceivedItems != null &&
+                          ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(
+                              ItemsAndLocationsHandler.ItemFromEItem(EItems.WINDMILL_SHURIKEN));
+
+                //Add teleport to HQ button
+                ArchipelagoMenu.TeleportToHqButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => "Teleport to HQ",
+                    OnSelectTeleportToHq);
+                ArchipelagoMenu.TeleportToHqButton.IsEnabled = () =>
+                    Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
+                    RandomizerStateManager.IsSafeTeleportState();
+
+                //Add teleport to Ninja Village button
+                ArchipelagoMenu.TeleportToNinjaVillage = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => "Teleport to Ninja Village",
+                    OnSelectTeleportToNinjaVillage);
+                ArchipelagoMenu.TeleportToNinjaVillage.IsEnabled = () =>
+                    Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
+                    Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") &&
+                    RandomizerStateManager.IsSafeTeleportState();
+
+                //Add Archipelago status button
+                ArchipelagoMenu.ArchipelagoStatusButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => ArchipelagoClient.DisplayStatus
+                        ? "Hide status information"
+                        : "Display status information",
+                    OnToggleAPStatus);
+                ArchipelagoMenu.ArchipelagoStatusButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+
+                //Add Archipelago message button
+                ArchipelagoMenu.ArchipelagoToggleMessagesButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => ArchipelagoClient.DisplayAPMessages
+                        ? "Hide server messages"
+                        : "Display server messages",
+                    OnToggleAPMessages);
+                ArchipelagoMenu.ArchipelagoToggleMessagesButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+
+                //Add Archipelago filter messages button
+                ArchipelagoMenu.ArchipelagoToggleFilterMessagesButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => ArchipelagoClient.FilterAPMessages
+                        ? "Show all server messages"
+                        : "Filter messages to only relevant to me",
+                    () => ArchipelagoClient.FilterAPMessages = !ArchipelagoClient.FilterAPMessages);
+                ArchipelagoMenu.ArchipelagoToggleFilterMessagesButton.IsEnabled = () =>
+                    ArchipelagoClient.Authenticated && ArchipelagoClient.DisplayAPMessages;
+
+                //Add Archipelago hint popup button
+                ArchipelagoMenu.ArchipelagoToggleHintPopupButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => ArchipelagoClient.HintPopUps ? "Disable hint popups" : "Enable hint popups",
+                    () => ArchipelagoClient.HintPopUps = !ArchipelagoClient.HintPopUps);
+                ArchipelagoMenu.ArchipelagoToggleHintPopupButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+
+                //Add Archipelago message display timer button
+                ArchipelagoMenu.ArchipelagoMessageTimerButton = ArchipelagoMenu.RegisterTextRandoButton(
+                    () => "AP Message Display Time",
+                    OnSelectMessageTimer,
+                    1,
+                    () => "Enter amount of time to display Archipelago messages, in seconds",
+                    () => updateTime.ToString(CultureInfo.InvariantCulture), CharsetFlags.Number);
+                ArchipelagoMenu.ArchipelagoMessageTimerButton.IsEnabled =
+                    () => ArchipelagoClient.Authenticated && ArchipelagoClient.DisplayStatus;
+
+                ArchipelagoMenu.ShuffleMusicButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => RandoMusicManager.ShuffleMusic
+                        ? "Disable Music Shuffle"
+                        : "Enable Music Shuffle",
+                    () => RandoMusicManager.ShuffleMusic = !RandoMusicManager.ShuffleMusic);
+                ArchipelagoMenu.ShuffleMusicButton.IsEnabled =
+                    () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
+                
+                //Add Archipelago death link button
+                ArchipelagoMenu.ArchipelagoDeathLinkButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => ArchipelagoData.DeathLink
+                        ? "Disable Death Link"
+                        : "Enable Death Link",
+                    OnToggleDeathLink);
+                ArchipelagoMenu.ArchipelagoDeathLinkButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+
+                //Add Archipelago release button
+                ArchipelagoMenu.ArchipelagoReleaseButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => "Release remaining items",
+                    OnSelectArchipelagoRelease);
+                ArchipelagoMenu.ArchipelagoReleaseButton.IsEnabled = ArchipelagoClient.CanRelease;
+
+                //Add Archipelago collect button
+                ArchipelagoMenu.ArchipelagoCollectButton = ArchipelagoMenu.RegisterSubRandoButton(
+                    () => "Collect remaining items",
+                    OnSelectArchipelagoCollect);
+                ArchipelagoMenu.ArchipelagoCollectButton.IsEnabled = ArchipelagoClient.CanCollect;
+            }
+
+            BuildRandoMenu();
+
+            void BuildRandoMenu()
+            {
+                RandoMenu.SoloRandoMenuButton =
+                    Courier.UI.RegisterSubMenuOptionButton(() => "Solo Randomizer", RandoMenu.DisplayRandoMenu);
+                RandoMenu.SoloRandoMenuButton.IsEnabled = () =>
+                    Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.NONE) &&
+                    !ArchipelagoClient.HasConnected;
+
+                RandoMenu.Name = RandoMenu.RegisterTextRandoButton(
+                    () => $"Name: {RandomizerOptions.Name}",
+                    RandomizerOptions.OnNameEntry,
+                    16,
+                    () => "Enter name to be used for generation",
+                    charset: CharsetFlags.Dash | CharsetFlags.Dot | CharsetFlags.Letter |
+                             CharsetFlags.Number | CharsetFlags.Space);
+                
+                RandoMenu.SeedNumButton = RandoMenu.RegisterTextRandoButton(
+                    () => $"Seed: {RandomizerOptions.Seed}",
+                    RandomizerOptions.OnSeedEntry,
+                    20,
+                    () => "Enter seed to be used for generation",
+                    charset: CharsetFlags.Number);
+
+                RandoMenu.SpoilerLevel = RandoMenu.RegisterSubRandoButton(
+                    RandomizerOptions.GetSpoilerText,
+                    RandomizerOptions.ChangeSpoiler);
+                
+                RandoMenu.BlankSpaceOne = RandoMenu.RegisterSubRandoButton(null, null);
+                
+                RandoMenu.Accessibility = RandoMenu.RegisterSubRandoButton(
+                    RandomizerOptions.GetAccessibilityText,
+                    RandomizerOptions.ChangeAccessibility);
+
+                RandoMenu.Logic =
+                    RandoMenu.RegisterSubRandoButton(RandomizerOptions.GetLogicText, RandomizerOptions.ChangeLogic);
+
+                RandoMenu.Shards = RandoMenu.RegisterSubRandoButton(
+                    () => RandomizerOptions.Shards ? "Shuffle Mega Shards" : "No Mega Shards",
+                    () => RandomizerOptions.Shards = !RandomizerOptions.Shards);
+
+                RandoMenu.LimitedMovement = RandoMenu.RegisterSubRandoButton(
+                    () => RandomizerOptions.LimMovement ? "Limited Movement" : "All Movement Available",
+                    () => RandomizerOptions.LimMovement = !RandomizerOptions.LimMovement);
+                
+                RandoMenu.EarlyMed = RandoMenu.RegisterSubRandoButton(
+                    () => RandomizerOptions.EarlyMed ? "Early Meditation" : "No Early Guaranteed Meditation",
+                    () => RandomizerOptions.EarlyMed = !RandomizerOptions.EarlyMed);
+
+                RandoMenu.AvailablePortals = RandoMenu.RegisterSubRandoButton(
+                    RandomizerOptions.GetAvailablePortalsText,
+                    RandomizerOptions.ChangeAvailablePortals);
+
+                RandoMenu.ShufflePortals = RandoMenu.RegisterSubRandoButton(
+                    RandomizerOptions.GetPortalShuffleText,
+                    RandomizerOptions.ChangePortalShuffle);
+
+                RandoMenu.ShuffleTransitions = RandoMenu.RegisterSubRandoButton(
+                    RandomizerOptions.GetTransitionText,
+                    RandomizerOptions.ChangeTransitionShuffle);
+                
+                RandoMenu.Goal = RandoMenu.RegisterSubRandoButton(
+                    () => RandomizerOptions.Goal ? "Power Seal Hunt" : "Open Music Box",
+                    () => RandomizerOptions.Goal = !RandomizerOptions.Goal);
+
+                RandoMenu.MusicBox = RandoMenu.RegisterSubRandoButton(
+                    () => RandomizerOptions.MusicBox ? "Do Music Box" : "Skip Music Box",
+                    () => RandomizerOptions.MusicBox = !RandomizerOptions.MusicBox);
+
+                RandoMenu.NotesNeeded =
+                    RandoMenu.RegisterSubRandoButton(RandomizerOptions.GetNotesText, RandomizerOptions.ChangeNotes);
+
+                RandoMenu.AmountSeals = RandoMenu.RegisterTextRandoButton(
+                    () => $"Total Power Seals Available: {RandomizerOptions.TotalSeals}",
+                    RandomizerOptions.OnTotalSealsEntry,
+                    2,
+                    charset: CharsetFlags.Number);
+
+                RandoMenu.RequiredSeals = RandoMenu.RegisterTextRandoButton(
+                    () => $"Percentage of Seals Required: {RandomizerOptions.RequiredSeals}",
+                    RandomizerOptions.OnRequiredSealsEntry,
+                    3,
+                    charset: CharsetFlags.Number);
+
+                RandoMenu.ShopPrices = RandoMenu.RegisterTextRandoButton(
+                    () => $"Randomized Shop Price Modifier: {RandomizerOptions.ShopPriceMod}",
+                    RandomizerOptions.OnShopPriceModEntry, 
+                    3,
+                    charset: CharsetFlags.Number);
+
+                RandoMenu.BlankSpaceTwo = RandoMenu.RegisterSubRandoButton(null, null);
+                
+                RandoMenu.ExportButton = RandoMenu.RegisterSubRandoButton(
+                    () => "Export Randomizer options",
+                    () => OptionsExporter.ExportAsync(RandoMenu.ExportButton));
+                RandoMenu.GenerateButton = RandoMenu.RegisterSubRandoButton(
+                    () => "Generate solo seed",
+                    () => SeedGenerator.GenerateAsync(RandoMenu.GenerateButton));
+            }
             
-            //Add Archipelago filter messages button
-            archipelagoToggleFilterMessagesButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => ArchipelagoClient.FilterAPMessages
-                    ? "Show all server messages"
-                    : "Filter messages to only relevant to me",
-                () => ArchipelagoClient.FilterAPMessages = !ArchipelagoClient.FilterAPMessages);
-            
-            //Add Archipelago hint popup button
-            archipelagoToggleHintPopupButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => ArchipelagoClient.HintPopUps ? "Disable hint popups" : "Enable hint popups",
-                () => ArchipelagoClient.HintPopUps = !ArchipelagoClient.HintPopUps);
+            BuildHintMenu();
 
-            //Add Archipelago message display timer button
-            archipelagoMessageTimerButton = Courier.UI.RegisterTextEntryModOptionButton(
-                () => "AP Message Display Time",
-                entry => OnSelectMessageTimer(entry),
-                1,
-                () => "Enter amount of time to display Archipelago messages, in seconds",
-                () => updateTime.ToString(), CharsetFlags.Number);
+            void BuildHintMenu()
+            {
+                // HintMenu.ArchipelagoHintMenuButton =
+                //     Courier.UI.RegisterSubMenuOptionButton(() => "Hint Menu", HintMenu.DisplayHintMenu);
+                // HintMenu.ArchipelagoHintMenuButton.IsEnabled = () => ArchipelagoClient.Authenticated;
 
-            //Add Archipelago death link button
-            archipelagoDeathLinkButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => ArchipelagoData.DeathLink
-                    ? "Disable Death Link"
-                    : "Enable Death Link",
-                OnToggleDeathLink);
-
-            //Add Archipelago hint button
-            archipelagoHintButton = Courier.UI.RegisterTextEntryModOptionButton(
-                () => "Hint for an item",
-                OnSelectArchipelagoHint,
-                30,
-                () => "Enter item name:");
-
-            //Add Archipelago release button
-            archipelagoReleaseButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => "Release remaining items",
-                OnSelectArchipelagoRelease);
-
-            //Add Archipelago collect button
-            archipelagoCollectButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => "Collect remaining items",
-                OnSelectArchipelagoCollect);
-
-            shuffleMusicButton = Courier.UI.RegisterSubMenuModOptionButton(
-                () => RandoMusicManager.ShuffleMusic
-                    ? "Disable Music Shuffle"
-                    : "Enable Music Shuffle",
-                () => RandoMusicManager.ShuffleMusic = !RandoMusicManager.ShuffleMusic);
-
+                //Add Archipelago hint button
+                HintMenu.archipelagoHintButton = ArchipelagoMenu.RegisterTextRandoButton(
+                    () => "Hint for an item",
+                    OnSelectArchipelagoHint,
+                    30,
+                    () => "Enter item name:");
+                HintMenu.archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
+            }
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
             On.ProgressionManager.SetChallengeRoomAsCompleted += ProgressionManager_SetChallengeRoomAsCompleted;
@@ -221,13 +356,17 @@ namespace MessengerRando
             On.CutsceneHasPlayed.IsTrue += CutsceneHasPlayed_IsTrue;
             On.SaveGameSelectionScreen.OnLoadGame += SaveGameSelectionScreen_OnLoadGame;
             On.SaveGameSelectionScreen.OnNewGame += SaveGameSelectionScreen_OnNewGame;
+            On.SaveGameSelectionScreen.ConfirmSaveDelete += SaveGameSelectionScreen_ConfirmSaveDelete;
+            On.SaveGameSelectionScreen.OnDeleteChoiceDone += SaveGameSelectionScreen_OnDelete;
             On.BackToTitleScreen.GoBackToTitleScreen += PauseScreen_OnQuitToTitle;
             On.NecrophobicWorkerCutscene.Play += NecrophobicWorkerCutscene_Play;
             IL.RuxxtinNoteAndAwardAmuletCutscene.Play += RuxxtinNoteAndAwardAmuletCutscene_Play;
             On.DialogCutscene.Play += DialogCutscene_Play;
             On.CatacombLevelInitializer.OnBeforeInitDone += CatacombLevelInitializer_OnBeforeInitDone;
             On.DialogManager.LoadDialogs_ELanguage += DialogChanger.LoadDialogs_Elanguage;
-            // // shop management
+            On.OptionScreen.OnEnable += OnOptionScreenEnable;
+            On.LostWoods.SetAsSolved += LostWoodsManager.OnSetAsSolved;
+            // shop management
             On.UpgradeButtonData.GetPrice += RandoShopManager.GetPrice;
             On.BuyMoneyWrenchCutscene.OnBuyWrenchChoice += RandoShopManager.BuyMoneyWrench;
             On.BuyMoneyWrenchCutscene.EndCutsceneOnDialogDone += RandoShopManager.EndMoneyWrenchCutscene;
@@ -237,8 +376,8 @@ namespace MessengerRando
             On.SousSol.UnlockFigurine += RandoShopManager.UnlockFigurine;
             On.Shop.Init += RandoShopManager.ShopInit;
             On.JukeboxTrack.IsUnlocked += (orig, self) => true;
-            On.AudioManager.PlayMusic += RandoMusicManager.OnPlayMusic;
             On.UpgradeButtonData.IsStoryUnlocked += RandoShopManager.IsStoryUnlocked;
+            On.AudioManager.PlayMusic += RandoMusicManager.OnPlayMusic;
             // boss management
             On.ProgressionManager.HasDefeatedBoss +=
                 (orig, self, bossName) => RandoBossManager.HasBossDefeated(bossName);
@@ -248,6 +387,11 @@ namespace MessengerRando
                 (orig, self, bossName) => RandoBossManager.SetBossAsDefeated(bossName);
             // level teleporting etc management
             On.Level.ChangeRoom += RandoRoomManager.Level_ChangeRoom;
+            On.LevelManager.LoadLevel += RandoLevelManager.LoadLevel;
+            On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
+            On.ElementalSkylandsLevelInitializer.OnBeforeInitDone += RandoLevelManager.ElementalSkylandsInit;
+            // On.PortalOpeningCutscene.OnOpenPortalEvent += RandoPortalManager.OpenPortalEvent;
+            On.TotHQ.LeaveToLevel += RandoPortalManager.LeaveHQ;
             //These functions let us override and manage power seals ourselves with 'fake' items
             On.ProgressionManager.TotalPowerSealCollected += ProgressionManager_TotalPowerSealCollected;
             On.ShopChestOpenCutscene.OnChestOpened += (orig, self) =>
@@ -264,66 +408,29 @@ namespace MessengerRando
             // On.MegaTimeShard.ReceiveHit += RandoTimeShardManager.ReceiveHit;
             On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
-            On.LevelManager.EndLevelLoading += RandoLevelManager.EndLevelLoading;
             On.Cutscene.Play += Cutscene_Play;
             //temp add
             #if DEBUG
-            On.InventoryManager.GetItemQuantity += InventoryManager_GetItemQuantity;
             On.PhantomIntroCutscene.OnEnterRoom += PhantomIntro_OnEnterRoom; //this lets us skip the phantom fight
             On.UIManager.ShowView += UIManager_ShowView;
             On.MusicBox.SetNotesState += MusicBox_SetNotesState;
             On.PowerSeal.OnEnterRoom += PowerSeal_OnEnterRoom;
-            On.LevelManager.LoadLevel += RandoLevelManager.LoadLevel;
             #endif
 
             Console.WriteLine("Randomizer finished loading!");
         }
 
+        private void OnOptionScreenEnable(On.OptionScreen.orig_OnEnable orig, OptionScreen self)
+        {
+            RandoSave.TryLoad(Save.APSaveData);
+            orig(self);
+        }
+
         public override void Initialize()
         {
-            //I only want the generate seed/enter seed mod options available when not in the game.
-            resetRandoSaveFileButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE;
-            //Also the AP buttons
-            archipelagoHostButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
-            archipelagoPortButton.IsEnabled = () => !ArchipelagoClient.Authenticated &&
-                                                    (Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE
-                                                    || (Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE
-                                                        && ArchipelagoClient.HasConnected));
-            archipelagoNameButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
-            archipelagoPassButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
-            archipelagoConnectButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE && !ArchipelagoClient.Authenticated;
-
-            //Options I only want working while actually in the game
-            seedNumButton.IsEnabled = () => ArchipelagoClient.HasConnected && randoStateManager.CurrentFileSlot != 0;
-            windmillShurikenToggleButton.IsEnabled = () => ArchipelagoClient.ServerData?.ReceivedItems != null &&
-                                                           ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(
-                                                               ItemsAndLocationsHandler.ItemFromEItem(
-                                                                   EItems.WINDMILL_SHURIKEN));
-            teleportToHqButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
-                                                 RandomizerStateManager.IsSafeTeleportState();
-            teleportToNinjaVillage.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != 
-                ELevel.NONE && Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") && 
-                RandomizerStateManager.IsSafeTeleportState();
-            shuffleMusicButton.IsEnabled = () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
-            
-            //These AP buttons can exist in or out of game
-            archipelagoStatusButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-            archipelagoToggleMessagesButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-            archipelagoToggleFilterMessagesButton.IsEnabled = () =>
-                ArchipelagoClient.Authenticated && ArchipelagoClient.DisplayAPMessages;
-            archipelagoToggleHintPopupButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-            archipelagoDeathLinkButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-            archipelagoMessageTimerButton.IsEnabled = () => ArchipelagoClient.DisplayStatus;
-            archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
-            archipelagoReleaseButton.IsEnabled = ArchipelagoClient.CanRelease;
-            archipelagoCollectButton.IsEnabled = ArchipelagoClient.CanCollect;
-
             #if DEBUG
             SceneManager.sceneLoaded += OnSceneLoadedRando;
             #endif
-            
-            //Options always available
-            versionButton.IsEnabled = () => true;
             
             //load config
             Debug.Log("Loading config from APConfig.toml");
@@ -465,17 +572,6 @@ namespace MessengerRando
             
         }
         
-        int InventoryManager_GetItemQuantity(On.InventoryManager.orig_GetItemQuantity orig, InventoryManager self, EItems item)
-        {
-            //Just doing some logging here
-            if (EItems.NONE.Equals(item))
-            {
-                Console.WriteLine($"INVENTORYMANAGER_GETITEMQUANTITY CALLED! Let's learn some stuff. Item: '{item}' | Quantity of said item: '{orig(self, item)}'");
-            }
-            //Manager<LevelManager>.Instance.onLevelLoaded
-            return orig(self, item);
-        }
-
         bool AwardNoteCutscene_ShouldPlay(On.AwardNoteCutscene.orig_ShouldPlay orig, AwardNoteCutscene self)
         {
             //Need to handle note cutscene triggers so they will play as long as I dont have the actual item it grants
@@ -497,7 +593,7 @@ namespace MessengerRando
             }
             return orig(self);
         }
-
+        
         void SaveGameSelectionScreen_OnLoadGame(On.SaveGameSelectionScreen.orig_OnLoadGame orig, SaveGameSelectionScreen self, int slotIndex)
         {
             //slotIndex is 0-based, going to increment it locally to keep things simple.
@@ -506,8 +602,7 @@ namespace MessengerRando
             //This is probably a bad way to do this
             try
             {
-                if (!clearedData)
-                    RandoSave.TryLoad(Save.APSaveData);
+                RandoSave.TryLoad(Save.APSaveData);
                 if (ArchipelagoData.LoadData(randoStateManager.CurrentFileSlot))
                 {
                     Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
@@ -526,8 +621,19 @@ namespace MessengerRando
                     //We force a reload of all dialog when loading the game
                     try
                     {
-                        Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);   
-                    } catch (Exception e){Console.WriteLine(e);}
+                        Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance
+                            .CurrentLanguage);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+                else if (ArchipelagoClient.offline)
+                {
+                    if (ItemsAndLocationsHandler.ItemsLookup == null)
+                        ItemsAndLocationsHandler.Initialize();
+                    Manager<DialogManager>.Instance.LoadDialogs(Manager<LocalizationManager>.Instance.CurrentLanguage);
                 }
             }
             catch (Exception e)
@@ -543,31 +649,102 @@ namespace MessengerRando
             }
 
             orig(self, slotIndex);
-            RandomizerStateManager.Instance.InGame = true;
             Manager<AudioManager>.Instance.levelMusicShuffle = RandoMusicManager.ShuffleMusic;
             RandoMusicManager.BuildMusicLibrary();
         }
 
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
+            Console.WriteLine("trying to load new game");
+            try
+            {
+                Environment.GetCommandLineArgs();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            if (ArchipelagoClient.Authenticated)
+                RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+            else if (ArchipelagoClient.offline)
+            {
+                try
+                {
+                    RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            else if (Environment.GetCommandLineArgs().Length > 0)
+            {
+                Console.WriteLine("loading new game save... found command line args");
+                foreach (var arg in Environment.GetCommandLineArgs())
+                {
+                    Console.WriteLine(arg);
+                    if (!arg.Contains("archipelago")) continue;
+                    var uri = new Uri(arg);
+                    ArchipelagoClient.ServerData = new ArchipelagoData();
+                    var userInfo = uri.UserInfo.Split(':');
+                    ArchipelagoClient.ServerData.SlotName = userInfo[0];
+                    ArchipelagoClient.ServerData.Password = userInfo[1] == "None" ? "" : userInfo[1];
+                    ArchipelagoClient.ServerData.Uri = uri.Host;
+                    ArchipelagoClient.ServerData.Port = uri.Port;
+                    Console.WriteLine(ArchipelagoClient.ServerData.SlotName);
+                    Console.WriteLine(ArchipelagoClient.ServerData.Password);
+                    Console.WriteLine(ArchipelagoClient.ServerData.Uri);
+                    Console.WriteLine(ArchipelagoClient.ServerData.Port);
+                    var result = ArchipelagoClient.Connect();
+                    if (ArchipelagoClient.Authenticated)
+                    {
+                        RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
+                        return;
+                    }
+                    break;
+                }
+                orig(self, slot);
+            }
+            else
+                orig(self, slot);
+        }
+
+        private void SaveGameSelectionScreen_ConfirmSaveDelete(On.SaveGameSelectionScreen.orig_ConfirmSaveDelete orig, SaveGameSelectionScreen self, SaveSlotUI slot)
+        {
+            randoStateManager.CurrentFileSlot = slot.slotIndex + 1;
             orig(self, slot);
         }
 
+        private void SaveGameSelectionScreen_OnDelete(On.SaveGameSelectionScreen.orig_OnDeleteChoiceDone orig, SaveGameSelectionScreen self, bool delete)
+        {
+            if (delete)
+            {
+                RandoSave.TryLoad(Save.APSaveData);
+                randoStateManager.APSave[randoStateManager.CurrentFileSlot] = new ArchipelagoData();
+                Save?.ForceUpdate();
+            }
+            orig(self, delete);
+        }
+        
         void PauseScreen_OnQuitToTitle(On.BackToTitleScreen.orig_GoBackToTitleScreen orig)
         {
             if (ArchipelagoClient.HasConnected)
             {
                 ArchipelagoClient.Disconnect();
                 ArchipelagoClient.HasConnected = false;
+                ArchipelagoClient.offline = false;
                 RandoBossManager.DefeatedBosses = new List<string>();
+                RandoPortalManager.StartingPortals = new List<string>();
+                RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
+                RandoLevelManager.RandoLevelMapping =
+                    new Dictionary<string, LevelConstants.RandoLevel>();
+                Manager<ProgressionManager>.Instance.powerSealTotal = 0;
             }
             randoStateManager = new RandomizerStateManager();
             ArchipelagoClient.ServerData = new ArchipelagoData();
-            
-            clearedData = false;
             orig();
             Console.WriteLine("returned to title");
-            RandomizerStateManager.Instance.InGame = false;
+            Manager<UIManager>.Instance.GetView<InGameHud>().UpdateShurikenVisibility();
         }
 
         //Fixing necro cutscene check
@@ -592,10 +769,11 @@ namespace MessengerRando
         }
 
         // Breaking into Necro cutscene to fix things
-        void NecrophobicWorkerCutscene_Play(On.NecrophobicWorkerCutscene.orig_Play orig, NecrophobicWorkerCutscene self)
+        private static void NecrophobicWorkerCutscene_Play(On.NecrophobicWorkerCutscene.orig_Play orig, NecrophobicWorkerCutscene self)
         {
             //Cutscene moves Ninja around, lets see if i can stop it by making that "location" the current location the player is.
-            self.playerStartPosition = UnityEngine.Object.FindObjectOfType<PlayerController>().transform;
+            if (ArchipelagoClient.HasConnected)
+                self.playerStartPosition = Object.FindObjectOfType<PlayerController>().transform;
             orig(self);
         }
 
@@ -630,7 +808,22 @@ namespace MessengerRando
 #if DEBUG
             Console.WriteLine($"Playing cutscene: {eventName}");
 #endif
-            if (ArchipelagoClient.EventsICareAbout.Contains(eventName))
+            if (eventName == "PortalOpeningCutscene")
+            {
+                if (RandoPortalManager.StartingPortals != null)
+                {
+                    var progManager = Manager<ProgressionManager>.Instance;
+                    foreach (var portal in RandoPortalManager.StartingPortals.Where(
+                                 portal => !portal.StartsWith("Autumn")
+                                           && !portal.StartsWith("Howling")
+                                           && !portal.StartsWith("Glacial")))
+                    {
+                        var cutsceneName = $"{portal.Replace(" ", "")}OpeningCutscene";
+                        progManager.cutscenesPlayed.Add(cutsceneName);
+                    }
+                }
+            }
+            if (ArchipelagoClient.EventsICareAbout.Contains(eventName) && ArchipelagoClient.Authenticated)
             {
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"] +=
                     new List<string> { eventName };
@@ -644,7 +837,7 @@ namespace MessengerRando
             if (randoStateManager.SkipPhantom)
             {
                 Manager<AudioManager>.Instance.StopMusic();
-                UnityEngine.Object.FindObjectOfType<PhantomOutroCutscene>().Play();
+                Object.FindObjectOfType<PhantomOutroCutscene>().Play();
             }
             else
             {
@@ -686,83 +879,36 @@ namespace MessengerRando
             // this determines which notes should be shown present in the music box
             orig(self);
         }
-
-        bool OnRandoFileResetConfirmation(string answer)
-        {
-            
-            if(!"y".Equals(answer.ToLowerInvariant()))
-            {
-                return true;
-            }
-
-            ArchipelagoData.ClearData();
-            randoStateManager = new RandomizerStateManager();
-            clearedData = true;
-            try
-            {
-                Save.APSaveData = RandoSave.GetSaveData();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            string path = Application.persistentDataPath + "/SaveGame.txt";
-            using (StreamWriter sw = File.CreateText(path))
-            {
-                sw.WriteLine(RandomizerConstants.SAVE_FILE_STRING);
-            }
-            
-            Manager<SaveManager>.Instance.LoadSaveGame();
-            //Delete the existing save file selection ui since it really wants to hold on to the previous saves data.
-            GameObject.Destroy(Manager<UIManager>.Instance.GetView<SaveGameSelectionScreen>().gameObject);
-            //Reinit the save file selection ui.
-            SaveGameSelectionScreen selectionScreen = Manager<UIManager>.Instance.ShowView<SaveGameSelectionScreen>(EScreenLayers.MAIN, null, false, AnimatorUpdateMode.Normal);
-            selectionScreen.GoOffscreenInstant();
-
-            return true;
-        }
-
+        
         public static void OnToggleWindmillShuriken()
         {
-            //Toggle Shuriken
             Manager<ProgressionManager>.Instance.useWindmillShuriken = !Manager<ProgressionManager>.Instance.useWindmillShuriken;
-            //Update UI
             InGameHud view = Manager<UIManager>.Instance.GetView<InGameHud>();
             if (view != null)
-            {
                 view.UpdateShurikenVisibility();
-            }
         }
 
         void OnSelectTeleportToHq()
         {
+            Console.WriteLine("Teleporting to HQ!");       
+#if DEBUG
+            var position = Manager<PlayerManager>.Instance.Player.transform.position;
+            Console.WriteLine($"{position.x} {position.y} {position.z}");
+#endif
+            ArchipelagoMenu.archipelagoScreen.Close(false);
 
-            //Properly close out of the mod options and get the game state back together
-            Manager<PauseManager>.Instance.Resume();
-            Manager<UIManager>.Instance.GetView<OptionScreen>().Close(false);                
-            Console.WriteLine("Teleporting to HQ!");
-            Courier.UI.ModOptionScreen.Close(false);
-
-            //Fade the music out because musiception is annoying
-            Manager<AudioManager>.Instance.FadeMusicVolume(1f, 0f, true);
-
+            RandoLevelManager.CleanupBeforeTeleport();
             //Load the HQ
-            Manager<TowerOfTimeHQManager>.Instance.TeleportInToTHQ(true, ELevelEntranceID.ENTRANCE_A, null, null, true);
+            Manager<TowerOfTimeHQManager>.Instance.TeleportInToTHQ(true, ELevelEntranceID.ENTRANCE_A, null);
         }
 
         void OnSelectTeleportToNinjaVillage()
         {
-            Console.WriteLine("Attempting to teleport to Ninja Village.");
-            
-            // Properly close out of the mod options and get the game state back together
-            Manager<PauseManager>.Instance.Resume();
-            Manager<UIManager>.Instance.GetView<OptionScreen>().Close(false);
-            Courier.UI.ModOptionScreen.Close(false);
+            Console.WriteLine("Teleporting to Ninja Village.");
+            ArchipelagoMenu.archipelagoScreen.Close(false);
             EBits dimension = Manager<DimensionManager>.Instance.currentDimension;
 
-            //Fade the music out because musiception is annoying
-            Manager<AudioManager>.Instance.FadeMusicVolume(1f, 0f, true);
-
+            RandoLevelManager.CleanupBeforeTeleport();
             //Load to Ninja Village
             Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition = new Vector2(-153.3f, -56.5f);
             LevelLoadingInfo levelLoadingInfo = new LevelLoadingInfo("Level_01_NinjaVillage_Build", false, true, LoadSceneMode.Single, ELevelEntranceID.NONE, dimension);
@@ -806,19 +952,19 @@ namespace MessengerRando
         void OnSelectArchipelagoConnect()
         {
             if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
-            if (ArchipelagoClient.ServerData.SlotName.IsNullOrEmpty())
+            if (!UserConfig.SlotName.IsNullOrEmpty())
             {
-                if (!UserConfig.SlotName.IsNullOrEmpty())
-                {
-                    ArchipelagoClient.ServerData.Uri = UserConfig.HostName;
-                    ArchipelagoClient.ServerData.Port = UserConfig.Port;
-                    ArchipelagoClient.ServerData.SlotName = UserConfig.SlotName;
-                    ArchipelagoClient.ServerData.Password = UserConfig.Password;
-                }
+                ArchipelagoClient.ServerData.Uri = UserConfig.HostName;
+                ArchipelagoClient.ServerData.Port = UserConfig.Port;
+                ArchipelagoClient.ServerData.SlotName = UserConfig.SlotName;
+                ArchipelagoClient.ServerData.Password = UserConfig.Password;
+            }
+            else if (ArchipelagoClient.ServerData.SlotName.IsNullOrEmpty())
+            {
                 return;
             }
             
-            ArchipelagoClient.ConnectAsync(archipelagoConnectButton);
+            ArchipelagoClient.ConnectAsync(ArchipelagoMenu.ArchipelagoConnectButton);
         }
 
         void OnSelectArchipelagoRelease()
@@ -870,10 +1016,7 @@ namespace MessengerRando
         /// <returns></returns>
         private EItems GetRandoItemByItem(EItems item)
         {
-            if (!randoStateManager.IsLocationRandomized(item, out var ruxxAmuletLocation)) return item;
-            Console.WriteLine($"IL Wackiness -- Checking for Item '{item}' | Rando item to return '{randoStateManager.ScoutedLocations[ruxxAmuletLocation].Item}'");
-
-            return EItems.POTION;
+            return !randoStateManager.IsLocationRandomized(item, out var ruxxAmuletLocation) ? item : EItems.POTION;
         }
 
         private string GetCurrentSeedNum()
@@ -896,10 +1039,10 @@ namespace MessengerRando
         private void PlayerController_OnUpdate(PlayerController controller)
         {
             if (!ArchipelagoClient.HasConnected || randoStateManager.CurrentFileSlot == 0) return;
-            ArchipelagoClient.DeathLinkHandler.Player = controller;
-            if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused)
+            if (ArchipelagoClient.Authenticated && ArchipelagoClient.DeathLinkHandler.Player == null)
+                ArchipelagoClient.DeathLinkHandler.Player = controller;
+            if (RandomizerStateManager.IsSafeTeleportState() && !Manager<PauseManager>.Instance.IsPaused && ArchipelagoClient.Authenticated)
                 ArchipelagoClient.DeathLinkHandler.KillPlayer();
-            // ItemsAndLocationsHandler.UnlockItems();
             //This updates every {updateTime} seconds
             updateTimer += Time.deltaTime;
             if (!(updateTimer >= updateTime)) return;
@@ -915,8 +1058,8 @@ namespace MessengerRando
             orig(self);
             if (apTextDisplay8 == null)
             {
-                apTextDisplay8 = UnityEngine.Object.Instantiate(self.hud_8.coinCount, self.hud_8.gameObject.transform);
-                apTextDisplay16 = UnityEngine.Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
+                apTextDisplay8 = Object.Instantiate(self.hud_8.coinCount, self.hud_8.gameObject.transform);
+                apTextDisplay16 = Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
                 apTextDisplay8.transform.Translate(0f, -110f, 0f);
                 apTextDisplay16.transform.Translate(0f, -110f, 0f);
                 apTextDisplay16.fontSize = apTextDisplay8.fontSize = UserConfig.StatusTextSize;
@@ -924,8 +1067,8 @@ namespace MessengerRando
                 apTextDisplay16.enableWordWrapping = apTextDisplay8.enableWordWrapping = true;
                 apTextDisplay16.color = apTextDisplay8.color = Color.white;
 
-                apMessagesDisplay8 = UnityEngine.Object.Instantiate(self.hud_8.coinCount, self.hud_8.gameObject.transform);
-                apMessagesDisplay16 = UnityEngine.Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
+                apMessagesDisplay8 = Object.Instantiate(self.hud_8.coinCount, self.hud_8.gameObject.transform);
+                apMessagesDisplay16 = Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
                 apMessagesDisplay8.transform.Translate(0f, -200f, 0f);
                 apMessagesDisplay16.transform.Translate(0f, -200f, 0f);
                 apMessagesDisplay16.fontSize = apMessagesDisplay8.fontSize = UserConfig.MessageTextSize;
@@ -942,22 +1085,41 @@ namespace MessengerRando
 
         private void SaveManager_DoActualSave(On.SaveManager.orig_DoActualSaving orig, SaveManager self, bool applySaveDelay = true)
         {
-            if (ArchipelagoClient.HasConnected)
-            {
-                // The game calls the save method after the ending cutscene before rolling credits
-                if (ArchipelagoClient.Authenticated
-                    && Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_Ending))
-                {
-                    ArchipelagoClient.UpdateClientStatus(ArchipelagoClientState.ClientGoal);
-                }
-                if (randoStateManager.CurrentFileSlot == 0) return;
-                var saveSlot = self.GetCurrentSaveGameSlot();
-                var playerAlias =
-                    ArchipelagoClient.Session.Players.GetPlayerAlias(ArchipelagoClient.Session.ConnectionInfo.Slot);
-                saveSlot.SlotName = playerAlias;
-            }
-            Save?.Update();
+            // var checkpoint = Manager<ProgressionManager>.Instance.checkpointSaveInfo;
+            // var pos = checkpoint.loadedLevelPlayerPosition;
+            // Console.WriteLine($"{checkpoint.loadedLevelCheckpointIndex} \n{checkpoint.playerFacingDirection}\n {pos.x} {pos.y} {pos.z}");
             orig(self, applySaveDelay);
+            if (!ArchipelagoClient.HasConnected) return;
+            Save?.Update();
+            try
+            {
+                if (RandoPortalManager.LeftHQPortal)
+                {
+                    RandoPortalManager.Teleport();
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+            if (LostWoodsManager.NeedsUnsolved)
+            {
+                LostWoodsManager.UnsolveLostWoods();
+            }
+            else if (LostWoodsManager.NeedsSolved)
+            {
+                // just keep trying to solve it until it eventually works lmao
+                LostWoodsManager.SolveLostWoods();
+            }
+                
+            // The game calls the save method after the ending cutscene before rolling credits
+            if (ArchipelagoClient.Authenticated
+                && Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_Ending))
+            {
+                ArchipelagoClient.UpdateClientStatus(ArchipelagoClientState.ClientGoal);
+            }
         }
 
         private void OnPlayerDie(On.PlayerController.orig_Die orig, PlayerController self, EDeathType deathType,

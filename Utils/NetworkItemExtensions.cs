@@ -12,15 +12,19 @@ namespace MessengerRando.Utils
             string text;
             var ownPlayer = ArchipelagoClient.Session.ConnectionInfo.Slot;
             if (item.Player.Equals(ownPlayer))
+            {
                 text = item.Location.Equals(-1) ? $"Cheated {item.Colorize()}" : $"Found {item.Colorize()}";
+                
+                text += otherPlayer.IsNullOrEmpty()
+                    ? "!"
+                    : $" for <color=#{UserConfig.OtherPlayerColor}>{otherPlayer}</color>";
+            }
             else
             {
-                text = $"Received {item.Colorize()}!";
+                text = $"Received {item.Colorize()} from <color=#{UserConfig.OtherPlayerColor}>" +
+                       $"{ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player)}!";
                 return text;
             }
-            text += otherPlayer.IsNullOrEmpty() || otherPlayer.Equals(ArchipelagoClient.Session.Players.GetPlayerAlias(ownPlayer))
-                ? "!"
-                : $" for <color=#{UserConfig.OtherPlayerColor}>{otherPlayer}</color>";
             return text;
         }
 

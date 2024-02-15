@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using MessengerRando.RO;
 using MessengerRando.GameOverrideManagers;
+using MessengerRando.RO;
 using MessengerRando.Utils;
 
 namespace MessengerRando.Archipelago
@@ -12,7 +12,7 @@ namespace MessengerRando.Archipelago
     {
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
-        private static Dictionary<EItems, long> EitemsLocationsLookup;
+        private static Dictionary<EItems, long> EItemsLocationsLookup;
         private static Dictionary<long, LocationRO> IDtoLocationsLookup;
 
         public static RandomizerStateManager RandoStateManager;
@@ -51,7 +51,7 @@ namespace MessengerRando.Archipelago
             offset = BaseOffset;
             Console.WriteLine("Building LocationsLookup...");
             LocationsLookup = new Dictionary<LocationRO, long>();
-            EitemsLocationsLookup = new Dictionary<EItems, long>();
+            EItemsLocationsLookup = new Dictionary<EItems, long>();
             IDtoLocationsLookup = new Dictionary<long, LocationRO>();
             
             var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
@@ -68,8 +68,8 @@ namespace MessengerRando.Archipelago
                 IDtoLocationsLookup.Add(offset, progLocation);
                 // Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
                 if (progLocation.VanillaItem != EItems.NONE &&
-                    !EitemsLocationsLookup.ContainsKey(progLocation.VanillaItem))
-                    EitemsLocationsLookup.Add(progLocation.VanillaItem, offset);
+                    !EItemsLocationsLookup.ContainsKey(progLocation.VanillaItem))
+                    EItemsLocationsLookup.Add(progLocation.VanillaItem, offset);
                 ++offset;
             }
         }
@@ -289,7 +289,9 @@ namespace MessengerRando.Archipelago
 
         public static long LocationFromEItem(EItems location)
         {
-            return !EitemsLocationsLookup.ContainsKey(location) ? 0 : EitemsLocationsLookup[location];
+            if (EItemsLocationsLookup == null)
+                Initialize();
+            return !EItemsLocationsLookup.ContainsKey(location) ? 0 : EItemsLocationsLookup[location];
         }
 
         public static bool ShopLocation(long locationID, out LocationRO shopLocation)
@@ -376,7 +378,9 @@ namespace MessengerRando.Archipelago
                     }
                     catch
                     {
+                        // ignored
                     }
+
                     break;
                 default:
                     Console.WriteLine($"Checking if {randoItem.Item} is a shop item: {ShopItem(randoItem.Item)}");
@@ -417,7 +421,15 @@ namespace MessengerRando.Archipelago
         public static void SendLocationCheck(LocationRO checkedLocation)
         {
             LocationsLookup.TryGetValue(checkedLocation, out var locationID);
-            SendLocationCheck(locationID);
+            if (ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID)) return;
+            try
+            {
+                SendLocationCheck(locationID);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public static void SendLocationCheck(long locationID)
@@ -438,9 +450,34 @@ namespace MessengerRando.Archipelago
             
             Console.WriteLine("Sending location checks");
             if (ArchipelagoClient.Authenticated)
+            {
                 ThreadPool.QueueUserWorkItem(o =>
                     ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
+                if (!HasDialog(locationID))
+                    if (RandomizerStateManager.IsSafeTeleportState())
+                        DialogChanger.CreateDialogBox(RandoStateManager.ScoutedLocations[locationID].ToReadableString());
+                    else
+                        ArchipelagoClient.DialogQueue.Enqueue(RandoStateManager.ScoutedLocations[locationID]
+                            .ToReadableString());
+            }
+            else if (ArchipelagoClient.offline)
+            {
+                var itemToUnlock = ArchipelagoClient.ServerData.LocationData[locationID].First().Value[0];
+                if (RandomizerStateManager.IsSafeTeleportState())
+                    Unlock(itemToUnlock);
+                else
+                    ArchipelagoClient.ItemQueue.Enqueue(itemToUnlock);
+                
+                if (!HasDialog(locationID))
+                {
+                    var dialog = SeedGenerator.GetOfflineDialog(locationID);
+                    if (RandomizerStateManager.IsSafeTeleportState())
+                        DialogChanger.CreateDialogBox(dialog);
+                    else
+                        ArchipelagoClient.DialogQueue.Enqueue(dialog);
+                }
+            }
             Manager<SaveManager>.Instance.SaveGame();
         }
 

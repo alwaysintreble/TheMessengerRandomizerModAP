@@ -2,8 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <TargetFramework>net35</TargetFramework>
     <ProjectGuid>{6271B317-0737-489F-8319-67F0AC291D20}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -12,9 +11,9 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
+    <Version>0.13.0-alpha-10</Version>
   </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -26,14 +25,19 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\TheMessengerRandomizerAP\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>bin\Release\net35\TheMessengerRandomizerAP\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+
+  <Target Name="ZipMod" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <ZipDirectory SourceDirectory="bin\Release\net35\"
+                  DestinationFile="bin\Release\TheMessengerRandomizerAP-$(Version).zip"
+                  Overwrite="true"/>
+  </Target>
+  
   <ItemGroup>
     <Reference Include="Archipelago.MultiClient.Net, Version=5.0.6.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Archipelago.MultiClient.Net.5.0.6\lib\net35\Archipelago.MultiClient.Net.dll</HintPath>
@@ -89,6 +93,7 @@
       <HintPath>packages\Archipelago.MultiClient.Net.5.0.6\lib\net35\websocket-sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
+  
   <ItemGroup>
     <Compile Include="Archipelago\ArchipelagoClient.cs" />
     <Compile Include="Archipelago\ArchipelagoData.cs" />
@@ -117,7 +122,7 @@
     <Compile Include="Utils\RandoMenu.cs" />
     <Compile Include="Utils\RandomizerOptions.cs" />
     <Compile Include="Utils\RandoSave.cs" />
-    <Compile Include="Utils\LocationInfo.cs" />
+    <Compile Include="Utils\NetworkItemExtensions.cs" />
     <Compile Include="Utils\DialogChanger.cs" />
     <Compile Include="Utils\RandomizerConstants.cs" />
     <Compile Include="Utils\RandomizerStateManager.cs" />
@@ -130,6 +135,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>

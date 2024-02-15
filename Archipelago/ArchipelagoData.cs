@@ -79,8 +79,13 @@ namespace MessengerRando.Archipelago
                                 CheckedLocations.ToArray()));
                         while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)
                         {
-                            i += 1;
+                            if (!ArchipelagoClient.Session.Items.AllItemsReceived[i].Player
+                                    .Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+                            {
+                                ArchipelagoClient.DialogQueue.Dequeue();
+                            }
                             ArchipelagoClient.ItemQueue.Dequeue();
+                            i += 1;
                         }
                         return true;
                     }
@@ -115,8 +120,13 @@ namespace MessengerRando.Archipelago
                 ArchipelagoClient.Connect();
                 while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)
                 {
-                    i += 1;
+                    if (!ArchipelagoClient.Session.Items.AllItemsReceived[i].Player
+                            .Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+                    {
+                        ArchipelagoClient.DialogQueue.Dequeue();
+                    }
                     ArchipelagoClient.ItemQueue.Dequeue();
+                    i += 1;
                 }
                 return ArchipelagoClient.HasConnected = true;
             }
@@ -124,17 +134,6 @@ namespace MessengerRando.Archipelago
             {
                 Console.WriteLine(ex.ToString());
                 return false; 
-            }
-        }
-
-        public static void ClearData()
-        {
-            for (int slot = 0; slot <= 3; slot++)
-            {
-                var filePath = Application.persistentDataPath + "ArchipelagoSlot{slot}.map";
-                if (File.Exists(filePath)) { File.Delete(filePath); }
-                var nextPath = Application.persistentDataPath + $"/ArchipelagoSlot{slot}.map";
-                if (File.Exists(nextPath)) { File.Delete(nextPath); }
             }
         }
     }

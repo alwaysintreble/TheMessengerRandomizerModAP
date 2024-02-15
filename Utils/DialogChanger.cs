@@ -92,9 +92,25 @@ namespace MessengerRando.Utils
                                 ItemDialogID.First(x => x.Value.Equals(replaceableKey)).Key,
                                 out var locationID))
                         {
-                            LocCopy[replaceableKey][0].text = ArchipelagoClient.offline
-                                ? SeedGenerator.GetOfflineDialog(locationID)
-                                : RandomizerStateManager.Instance.ScoutedLocations[locationID].ToReadableString();
+                            if (ArchipelagoClient.offline)
+                            {
+                                LocCopy[replaceableKey][0].text = SeedGenerator.GetOfflineDialog(locationID);
+                            }
+                            else
+                            {
+                                var netItem = RandomizerStateManager.Instance.ScoutedLocations[locationID];
+                                var otherPlayer = netItem.Player;
+                                if (otherPlayer.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+                                {
+                                    LocCopy[replaceableKey][0].text = netItem.ToReadableString();
+                                }
+                                else
+                                {
+                                    var otherPlayerName = ArchipelagoClient.Session.Players.GetPlayerAlias(otherPlayer);
+                                    netItem.Player = ArchipelagoClient.Session.ConnectionInfo.Slot;
+                                    LocCopy[replaceableKey][0].text = netItem.ToReadableString(otherPlayerName);
+                                }
+                            }
                         }
 
                         //This will remove all additional dialog that comes after the initial reward text

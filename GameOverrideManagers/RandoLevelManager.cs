@@ -21,11 +21,9 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
         {
-            #if DEBUG
             Console.WriteLine($"Current Level: {Manager<LevelManager>.Instance.GetCurrentLevelEnum()}");
             Console.WriteLine($"Loading Level: {levelInfo.levelName}");
             Console.WriteLine($"Entrance ID: {levelInfo.levelEntranceId}, Dimension: {levelInfo.dimension}");
-            #endif
             try
             {
                 if (!teleporting)
@@ -142,12 +140,12 @@ namespace MessengerRando.GameOverrideManagers
             //     }
             // }
 
-            if (self.GetCurrentLevelEnum().Equals(ELevel.Level_05_A_HowlingGrotto))
-            {
-                var progManager = Manager<ProgressionManager>.Instance;
+            // if (self.GetCurrentLevelEnum().Equals(ELevel.Level_05_A_HowlingGrotto))
+            // {
+            //     var progManager = Manager<ProgressionManager>.Instance;
                 // progManager.levelsDiscovered.Remove(ELevel.Level_05_B_SunkenShrine);
                 // progManager.allTimeDiscoveredLevels.Remove(ELevel.Level_05_B_SunkenShrine);
-            }
+            // }
             if (teleporting)
             {
                 teleporting = false;
@@ -164,7 +162,7 @@ namespace MessengerRando.GameOverrideManagers
                 return;
             }
             
-            if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_11_B_MusicBox) &&
+            if (currentLevel.Equals(ELevel.Level_11_B_MusicBox) &&
                 RandomizerStateManager.Instance.SkipMusicBox)
             {
                 SkipMusicBox();

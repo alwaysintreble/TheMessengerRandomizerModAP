@@ -108,7 +108,7 @@ namespace MessengerRando.Utils
                 null,
                 TextEntryButtonInfo.CharsetFlags.Space);
             
-            generatePopup.Init(result ? "Seed successfully generated!" : "Seed generation failed.");
+            generatePopup.Init(result ? "Seed successfully generated!" : "Seed generation failed. Ensure you've output a settings file.");
             generatePopup.gameObject.SetActive(true);
             generating = false;
         }

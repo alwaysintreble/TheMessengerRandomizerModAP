@@ -97,9 +97,7 @@ namespace MessengerRando
                     () => "Enter the port for the Archipelago session",
                     () => ArchipelagoClient.ServerData?.Port.ToString(),
                     CharsetFlags.Number);
-                ArchipelagoMenu.ArchipelagoPortButton.IsEnabled =
-                    () => ArchipelagoClient.HasConnected && !ArchipelagoClient.Authenticated && !ArchipelagoClient.offline &&
-                          Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
+                ArchipelagoMenu.ArchipelagoPortButton.IsEnabled = ArchipelagoPortEnabled;
                 
                 //Add archipelago name button
                 ArchipelagoMenu.ArchipelagoNameButton = ArchipelagoMenu.RegisterTextRandoButton(
@@ -931,6 +929,16 @@ namespace MessengerRando
             int.TryParse(answer, out var port);
             ArchipelagoClient.ServerData.Port = port;
             return true;
+        }
+
+        bool ArchipelagoPortEnabled()
+        {
+            if (Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.NONE))
+            {
+                return !ArchipelagoClient.HasConnected;
+            }
+
+            return ArchipelagoClient.HasConnected && !ArchipelagoClient.Authenticated && !ArchipelagoClient.offline;
         }
 
         bool OnSelectArchipelagoName(string answer)

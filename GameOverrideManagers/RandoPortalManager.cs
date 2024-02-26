@@ -55,7 +55,7 @@ namespace MessengerRando.GameOverrideManagers
                 {
                     new List<LevelConstants.RandoLevel>
                     {
-                        new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(-20076.46f, -200004)),
+                        new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(485, -102)),
                     },
                     new List<LevelConstants.RandoLevel>
                     {
@@ -147,7 +147,7 @@ namespace MessengerRando.GameOverrideManagers
                     {
                         new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(193.5f, -37)),
                         new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(663.5f, -27)),
-                        new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(1085.5f, -45)),
+                        new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(1085.5f, -43)),
                     },
                     new List<LevelConstants.RandoLevel>
                     {
@@ -181,7 +181,7 @@ namespace MessengerRando.GameOverrideManagers
                 {
                     new List<LevelConstants.RandoLevel>
                     {
-                        new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(220.6f, 66.5f)),
+                        new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(220.6f, -67)),
                     },
                     new List<LevelConstants.RandoLevel>
                     {

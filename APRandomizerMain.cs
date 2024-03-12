@@ -156,7 +156,8 @@ namespace MessengerRando
                     OnSelectTeleportToNinjaVillage);
                 ArchipelagoMenu.TeleportToNinjaVillage.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
-                    Manager<ProgressionManager>.Instance.HasCutscenePlayed("ElderAwardSeedCutscene") &&
+                    Manager<ProgressionManager>.Instance.levelsDiscovered.Contains(ELevel.Level_01_NinjaVillage) &&
+                    RandoLevelManager.RandoLevelMapping == null &&
                     RandomizerStateManager.IsSafeTeleportState();
 
                 //Add Archipelago status button

@@ -46,9 +46,10 @@ namespace MessengerRando.GameOverrideManagers
 
         public static bool WithinRange(float pos1, float pos2)
         {
+            Console.WriteLine($"comparing positions: {pos1}, {pos2}");
             var comparison = pos2 - pos1;
             if (comparison < 0) comparison *= -1;
-            return comparison <= 10;
+            return comparison <= 50;
         }
 
         private static LevelConstants.RandoLevel FindEntrance()
@@ -75,7 +76,6 @@ namespace MessengerRando.GameOverrideManagers
                 else if (!LevelConstants.TransitionToEntranceName.TryGetValue(
                         new LevelConstants.Transition(lastLevel, currentLevel), out entrance))
                     return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
-                Console.WriteLine(entrance);
                 
                 if (LevelConstants.SpecialEntranceNames.Contains(entrance))
                 {
@@ -86,7 +86,7 @@ namespace MessengerRando.GameOverrideManagers
                             comparePos = LevelConstants.EntranceNameToRandoLevel["Howling Grotto - Right"].PlayerPos;
                             entrance = WithinRange(playerPos.x, comparePos.x)
                                 ? "Howling Grotto - Right"
-                                : "Howling Grotto - Bottom";
+                                : "Howling Grotto - Top";
 
                             break;
                         case "Quillshroom Marsh - Left":
@@ -112,6 +112,7 @@ namespace MessengerRando.GameOverrideManagers
                             break;
                     }
                 }
+                Console.WriteLine(entrance);
                 return RandoLevelMapping[entrance];
             } catch (Exception e){ Console.WriteLine(e);}
             return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());

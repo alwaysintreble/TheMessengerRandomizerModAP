@@ -149,7 +149,7 @@ namespace MessengerRando.Utils.Constants
                 {
                     "Howling Grotto - Right",
                     new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(584.21f, -123f))
-                }, // Emerald Golem is here. Need to either figure out teleporting out of boss rooms without fighting them or temporarily mark it as dead. Scene loaded gets called before the check, but level loaded is after 
+                }, // Emerald Golem is here. Scene loaded gets called before the check, but level loaded is after 
                 {
                     "Howling Grotto - Top",
                     new RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(419.95f, -58.66491f), EBits.BITS_16)

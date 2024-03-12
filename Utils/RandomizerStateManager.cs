@@ -103,6 +103,7 @@ namespace MessengerRando.Utils
                         var replacement =
                             LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
                         RandoLevelManager.RandoLevelMapping[orig] = replacement;
+                        Console.WriteLine($"{orig}: {LevelConstants.TransitionNames[pairing[1]]}");
                     }
                 }
             }

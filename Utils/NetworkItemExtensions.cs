@@ -10,19 +10,20 @@ namespace MessengerRando.Utils
         public static string ToReadableString(this NetworkItem item, string otherPlayer = "")
         {
             string text;
+            if (!otherPlayer.IsNullOrEmpty())
+            {
+                text = $"Found {item.Colorize()} for <color=#{UserConfig.OtherPlayerColor}>{otherPlayer}</color>!";
+                return text;
+            }
             var ownPlayer = ArchipelagoClient.Session.ConnectionInfo.Slot;
             if (item.Player.Equals(ownPlayer))
             {
-                text = item.Location.Equals(-1) ? $"Cheated {item.Colorize()}" : $"Found {item.Colorize()}";
-                
-                text += otherPlayer.IsNullOrEmpty()
-                    ? "!"
-                    : $" for <color=#{UserConfig.OtherPlayerColor}>{otherPlayer}</color>";
+                text = item.Location.Equals(-1) ? $"Cheated {item.Colorize()}!" : $"Found {item.Colorize()}!";
             }
             else
             {
                 text = $"Received {item.Colorize()} from <color=#{UserConfig.OtherPlayerColor}>" +
-                       $"{ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player)}!";
+                       $"{ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player)}</color>!";
                 return text;
             }
             return text;
@@ -45,7 +46,7 @@ namespace MessengerRando.Utils
                     color = UserConfig.TrapColor;
                     break;
             }
-            var text = string.IsNullOrEmpty(color) ? item.Name() : $"<color=#{color}>{item.Name()}</color>";
+            var text = color.IsNullOrEmpty() ? item.Name() : $"<color=#{color}>{item.Name()}</color>";
 
             return text;
         }

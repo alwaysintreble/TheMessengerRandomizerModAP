@@ -455,11 +455,15 @@ namespace MessengerRando.Archipelago
                     ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
                 if (!HasDialog(locationID))
+                {
+                    var item = RandoStateManager.ScoutedLocations[locationID];
+                    var otherPlayer = ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player);
+                    var dialog = item.ToReadableString(otherPlayer);
                     if (RandomizerStateManager.IsSafeTeleportState())
-                        DialogChanger.CreateDialogBox(RandoStateManager.ScoutedLocations[locationID].ToReadableString());
+                        DialogChanger.CreateDialogBox(dialog);
                     else
-                        ArchipelagoClient.DialogQueue.Enqueue(RandoStateManager.ScoutedLocations[locationID]
-                            .ToReadableString());
+                        ArchipelagoClient.DialogQueue.Enqueue(dialog);
+                }
             }
             else if (ArchipelagoClient.offline)
             {

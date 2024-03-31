@@ -18,14 +18,14 @@ namespace MessengerRando.Archipelago
 {
     public static class ArchipelagoClient
     {
-        private const string ApVersion = "0.4.3";
+        private const string ApVersion = "0.4.4";
         public static ArchipelagoData ServerData = new ArchipelagoData();
 
         private delegate void OnConnectAttempt(string result);
         public static bool Authenticated;
         public static bool HasConnected;
         private static bool attemptingConnection;
-        public static bool offline;
+        public static bool Offline;
 
         public static bool DisplayAPMessages = true;
         public static bool FilterAPMessages = true;
@@ -409,9 +409,11 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine(message);
                 DialogChanger.CreateDialogBox(message);
             }
+
+            TrapManager.UpdateTrapStatus();
             if (!Authenticated)
             {
-                if (offline) return;
+                if (Offline) return;
                 Console.WriteLine("Attempting to reconnect to Archipelago Server...");
                 ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
                 return;
@@ -494,7 +496,7 @@ namespace MessengerRando.Archipelago
                     text += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
                 }
             }
-            else if (offline)
+            else if (Offline)
             {
                 text = "";
             }

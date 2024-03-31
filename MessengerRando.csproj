@@ -109,9 +109,11 @@
     <Compile Include="GameOverrideManagers\RandoRoomManager.cs" />
     <Compile Include="GameOverrideManagers\RandoShopManager.cs" />
     <Compile Include="GameOverrideManagers\RandoTimeShardManager.cs" />
+    <Compile Include="GameOverrideManagers\TrapManager.cs" />
     <Compile Include="Overrides\RandoCatacombLevelInitializer.cs" />
     <Compile Include="RO\RandoItemRO.cs" />
     <Compile Include="RO\LocationRO.cs" />
+    <Compile Include="Utils\Constants\ReplaceFlavorDialog.cs" />
     <Compile Include="Utils\OptionsExporter.cs" />
     <Compile Include="Utils\SeedGenerator.cs" />
     <Compile Include="Utils\HintMenu.cs" />

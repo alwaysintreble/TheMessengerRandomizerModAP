@@ -230,6 +230,11 @@ namespace MessengerRando.GameOverrideManagers
             Manager<LevelManager>.Instance.LoadLevel(levelLoadingInfo);
         }
 
+        public static void TeleportInArea(LevelConstants.RandoLevel teleportLocation)
+        {
+            TeleportInArea(teleportLocation.LevelName, teleportLocation.PlayerPos, teleportLocation.Dimension);
+        }
+
         public static void ElementalSkylandsInit(On.ElementalSkylandsLevelInitializer.orig_OnBeforeInitDone orig,
             ElementalSkylandsLevelInitializer self)
         {

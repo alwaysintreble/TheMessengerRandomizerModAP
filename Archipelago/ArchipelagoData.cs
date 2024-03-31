@@ -44,7 +44,7 @@ namespace MessengerRando.Archipelago
 
         public static bool LoadData(int slot)
         {
-            if (ArchipelagoClient.offline) return false;
+            if (ArchipelagoClient.Offline) return false;
             Console.WriteLine($"Loading Archipelago data for slot {slot}");
             if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
             return ArchipelagoClient.ServerData.loadData(slot);
@@ -115,7 +115,7 @@ namespace MessengerRando.Archipelago
                 {
                     Console.WriteLine("continuing offline seed");
                     RandomizerStateManager.InitializeSeed();
-                    return ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
+                    return ArchipelagoClient.HasConnected = ArchipelagoClient.Offline = true;
                 }
                 ArchipelagoClient.Connect();
                 while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)

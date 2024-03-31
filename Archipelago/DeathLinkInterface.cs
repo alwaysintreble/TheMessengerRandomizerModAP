@@ -1,6 +1,8 @@
 ﻿using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using System;
 using System.Collections.Generic;
+using MessengerRando.Utils;
+using Mod.Courier;
 using UnityEngine;
 using WebSocketSharp;
 
@@ -12,7 +14,6 @@ namespace MessengerRando.Archipelago
         public PlayerController Player;
         private readonly List<DeathLink> deathLinks = new List<DeathLink>();
         private bool receivedDeath;
-        private System.Random random;
         private int deathsSent;
         private List<string> genericDeathCauses;
         private List<string> projectileDeathCauses;
@@ -29,8 +30,7 @@ namespace MessengerRando.Archipelago
                 DeathLinkService = ArchipelagoClient.Session.CreateDeathLinkService();
                 DeathLinkService.OnDeathLinkReceived += DeathLinkReceived;
                 GenerateFunnyCauses();
-                random = new System.Random();
-
+                
                 if (ArchipelagoData.DeathLink)
                     DeathLinkService.EnableDeathLink();
                 else
@@ -158,6 +158,7 @@ namespace MessengerRando.Archipelago
 
         private string GetDeathLinkCause(EDeathType deathType)
         {
+            var random = RandomizerStateManager.SeedRandom;
             try
             {
                 switch (deathType)
@@ -182,14 +183,7 @@ namespace MessengerRando.Archipelago
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                Console.WriteLine(genericDeathCauses);
-                Console.WriteLine(projectileDeathCauses);
-                Console.WriteLine(spikeDeathCauses);
-                Console.WriteLine(pitfallDeathCauses);
-                Console.WriteLine(squishDeathCauses);
-                Console.WriteLine(frequentDeathCauses);
-                Console.WriteLine(random);
+                e.LogDetailed();
                 return " is a menace";
             }
         }

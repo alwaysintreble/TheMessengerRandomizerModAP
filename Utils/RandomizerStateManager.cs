@@ -7,10 +7,10 @@ using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils.Constants;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using WebSocketSharp;
+using Random = System.Random;
 
 // ReSharper disable StringLiteralTypo
 // ReSharper disable CommentTypo
@@ -36,6 +36,8 @@ namespace MessengerRando.Utils
         public Dictionary<long, NetworkItem> ScoutedLocations;
         public readonly Dictionary<int, ArchipelagoData> APSave;
 
+        public static Random SeedRandom;
+
         public RandomizerStateManager()
         {
             #if DEBUG
@@ -59,6 +61,16 @@ namespace MessengerRando.Utils
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
             SeenHints = new List<NetworkItem>();
+
+            if (ArchipelagoClient.ServerData.SeedName.IsNullOrEmpty() ||
+                ArchipelagoClient.ServerData.SeedName.Equals("Unknown"))
+            {
+                SeedRandom = new Random();
+            }
+            else
+            {
+                SeedRandom = new Random(ArchipelagoClient.ServerData.SeedName.GetHashCode());
+            }
 
             if ((Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1) && ArchipelagoClient.Authenticated)
             {
@@ -255,6 +267,7 @@ namespace MessengerRando.Utils
                 "NinjaVillageElderCutScene",
                 "DemonGeneralCutScene",
                 "NinjaVillageIntroEndCutScene",
+                "PowerSealCollectedCutscene",
                 // "LeafGolemIntroCutScene",
                 // "LeafGolemOutroCutScene",
                 // "NecrophobicWorkerCutscene",
@@ -270,7 +283,7 @@ namespace MessengerRando.Utils
                 // "SearagToGlacialPeakEntranceCutscene",
                 // "GlacialPeakTowerOfTimeCutscene",
                 // "GlacialPeakTowerOutCutscene",
-                // "QuibbleIntroCutscene",
+                "QuibbleIntroCutscene",
                 // "TowerOfTimeBossIntroCutscene",
                 // "TowerOfTimeBossOutroCutscene",
                 // "Teleport16BitsRoomCutscene",
@@ -356,7 +369,7 @@ namespace MessengerRando.Utils
                 ArchipelagoClient.ServerData.ScoutedLocations = new Dictionary<long, NetworkItem>();
                 ArchipelagoClient.ServerData.LocationData =
                     gameData["loc_data"].ToObject<Dictionary<long, Dictionary<string, List<long>>>>();
-                ArchipelagoClient.HasConnected = ArchipelagoClient.offline = true;
+                ArchipelagoClient.HasConnected = ArchipelagoClient.Offline = true;
                 InitializeSeed();
             }
             catch (Exception e)

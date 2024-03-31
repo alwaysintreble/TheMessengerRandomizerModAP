@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using MessengerRando.Utils.Constants;
 using UnityEngine;
 
 namespace MessengerRando.Utils
@@ -75,26 +76,24 @@ namespace MessengerRando.Utils
                 Dictionary<string, List<DialogInfo>> Loc = dialogByLocIDField.GetValue(self) as Dictionary<string, List<DialogInfo>>;
                 if (Loc != null)
                 {
-                    Dictionary<string, List<DialogInfo>> LocCopy = new Dictionary<string, List<DialogInfo>>(Loc);
-
                     //Loop through each dialog replacement - Will output the replacements to log for debugging
                     foreach (var replaceableKey in Loc.Select(kvp => kvp.Key).Where(toBeReplaced => ItemDialogID.ContainsValue(toBeReplaced)))
                     {
                         //Sets them to be all center and no portrait (This really only applies to phobekins but was 
-                        LocCopy[replaceableKey][0].autoClose = false;
-                        LocCopy[replaceableKey][0].autoCloseDelay = 0;
-                        LocCopy[replaceableKey][0].characterDefinition = null;
-                        LocCopy[replaceableKey][0].forcedPortraitOrientation = 0;
-                        LocCopy[replaceableKey][0].position = EDialogPosition.CENTER;
-                        LocCopy[replaceableKey][0].skippable = true;
-                        if ((RandomizerStateManager.Instance.ScoutedLocations != null || ArchipelagoClient.offline) &&
+                        Loc[replaceableKey][0].autoClose = true;
+                        Loc[replaceableKey][0].autoCloseDelay = 0;
+                        Loc[replaceableKey][0].characterDefinition = null;
+                        Loc[replaceableKey][0].forcedPortraitOrientation = 0;
+                        Loc[replaceableKey][0].position = EDialogPosition.CENTER;
+                        Loc[replaceableKey][0].skippable = false;
+                        if ((RandomizerStateManager.Instance.ScoutedLocations != null || ArchipelagoClient.Offline) &&
                             RandomizerStateManager.Instance.IsLocationRandomized(
                                 ItemDialogID.First(x => x.Value.Equals(replaceableKey)).Key,
                                 out var locationID))
                         {
-                            if (ArchipelagoClient.offline)
+                            if (ArchipelagoClient.Offline)
                             {
-                                LocCopy[replaceableKey][0].text = SeedGenerator.GetOfflineDialog(locationID);
+                                Loc[replaceableKey][0].text = SeedGenerator.GetOfflineDialog(locationID);
                             }
                             else
                             {
@@ -102,25 +101,28 @@ namespace MessengerRando.Utils
                                 var otherPlayer = netItem.Player;
                                 if (otherPlayer.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
                                 {
-                                    LocCopy[replaceableKey][0].text = netItem.ToReadableString();
+                                    Loc[replaceableKey][0].text = netItem.ToReadableString();
                                 }
                                 else
                                 {
                                     var otherPlayerName = ArchipelagoClient.Session.Players.GetPlayerAlias(otherPlayer);
                                     netItem.Player = ArchipelagoClient.Session.ConnectionInfo.Slot;
-                                    LocCopy[replaceableKey][0].text = netItem.ToReadableString(otherPlayerName);
+                                    Loc[replaceableKey][0].text = netItem.ToReadableString(otherPlayerName);
                                 }
                             }
                         }
 
                         //This will remove all additional dialog that comes after the initial reward text
-                        for (int i = LocCopy[replaceableKey].Count - 1; i > 0; i--)
+                        if (Loc[replaceableKey].Count > 1)
                         {
-                            LocCopy[replaceableKey].RemoveAt(i);
+                            Loc[replaceableKey].RemoveRange(1, Loc[replaceableKey].Count - 1);
                         }
                     }
+
+                    ReplaceFlavorDialog.UpdateLoc(Loc);
+                    
                     //Sets the replacements
-                    dialogByLocIDField.SetValue(self, LocCopy);
+                    // dialogByLocIDField.SetValue(self, Loc);
                 }
             }
 

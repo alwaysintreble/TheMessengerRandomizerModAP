@@ -338,7 +338,6 @@ namespace MessengerRando.Archipelago
                 return;
             }
             Console.WriteLine($"Unlocking {itemToUnlock}, {randoItem.Item}");
-            TrapManager.TryTeleportPlayer();
 
             switch (randoItem.Item)
             {

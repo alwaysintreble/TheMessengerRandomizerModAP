@@ -35,6 +35,9 @@ namespace MessengerRando.Archipelago
             ArchipelagoItems.AddRange(new List<RandoItemRO>
             {
                 new RandoItemRO("Money Wrench", EItems.MONEY_WRENCH),
+                new RandoItemRO("Teleport Trap", EItems.NONE),
+                new RandoItemRO("Prophecy Trap", EItems.NONE),
+                new RandoItemRO("Darkness Trap", EItems.NONE),
                 new RandoItemRO("Health", EItems.POTION),
                 new RandoItemRO("Mana", EItems.MANA),
                 new RandoItemRO("Feather", EItems.FEATHER),
@@ -335,6 +338,7 @@ namespace MessengerRando.Archipelago
                 return;
             }
             Console.WriteLine($"Unlocking {itemToUnlock}, {randoItem.Item}");
+            TrapManager.TryTeleportPlayer();
 
             switch (randoItem.Item)
             {
@@ -378,7 +382,18 @@ namespace MessengerRando.Archipelago
                     }
                     catch
                     {
-                        // ignored
+                        switch (randoItem.Name)
+                        {
+                            case "Darkness Trap":
+                                TrapManager.StartDarkness();
+                                break;
+                            case "Teleport Trap":
+                                TrapManager.TryTeleportPlayer();
+                                break;
+                            case "Prophecy Trap":
+                                TrapManager.StartProphecyCutscene();
+                                break;
+                        }
                     }
 
                     break;
@@ -457,15 +472,23 @@ namespace MessengerRando.Archipelago
                 if (!HasDialog(locationID))
                 {
                     var item = RandoStateManager.ScoutedLocations[locationID];
-                    var otherPlayer = ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player);
-                    var dialog = item.ToReadableString(otherPlayer);
+                    string dialog;
+                    if (item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+                    {
+                        dialog = item.ToReadableString();
+                    }
+                    else
+                    {
+                        var otherPlayer = ArchipelagoClient.Session.Players.GetPlayerAlias(item.Player);
+                        dialog = item.ToReadableString(otherPlayer);
+                    }
                     if (RandomizerStateManager.IsSafeTeleportState())
                         DialogChanger.CreateDialogBox(dialog);
                     else
                         ArchipelagoClient.DialogQueue.Enqueue(dialog);
                 }
             }
-            else if (ArchipelagoClient.offline)
+            else if (ArchipelagoClient.Offline)
             {
                 var itemToUnlock = ArchipelagoClient.ServerData.LocationData[locationID].First().Value[0];
                 if (RandomizerStateManager.IsSafeTeleportState())

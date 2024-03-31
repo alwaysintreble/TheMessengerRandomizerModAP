@@ -87,7 +87,7 @@ namespace MessengerRando
                     | CharsetFlags.Number | CharsetFlags.Space);
                 ArchipelagoMenu.ArchipelagoHostButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
-                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.Offline);
                 
                 //Add Archipelago port button
                 ArchipelagoMenu.ArchipelagoPortButton = ArchipelagoMenu.RegisterTextRandoButton(
@@ -109,7 +109,7 @@ namespace MessengerRando
                     | CharsetFlags.Number | CharsetFlags.Space);
                 ArchipelagoMenu.ArchipelagoNameButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
-                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.Offline);
                 
                 //Add archipelago password button
                 ArchipelagoMenu.ArchipelagoPassButton = ArchipelagoMenu.RegisterTextRandoButton(
@@ -120,7 +120,7 @@ namespace MessengerRando
                     () => ArchipelagoClient.ServerData?.Password);
                 ArchipelagoMenu.ArchipelagoPassButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
-                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.Offline);
                 
                 //Add Archipelago connection button
                 ArchipelagoMenu.ArchipelagoConnectButton = ArchipelagoMenu.RegisterSubRandoButton(
@@ -128,7 +128,7 @@ namespace MessengerRando
                     OnSelectArchipelagoConnect);
                 ArchipelagoMenu.ArchipelagoConnectButton.IsEnabled = () =>
                     Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
-                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.offline);
+                    (!ArchipelagoClient.Authenticated || !ArchipelagoClient.Offline);
 
                 //Add windmill shuriken toggle button
                 ArchipelagoMenu.WindmillShurikenToggleButton = ArchipelagoMenu.RegisterSubRandoButton(
@@ -408,6 +408,7 @@ namespace MessengerRando
             On.MegaTimeShard.OnBreakDone += MegaTimeShard_OnBreakDone;
             On.DialogSequence.GetDialogList += DialogSequence_GetDialogList;
             On.Cutscene.Play += Cutscene_Play;
+            On.PlayerController.Awake += OnPlayerController_Awake;
             //temp add
             #if DEBUG
             On.PhantomIntroCutscene.OnEnterRoom += PhantomIntro_OnEnterRoom; //this lets us skip the phantom fight
@@ -417,6 +418,18 @@ namespace MessengerRando
             #endif
 
             Console.WriteLine("Randomizer finished loading!");
+        }
+
+        private void OnPlayerController_Awake(On.PlayerController.orig_Awake orig, PlayerController self)
+        {
+            // try {
+            //     GameObject darkness = Courier.LoadFromAssetBundles<GameObject>("Assets/PrefabInstance/modded/DarkCave_LightStencil.prefab");
+            //     Object.Instantiate(darkness, self.transform);
+            // } catch(Exception e) {
+            //     e.LogDetailed();
+            // }
+
+            orig(self);
         }
 
         private void OnOptionScreenEnable(On.OptionScreen.orig_OnEnable orig, OptionScreen self)
@@ -628,7 +641,7 @@ namespace MessengerRando
                         Console.WriteLine(e);
                     }
                 }
-                else if (ArchipelagoClient.offline)
+                else if (ArchipelagoClient.Offline)
                 {
                     if (ItemsAndLocationsHandler.ItemsLookup == null)
                         ItemsAndLocationsHandler.Initialize();
@@ -665,7 +678,7 @@ namespace MessengerRando
             }
             if (ArchipelagoClient.Authenticated)
                 RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
-            else if (ArchipelagoClient.offline)
+            else if (ArchipelagoClient.Offline)
             {
                 try
                 {
@@ -731,7 +744,7 @@ namespace MessengerRando
             {
                 ArchipelagoClient.Disconnect();
                 ArchipelagoClient.HasConnected = false;
-                ArchipelagoClient.offline = false;
+                ArchipelagoClient.Offline = false;
                 RandoBossManager.DefeatedBosses = new List<string>();
                 RandoPortalManager.StartingPortals = new List<string>();
                 RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
@@ -939,7 +952,7 @@ namespace MessengerRando
                 return !ArchipelagoClient.HasConnected;
             }
 
-            return ArchipelagoClient.HasConnected && !ArchipelagoClient.Authenticated && !ArchipelagoClient.offline;
+            return ArchipelagoClient.HasConnected && !ArchipelagoClient.Authenticated && !ArchipelagoClient.Offline;
         }
 
         bool OnSelectArchipelagoName(string answer)
@@ -1054,6 +1067,7 @@ namespace MessengerRando
                 ArchipelagoClient.DeathLinkHandler.KillPlayer();
             //This updates every {updateTime} seconds
             updateTimer += Time.deltaTime;
+            TrapManager.TrapTimer += Time.deltaTime;
             if (!(updateTimer >= updateTime)) return;
             apMessagesDisplay16.text = apMessagesDisplay8.text = ArchipelagoClient.UpdateMessagesText();
             updateTimer = 0;
@@ -1136,6 +1150,7 @@ namespace MessengerRando
         {
             try
             {
+                TrapManager.ResetPlayerState();
                 Manager<UIManager>.Instance.CloseAllScreensOfType<AwardItemPopup>(false);
                 ArchipelagoClient.DeathLinkHandler.SendDeathLink(deathType, killedBy);
             }

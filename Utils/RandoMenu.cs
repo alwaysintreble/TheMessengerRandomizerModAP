@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MessengerRando.Archipelago;
 using Mod.Courier;
 using Mod.Courier.UI;
 using TMPro;
@@ -211,7 +212,7 @@ namespace MessengerRando.Utils
 
                 // Make the selection frames blue
                 foreach (Image image in transform.GetComponentsInChildren<Image>()
-                             .Where((c) => c.name.Equals("SelectionFrame")))
+                             .Where(c => c.name.Equals("SelectionFrame")))
                 {
                     try
                     {
@@ -350,7 +351,7 @@ namespace MessengerRando.Utils
                 // Make the selection frames blue
                 // I should figure out if I can avoid doing this in LateUpdate()
                 foreach (Image image in transform.GetComponentsInChildren<Image>()
-                             .Where((c) => c.name.Equals("SelectionFrame")))
+                             .Where(c => c.name.Equals("SelectionFrame")))
                 {
                     try
                     {
@@ -389,7 +390,7 @@ namespace MessengerRando.Utils
                     {
                         CourierLogger.Log(LogType.Exception, "RandoScreen",
                             "Image not Read/Writeable when recoloring selection frames in ModOptionScreen");
-                        CourierLogger.LogDetailed(e);
+                        e.LogDetailed();
                     }
                 }
             }
@@ -486,6 +487,105 @@ namespace MessengerRando.Utils
             }
 
             return "???";
+        }
+        
+        public static void BuildRandoMenu()
+        {
+            SoloRandoMenuButton =
+                Courier.UI.RegisterSubMenuOptionButton(() => "Solo Randomizer", DisplayRandoMenu);
+            SoloRandoMenuButton.IsEnabled = () =>
+                Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.NONE) &&
+                !ArchipelagoClient.HasConnected;
+
+            Name = RegisterTextRandoButton(
+                () => $"Name: {RandomizerOptions.Name}",
+                RandomizerOptions.OnNameEntry,
+                16,
+                () => "Enter name to be used for generation",
+                charset: TextEntryButtonInfo.CharsetFlags.Dash | TextEntryButtonInfo.CharsetFlags.Dot | TextEntryButtonInfo.CharsetFlags.Letter |
+                         TextEntryButtonInfo.CharsetFlags.Number | TextEntryButtonInfo.CharsetFlags.Space);
+            
+            SeedNumButton = RegisterTextRandoButton(
+                () => $"Seed: {RandomizerOptions.Seed}",
+                RandomizerOptions.OnSeedEntry,
+                20,
+                () => "Enter seed to be used for generation",
+                charset: TextEntryButtonInfo.CharsetFlags.Number);
+
+            SpoilerLevel = RegisterSubRandoButton(
+                RandomizerOptions.GetSpoilerText,
+                RandomizerOptions.ChangeSpoiler);
+            
+            BlankSpaceOne = RegisterSubRandoButton(null, null);
+            
+            Accessibility = RegisterSubRandoButton(
+                RandomizerOptions.GetAccessibilityText,
+                RandomizerOptions.ChangeAccessibility);
+
+            Logic =
+                RegisterSubRandoButton(RandomizerOptions.GetLogicText, RandomizerOptions.ChangeLogic);
+
+            Shards = RegisterSubRandoButton(
+                () => RandomizerOptions.Shards ? "Shuffle Mega Shards" : "No Mega Shards",
+                () => RandomizerOptions.Shards = !RandomizerOptions.Shards);
+
+            LimitedMovement = RegisterSubRandoButton(
+                () => RandomizerOptions.LimMovement ? "Limited Movement" : "All Movement Available",
+                () => RandomizerOptions.LimMovement = !RandomizerOptions.LimMovement);
+            
+            EarlyMed = RegisterSubRandoButton(
+                () => RandomizerOptions.EarlyMed ? "Early Meditation" : "No Early Guaranteed Meditation",
+                () => RandomizerOptions.EarlyMed = !RandomizerOptions.EarlyMed);
+
+            AvailablePortals = RegisterSubRandoButton(
+                RandomizerOptions.GetAvailablePortalsText,
+                RandomizerOptions.ChangeAvailablePortals);
+
+            ShufflePortals = RegisterSubRandoButton(
+                RandomizerOptions.GetPortalShuffleText,
+                RandomizerOptions.ChangePortalShuffle);
+
+            ShuffleTransitions = RegisterSubRandoButton(
+                RandomizerOptions.GetTransitionText,
+                RandomizerOptions.ChangeTransitionShuffle);
+            
+            Goal = RegisterSubRandoButton(
+                () => RandomizerOptions.Goal ? "Power Seal Hunt" : "Open Music Box",
+                () => RandomizerOptions.Goal = !RandomizerOptions.Goal);
+
+            MusicBox = RegisterSubRandoButton(
+                () => RandomizerOptions.MusicBox ? "Do Music Box" : "Skip Music Box",
+                () => RandomizerOptions.MusicBox = !RandomizerOptions.MusicBox);
+
+            NotesNeeded =
+                RegisterSubRandoButton(RandomizerOptions.GetNotesText, RandomizerOptions.ChangeNotes);
+
+            AmountSeals = RegisterTextRandoButton(
+                () => $"Total Power Seals Available: {RandomizerOptions.TotalSeals}",
+                RandomizerOptions.OnTotalSealsEntry,
+                2,
+                charset: TextEntryButtonInfo.CharsetFlags.Number);
+
+            RequiredSeals = RegisterTextRandoButton(
+                () => $"Percentage of Seals Required: {RandomizerOptions.RequiredSeals}",
+                RandomizerOptions.OnRequiredSealsEntry,
+                3,
+                charset: TextEntryButtonInfo.CharsetFlags.Number);
+
+            ShopPrices = RegisterTextRandoButton(
+                () => $"Randomized Shop Price Modifier: {RandomizerOptions.ShopPriceMod}",
+                RandomizerOptions.OnShopPriceModEntry, 
+                3,
+                charset: TextEntryButtonInfo.CharsetFlags.Number);
+
+            BlankSpaceTwo = RegisterSubRandoButton(null, null);
+            
+            ExportButton = RegisterSubRandoButton(
+                () => "Export Randomizer options",
+                () => OptionsExporter.ExportAsync(ExportButton));
+            GenerateButton = RegisterSubRandoButton(
+                () => "Generate solo seed",
+                () => SeedGenerator.GenerateAsync(GenerateButton));
         }
     }
 }

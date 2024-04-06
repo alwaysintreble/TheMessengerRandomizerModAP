@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MessengerRando.Archipelago;
 using Mod.Courier;
 using Mod.Courier.UI;
 using TMPro;
@@ -182,7 +183,7 @@ namespace MessengerRando.Utils
 
                 // Make the selection frames blue
                 foreach (Image image in transform.GetComponentsInChildren<Image>()
-                             .Where((c) => c.name.Equals("SelectionFrame")))
+                             .Where(c => c.name.Equals("SelectionFrame")))
                 {
                     try
                     {
@@ -320,7 +321,7 @@ namespace MessengerRando.Utils
                 // Make the selection frames blue
                 // I should figure out if I can avoid doing this in LateUpdate()
                 foreach (Image image in transform.GetComponentsInChildren<Image>()
-                             .Where((c) => c.name.Equals("SelectionFrame")))
+                             .Where(c => c.name.Equals("SelectionFrame")))
                 {
                     try
                     {
@@ -359,7 +360,7 @@ namespace MessengerRando.Utils
                     {
                         CourierLogger.Log(LogType.Exception, "RandoScreen",
                             "Image not Read/Writeable when recoloring selection frames in ModOptionScreen");
-                        CourierLogger.LogDetailed(e);
+                        e.LogDetailed();
                     }
                 }
             }
@@ -433,6 +434,21 @@ namespace MessengerRando.Utils
                 new TextEntryButtonInfo(getText, onEntry, maxCharacter, getEntryText, getInitialText, charset);
             RegisterRandoButton(buttonInfo);
             return buttonInfo;
+        }
+        
+        public static void BuildHintMenu()
+        {
+            // HintMenu.ArchipelagoHintMenuButton =
+            //     Courier.UI.RegisterSubMenuOptionButton(() => "Hint Menu", HintMenu.DisplayHintMenu);
+            // HintMenu.ArchipelagoHintMenuButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+
+            //Add Archipelago hint button
+            archipelagoHintButton = ArchipelagoMenu.RegisterTextRandoButton(
+                () => "Hint for an item",
+                APRandomizerMain.OnSelectArchipelagoHint,
+                30,
+                () => "Enter item name:");
+            archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
         }
     }
 }

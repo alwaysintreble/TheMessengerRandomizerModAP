@@ -346,7 +346,7 @@ namespace MessengerRando.Archipelago
             }
         }
 
-        public static void SyncEvents()
+        private static void SyncEvents()
         {
             if (hasSynced) return;
             Console.WriteLine("Checking datastorage events");
@@ -362,9 +362,8 @@ namespace MessengerRando.Archipelago
         }
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
-            // Console.WriteLine("OnItemReceived called");
             var itemToUnlock = helper.DequeueItem();
-            if (helper.Index < ServerData.Index) return;
+            if (helper.Index <= ServerData.Index) return;
 
             ServerData.Index++;
             ItemQueue.Enqueue(itemToUnlock.Item);
@@ -419,7 +418,7 @@ namespace MessengerRando.Archipelago
                 return;
             }
             
-            if (ServerData.Index == Session.Items.AllItemsReceived.Count)
+            if (ServerData.Index < Session.Items.AllItemsReceived.Count)
                 return;
             Debug.Log("re-syncing...");
             ItemsAndLocationsHandler.ReSync();

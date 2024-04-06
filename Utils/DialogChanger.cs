@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using MessengerRando.Utils.Constants;
+using MessengerRando.GameOverrideManagers;
 using UnityEngine;
 
 namespace MessengerRando.Utils
@@ -119,10 +119,7 @@ namespace MessengerRando.Utils
                         }
                     }
 
-                    ReplaceFlavorDialog.UpdateLoc(Loc);
-                    
-                    //Sets the replacements
-                    // dialogByLocIDField.SetValue(self, Loc);
+                    FlavorDialogManager.UpdateLoc(Loc);
                 }
             }
 

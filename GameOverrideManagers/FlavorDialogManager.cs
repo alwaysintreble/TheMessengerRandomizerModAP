@@ -1,13 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
+using MessengerRando.Utils;
+using Mod.Courier;
+using UnityEngine;
+using UnityEngine.UI;
 
-namespace MessengerRando.Utils.Constants
+namespace MessengerRando.GameOverrideManagers
 {
-    public static class ReplaceFlavorDialog
+    public static class FlavorDialogManager
     {
+        private struct DialogBox
+        {
+            public string Text;
+            public CharacterDefinition Speaker;
+            public int Delay;
+
+            public DialogBox(string text, ECharacter speaker, int delay)
+            {
+                Text = text;
+                Speaker = Manager<DialogManager>.Instance.GetCharacterDefinition(speaker);
+                Delay = delay;
+            }
+        }
+
         public static CharacterDefinition ProphetDefinition;
         public static CharacterDefinition MessengerDefinition;
+
         static List<DialogInfo> ModifyDialogInfo(string locID, List<DialogInfo> infoToReplace)
         {
             switch (locID)
@@ -24,7 +43,6 @@ namespace MessengerRando.Utils.Constants
                     var newText =
                         ProphetIntroReplacements[
                             RandomizerStateManager.SeedRandom.Next(ProphetIntroReplacements.Count)];
-                    var newTextAsList = newText.ToList();
                     var toRemove = 0;
                     var newInfoList = new List<DialogInfo>();
                     foreach (var kvp in newText)
@@ -94,7 +112,10 @@ namespace MessengerRando.Utils.Constants
                 { "...", "Messenger" },
                 { "Can you at least have a look around to see if you can find them?", "Prophet" },
                 { "Sure.", "Messenger" },
-                { "<event=OpenPortals>*ahem* <color=#fd465b>BEHOLD</color>, and may you see success on your valiant journey oh yee valiant <color=#6844fc>Messenger</color>.", "Prophet" },
+                {
+                    "<event=OpenPortals>*ahem* <color=#fd465b>BEHOLD</color>, and may you see success on your journey oh yee valiant <color=#6844fc>Messenger</color>.",
+                    "Prophet"
+                },
                 { "Uh. Right. Thanks.", "Messenger" },
             },
             new Dictionary<string, string>
@@ -107,7 +128,10 @@ namespace MessengerRando.Utils.Constants
                 { "Do you ever think about what we're doing here?", "Prophet" },
                 { "Something about this Music Box thing, right?", "Messenger" },
                 { "Nevermind. *ahem* AND THUS THE WHEEL OF TIME CONTINUED TO TURN.", "Prophet" },
-                { "AND ALL THOSE WITHIN CONTINUED UNABATED, UNRELENTING ALONG THE CHARIOT OF THEIR ULTIMATE DESTINY.", "Prophet" },
+                {
+                    "AND ALL THOSE WITHIN CONTINUED UNABATED, UNRELENTING ALONG THE CHARIOT OF THEIR ULTIMATE DESTINY.",
+                    "Prophet"
+                },
                 { "...", "Messenger" },
                 { "<event=OpenPortals>Look just go find the things, ok?", "Prophet" },
             },
@@ -116,5 +140,20 @@ namespace MessengerRando.Utils.Constants
                 { "<event=OpenPortals>I could really go for a pizza right now.", "Prophet" },
             }
         };
+
+        public static string GetText(On.LocalizationManager.orig_GetText orig, LocalizationManager self, string locid)
+        {
+            Console.WriteLine($"Requesting text for {locid}");
+            switch (locid)
+            {
+                case "FIRST_HP_UPGRADE_NAME":
+                    return "This is a test.";
+                case "FIRST_HP_UPGRADE_DESCRIPTION":
+                    return "And so is this.";
+            }
+            var text = orig(self, locid);
+            Console.WriteLine(text);
+            return text;
+        }
     }
 }

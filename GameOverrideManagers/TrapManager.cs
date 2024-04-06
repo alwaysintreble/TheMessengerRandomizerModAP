@@ -63,7 +63,7 @@ namespace MessengerRando.GameOverrideManagers
                      {
                          text = text,
                          textID = $"PROPHECY_{count}",
-                         characterDefinition = ReplaceFlavorDialog.ProphetDefinition,
+                         characterDefinition = FlavorDialogManager.ProphetDefinition,
                          skippable = false,
                          autoClose = true,
                          autoCloseDelay = 2
@@ -176,12 +176,12 @@ namespace MessengerRando.GameOverrideManagers
         private static readonly List<LevelConstants.RandoLevel> TeleportTrapLocations =
             new List<LevelConstants.RandoLevel>
             {
-                new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(195, -357)),
-                new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(444, 140)),
-                new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(581, -41)),
+                new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(127, -55)),
+                new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(457, 137)),
+                new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(797, -38)),
                 new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(162, -109)),
-                new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(253, -85)),
-                new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(184, -144)),
+                new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(253, -75)),
+                new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(458, -50)),
             };
 
         private static readonly List<ELevel> availableTrapLevels =

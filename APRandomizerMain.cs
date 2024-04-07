@@ -452,10 +452,9 @@ namespace MessengerRando
                 ArchipelagoClient.HasConnected = false;
                 ArchipelagoClient.Offline = false;
                 RandoBossManager.DefeatedBosses = new List<string>();
-                RandoPortalManager.StartingPortals = new List<string>();
-                RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
-                RandoLevelManager.RandoLevelMapping =
-                    new Dictionary<string, LevelConstants.RandoLevel>();
+                RandoPortalManager.StartingPortals = null;
+                RandoPortalManager.PortalMapping = null;
+                RandoLevelManager.RandoLevelMapping = null;
                 Manager<ProgressionManager>.Instance.powerSealTotal = 0;
             }
             randoStateManager = new RandomizerStateManager();

@@ -68,6 +68,8 @@ namespace MessengerRando
             On.LostWoods.SetAsSolved += LostWoodsManager.OnSetAsSolved;
             // shop management
             On.UpgradeButtonData.GetPrice += RandoShopManager.GetPrice;
+            On.LocalizationManager.GetText += RandoShopManager.GetText;
+            // On.UpgradeButton.Refresh += RandoShopManager.UpgradeButton_Refresh;
             On.BuyMoneyWrenchCutscene.OnBuyWrenchChoice += RandoShopManager.BuyMoneyWrench;
             On.BuyMoneyWrenchCutscene.EndCutsceneOnDialogDone += RandoShopManager.EndMoneyWrenchCutscene;
             On.MoneySinkUnclogCutscene.OnDialogOutDone += RandoShopManager.UnclogSink;

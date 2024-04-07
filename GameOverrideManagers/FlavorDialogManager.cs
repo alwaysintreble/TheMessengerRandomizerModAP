@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using MessengerRando.Utils;
-using Mod.Courier;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace MessengerRando.GameOverrideManagers
 {
@@ -140,20 +135,5 @@ namespace MessengerRando.GameOverrideManagers
                 { "<event=OpenPortals>I could really go for a pizza right now.", "Prophet" },
             }
         };
-
-        public static string GetText(On.LocalizationManager.orig_GetText orig, LocalizationManager self, string locid)
-        {
-            Console.WriteLine($"Requesting text for {locid}");
-            switch (locid)
-            {
-                case "FIRST_HP_UPGRADE_NAME":
-                    return "This is a test.";
-                case "FIRST_HP_UPGRADE_DESCRIPTION":
-                    return "And so is this.";
-            }
-            var text = orig(self, locid);
-            Console.WriteLine(text);
-            return text;
-        }
     }
 }

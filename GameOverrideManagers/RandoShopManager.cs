@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
+using MessengerRando.Utils;
+using Mod.Courier;
 using UnityEngine;
 
 namespace MessengerRando.GameOverrideManagers
@@ -11,7 +13,7 @@ namespace MessengerRando.GameOverrideManagers
     {
         public static Dictionary<EShopUpgradeID, int> ShopPrices;
         public static Dictionary<EFigurine, int> FigurePrices;
-        public static Queue FigurineQueue = new Queue();
+        private static readonly Queue FigurineQueue = new Queue();
         private static bool figurineOverride;
         private static int wrenchPrice;
         
@@ -108,6 +110,112 @@ namespace MessengerRando.GameOverrideManagers
             //Unlock the glide attack (no need to keep it hidden, player can just buy it whenever they want.
             var isUnlocked = EShopUpgradeID.GLIDE_ATTACK.Equals(self.upgradeID) || orig(self);
             return isUnlocked;
+        }
+
+        public static void UpgradeButton_Refresh(On.UpgradeButton.orig_Refresh orig, UpgradeButton self)
+        {
+            try
+            {
+                orig(self);
+                var icon = Courier.LoadFromAssetBundles<Sprite>(Application.streamingAssetsPath + "/AP Icon.prefab");
+                var sprite = Resources.Load<Sprite>(Application.streamingAssetsPath + "/AP Icon.prefab");
+                self.icon.sprite = icon;
+            }
+            catch (Exception e)
+            {
+                e.LogDetailed();
+            }
+        }
+        
+        public static string GetText(On.LocalizationManager.orig_GetText orig, LocalizationManager self, string locid)
+        {
+            if (!InShop()) return orig(self, locid);
+            Console.WriteLine($"Requesting text for {locid}");
+            if (!ArchipelagoClient.HasConnected) return orig(self, locid);
+            var locType = TextType.None;
+            var lookupName = string.Empty;
+            if (locid.Contains("DESCRIPTION"))
+            {
+                Console.WriteLine("description");
+                locType = TextType.Description;
+                lookupName = locid.Replace("_DESCRIPTION", string.Empty);
+            }
+            else if (locid.Contains("NAME"))
+            {
+                Console.WriteLine("name");
+                locType = TextType.Name;
+                lookupName = locid.Replace("_NAME", string.Empty);
+            }
+
+            if (locType.Equals(TextType.None))
+                return orig(self, locid);
+            
+            if (!ShopTextToItems.TryGetValue(lookupName, out var itemType))
+            {
+                return orig(self, locid);
+            }
+
+            var locationID = ItemsAndLocationsHandler.LocationFromEItem(itemType);
+            switch (itemType)
+            {
+                case EItems.HEART_CONTAINER when lookupName.Contains("SECOND"):
+                    ItemsAndLocationsHandler.LocationsLookup.TryGetValue(
+                        new LocationRO("HP_UPGRADE_2", EItems.HEART_CONTAINER), out locationID);
+                    break;
+                case EItems.SHURIKEN_UPGRADE when lookupName.Contains("SECOND"):
+                    ItemsAndLocationsHandler.LocationsLookup.TryGetValue(new LocationRO("SHURIKEN_UPGRADE_2",
+                        EItems.SHURIKEN_UPGRADE), out locationID);
+                    break;
+            }
+
+            var itemOnLocation = RandomizerStateManager.Instance.ScoutedLocations[locationID];
+            if (locType.Equals(TextType.Name) && !hinted.Contains(locationID) && ArchipelagoClient.Authenticated)
+            {
+                ArchipelagoClient.Session.Locations.ScoutLocationsAsync(null, true, locationID);
+                hinted.Add(locationID);
+            }
+            var text = locType.Equals(TextType.Name)
+                ? itemOnLocation.Colorize()
+                : itemOnLocation.GetShopDescription();
+            Console.WriteLine(text);
+            return text;
+        }
+
+        private enum TextType
+        {
+            None,
+            Name,
+            Description,
+        }
+
+        private static readonly Dictionary<string, EItems> ShopTextToItems = new Dictionary<string, EItems>
+        {
+            { "MAP_PORTALS", EItems.MAP_TIME_WARP },
+            { "CHALLENGE_ROOM_WORLDMAP", EItems.MAP_POWER_SEAL_TOTAL },
+            { "CHALLENGE_ROOM_LOCALMAP", EItems.MAP_POWER_SEAL_PINS },
+            { "DAMAGE_REDUCTION", EItems.DAMAGE_REDUCTION },
+            { "ENEMY_HP_DROP", EItems.ENEMY_DROP_HP },
+            { "ENEMY_KI_DROP", EItems.ENEMY_DROP_MANA },
+            { "CHECKPOINT_UPGRADE", EItems.CHECKPOINT_UPGRADE },
+            { "FIRST_HP_UPGRADE", EItems.HEART_CONTAINER },
+            { "SECOND_HP_UPGRADE", EItems.HEART_CONTAINER },
+            { "LAST_HP_UPGRADE", EItems.POTION_FULL_HEAL_AND_HP_UPGRADE },
+            { "FIRST_KI_UPGRADE", EItems.SHURIKEN_UPGRADE },
+            { "SECOND_KI_UPGRADE", EItems.SHURIKEN_UPGRADE },
+            { "QUARBLE_DISCOUNT", EItems.QUARBLE_DISCOUNT_50 },
+            { "AIR_RECOVER", EItems.AIR_RECOVER },
+            { "UNLOCK_SHURIKEN", EItems.SHURIKEN },
+            { "ATTACK_PROJECTILE", EItems.ATTACK_PROJECTILES },
+            { "POWER_ATTACK", EItems.CHARGED_ATTACK },
+            { "SWIM_DASH", EItems.SWIM_DASH },
+            { "GLIDE_ATTACK", EItems.GLIDE_ATTACK },
+        };
+
+        private static List<long> hinted = new List<long>();
+
+        private static bool InShop()
+        {
+            return Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE;
         }
     }
 }

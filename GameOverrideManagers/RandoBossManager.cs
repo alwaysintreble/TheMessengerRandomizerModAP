@@ -138,7 +138,9 @@ namespace MessengerRando.GameOverrideManagers
             if (bossOverride)
                 bossName = RandomizerStateManager.Instance.BossManager.origToNewBoss
                     .First(name => name.Value.Equals(bossName)).Key;
+            #if DEBUG
             Console.WriteLine($"Checking if {bossName} is defeated.");
+            #endif
             try
             {
                 return !VanillaBossNames.Contains(bossName) || DefeatedBosses.Contains(bossName);

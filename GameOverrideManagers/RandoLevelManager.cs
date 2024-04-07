@@ -245,6 +245,7 @@ namespace MessengerRando.GameOverrideManagers
             else if (RandoLevelMapping != null)
                 self.startOnManfred = teleporting;
             orig(self);
+            KillManfred = false;
         }
 
         public static void CleanupBeforeTeleport()

@@ -167,7 +167,7 @@ namespace MessengerRando.GameOverrideManagers
                         new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(61, -27)),
                         new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(147.5f, 69)),
                         new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(226.5f, 151)),
-                        new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(282, 23)),
+                        new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(282, 237)),
                         new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(380.5f, 309)),
                         new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(119.5f, 248), EBits.BITS_8),
                     },

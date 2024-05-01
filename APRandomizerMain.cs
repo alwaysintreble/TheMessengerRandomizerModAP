@@ -638,6 +638,13 @@ namespace MessengerRando
             Manager<LevelManager>.Instance.LoadLevel(levelLoadingInfo);
         }
 
+        public static void OnSelectTeleportToSearing()
+        {
+            ArchipelagoMenu.archipelagoScreen.Close(false);
+            RandoLevelManager.TeleportInArea(new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags,
+                new Vector3(380.5f, 309)));
+        }
+
         public static bool OnSelectArchipelagoHost(string answer)
         {
             if (answer == null) return true;

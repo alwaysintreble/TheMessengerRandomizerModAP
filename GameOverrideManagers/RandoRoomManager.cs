@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Archipelago.MultiClient.Net.Enums;
+using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
 using WebSocketSharp;
 
@@ -10,6 +12,8 @@ namespace MessengerRando.GameOverrideManagers
         public static bool RoomRando;
         private static bool roomOverride;
         private static Dictionary<string, string> roomMap; // old room name - new room name
+
+        private static readonly List<string> TeleportRoomKeys = ["-500 -148 -60 -44", "364 396 308 324"];
         
         static string GetRoomKey(ScreenEdge left, ScreenEdge right, ScreenEdge bottom, ScreenEdge top)
         {
@@ -57,6 +61,18 @@ namespace MessengerRando.GameOverrideManagers
             //if we're in a room, it leaves the current room then enters the new room with the teleported bool
             //no idea what the teleported bool does currently
             orig(self, leftEdge, rightEdge, bottomEdge, topEdge, teleportedInRoom);
+            if (TeleportRoomKeys.Contains(oldRoomKey))
+            {
+                var index = TeleportRoomKeys.IndexOf(oldRoomKey);
+                if (oldRoomKey == TeleportRoomKeys[index])
+                {
+                    var teleportStorage = ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"];
+                    teleportStorage.Initialize(new List<bool>{false, false});
+                    var currentData = teleportStorage.To<List<bool>>();
+                    currentData[index] = true;
+                    ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"] = currentData;
+                }
+            }
             if (roomOverride)
             {
                 roomOverride = false;

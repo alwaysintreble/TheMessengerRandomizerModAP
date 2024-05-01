@@ -29,6 +29,7 @@ namespace MessengerRando.Utils
         public static SubMenuButtonInfo WindmillShurikenToggleButton;
         public static SubMenuButtonInfo TeleportToHqButton;
         public static SubMenuButtonInfo TeleportToNinjaVillage;
+        public static SubMenuButtonInfo TeleportToSearingShop;
         public static SubMenuButtonInfo ShuffleMusicButton;
 
         public static SubMenuButtonInfo ArchipelagoHostButton;
@@ -591,11 +592,11 @@ namespace MessengerRando.Utils
             TeleportToNinjaVillage = RegisterSubRandoButton(
                 () => "Teleport to Ninja Village",
                 APRandomizerMain.OnSelectTeleportToNinjaVillage);
-            TeleportToNinjaVillage.IsEnabled = () =>
-                Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
-                Manager<ProgressionManager>.Instance.levelsDiscovered.Contains(ELevel.Level_01_NinjaVillage) &&
-                RandoLevelManager.RandoLevelMapping == null &&
-                RandomizerStateManager.IsSafeTeleportState();
+            TeleportToNinjaVillage.IsEnabled = () => RandomizerStateManager.Instance.CanNinjaWarp;
+
+            TeleportToSearingShop = RegisterSubRandoButton(() => "Teleport to Searing Crags",
+                APRandomizerMain.OnSelectTeleportToSearing);
+            TeleportToSearingShop.IsEnabled = () => RandomizerStateManager.Instance.CanSearingWarp;
 
             //Add Archipelago status button
             ArchipelagoStatusButton = RegisterSubRandoButton(

@@ -359,6 +359,12 @@ namespace MessengerRando.Archipelago
                 Manager<ProgressionManager>.Instance.cutscenesPlayed.Add(cutscene);
             }
 
+            var teleportStorage = Session.DataStorage[Scope.Slot, "UnlockedTeleports"];
+            teleportStorage.Initialize(new List<bool>{false, false});
+            var storedBools = teleportStorage.To<List<bool>>();
+            RandomizerStateManager.Instance.CanNinjaWarp = storedBools[0];
+            RandomizerStateManager.Instance.CanSearingWarp = storedBools[1];
+
             hasSynced = true;
         }
         private static void OnItemReceived(ReceivedItemsHelper helper)

@@ -37,6 +37,7 @@ namespace MessengerRando.Utils
         public readonly Dictionary<int, ArchipelagoData> APSave;
 
         public static Random SeedRandom;
+        public static bool OnMainMenu = true;
 
         public RandomizerStateManager()
         {
@@ -231,6 +232,10 @@ namespace MessengerRando.Utils
             }
 
             var invManager = Manager<InventoryManager>.Instance;
+            invManager.ItemQuantityByItemId = new();
+            invManager.shopUpgradeUnlocked = [];
+            invManager.figurinesCollected = [];
+            
             invManager.ItemQuantityByItemId.Add(EItems.SCROLL_UPGRADE, 1);
             invManager.ItemQuantityByItemId.Add(EItems.TIME_SHARD, 0);
             invManager.ItemQuantityByItemId.Add(EItems.MAP, 1);
@@ -305,13 +310,10 @@ namespace MessengerRando.Utils
                 // "PortalOpeningCutscene",
                 "ExitPortalAwardMapCutscene",
             };
-            progManager.cutscenesPlayed.AddRange(skipCutscenes);
+            progManager.cutscenesPlayed = skipCutscenes;
 
-            progManager.actionSequenceDone.AddRange(new []{
-                "AwardGrimplouSequence(Clone)",
-                "AwardGlidouSequence(Clone)",
-                "AwardGraplouSequence(Clone)"
-            });
+            progManager.actionSequenceDone =
+                ["AwardGrimplouSequence(Clone)", "AwardGlidouSequence(Clone)", "AwardGraplouSequence(Clone)"];
             // copy everything from the managers to the save slot
             saveManager.GetCurrentSaveGameSlot().UpdateSaveGameData();
             saveManager.Save();

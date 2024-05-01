@@ -12,6 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <Version>0.14.1</Version>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -115,6 +116,7 @@
     <Compile Include="RO\RandoItemRO.cs" />
     <Compile Include="RO\LocationRO.cs" />
     <Compile Include="Utils\OptionsExporter.cs" />
+    <Compile Include="Utils\ReflectionHelpers.cs" />
     <Compile Include="Utils\SeedGenerator.cs" />
     <Compile Include="Utils\HintMenu.cs" />
     <Compile Include="Utils\Constants\BossConstants.cs" />

@@ -365,6 +365,10 @@ namespace MessengerRando
                     "a randomized file. Resetting the mappings and putting game items back to normal.");
                 ArchipelagoClient.ServerData = new ArchipelagoData();
             }
+            else
+            {
+                RandomizerStateManager.OnMainMenu = false;
+            }
 
             orig(self, slotIndex);
             Manager<AudioManager>.Instance.levelMusicShuffle = RandoMusicManager.ShuffleMusic;
@@ -451,6 +455,7 @@ namespace MessengerRando
                 ArchipelagoClient.Disconnect();
                 ArchipelagoClient.HasConnected = false;
                 ArchipelagoClient.Offline = false;
+                ArchipelagoClient.OfflineReceivedItems = 0;
                 RandoBossManager.DefeatedBosses = new List<string>();
                 RandoPortalManager.StartingPortals = null;
                 RandoPortalManager.PortalMapping = null;
@@ -459,6 +464,7 @@ namespace MessengerRando
             }
             randoStateManager = new RandomizerStateManager();
             ArchipelagoClient.ServerData = new ArchipelagoData();
+            RandomizerStateManager.OnMainMenu = true;
             orig();
             Console.WriteLine("returned to title");
             Manager<UIManager>.Instance.GetView<InGameHud>().UpdateShurikenVisibility();

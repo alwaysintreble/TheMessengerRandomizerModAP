@@ -38,6 +38,7 @@ namespace MessengerRando.Archipelago
         public static Queue ItemQueue = new Queue();
         public static Queue DialogQueue = new Queue();
         private static Queue messageQueue = new Queue();
+        public static int OfflineReceivedItems;
 
         public static List<string> EventsICareAbout = new List<string>
         {
@@ -363,9 +364,18 @@ namespace MessengerRando.Archipelago
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
             var itemToUnlock = helper.DequeueItem();
+            Console.WriteLine($"helper index: {helper.Index}");
+            Console.WriteLine($"Saved index: {ServerData.Index}");
             if (helper.Index <= ServerData.Index) return;
 
-            ServerData.Index++;
+            if (RandomizerStateManager.OnMainMenu)
+            {
+                OfflineReceivedItems++;
+            }
+            else
+            {
+                ServerData.Index++;
+            }
             ItemQueue.Enqueue(itemToUnlock.Item);
             if (itemToUnlock.Player != Session.ConnectionInfo.Slot)
                 DialogQueue.Enqueue(itemToUnlock.ToReadableString());

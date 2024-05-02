@@ -26,6 +26,7 @@ namespace MessengerRando.Utils
         // customizable seed input
         public static SubMenuButtonInfo Name;
         public static SubMenuButtonInfo SeedNumButton;
+        public static SubMenuButtonInfo GenerateSeed;
         public static SubMenuButtonInfo SpoilerLevel;
         public static SubMenuButtonInfo BlankSpaceOne;
         // options
@@ -511,6 +512,10 @@ namespace MessengerRando.Utils
                 20,
                 () => "Enter seed to be used for generation",
                 charset: TextEntryButtonInfo.CharsetFlags.Number);
+
+            GenerateSeed = RegisterSubRandoButton(
+                () => "Generate Seed Number",
+                RandomizerOptions.OnGenerateSeed);
 
             SpoilerLevel = RegisterSubRandoButton(
                 RandomizerOptions.GetSpoilerText,

@@ -20,6 +20,16 @@ namespace MessengerRando.Utils
             Seed = input;
             return true;
         }
+
+        public static void OnGenerateSeed()
+        {
+            var random = new Random();
+            Seed = string.Empty;
+            for (var i = 0; i < 10; i++)
+            {
+                Seed += random.Next(10).ToString();
+            }
+        }
         
         // spoiler
         public static int SpoilerLevel = 3;

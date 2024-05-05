@@ -54,7 +54,7 @@ namespace MessengerRando.GameOverrideManagers
         {
             var dialogBox = ScriptableObject.CreateInstance<DialogSequence>();
             dialogBox.dialogID = "PROPHECY_TRAP";
-            dialogBox.name = "*ahem";
+            dialogBox.name = "*ahem*";
             dialogBox.choices = new List<DialogSequenceChoice>();
             var dialogInfoList = new List<DialogInfo>();
             var dialogToAdd = ProphecyTrapDialog[RandomizerStateManager.SeedRandom.Next(ProphecyTrapDialog.Count)];
@@ -66,7 +66,7 @@ namespace MessengerRando.GameOverrideManagers
                          characterDefinition = FlavorDialogManager.ProphetDefinition,
                          skippable = false,
                          autoClose = true,
-                         autoCloseDelay = 2
+                         autoCloseDelay = 1
                      }))
             {
                 count++;
@@ -86,7 +86,7 @@ namespace MessengerRando.GameOverrideManagers
         public static void TryTeleportPlayer()
         {
             var level = Manager<LevelManager>.Instance;
-            if (availableTrapLevels.Contains(level.GetCurrentLevelEnum()) &&
+            if (AvailableTrapLevels.Contains(level.GetCurrentLevelEnum()) &&
                 RandomizerStateManager.IsSafeTeleportState())
             {
                 PreTeleLocation = Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition;
@@ -107,7 +107,7 @@ namespace MessengerRando.GameOverrideManagers
             if (queuedTeleports == 0) return;
             if (!RandomizerStateManager.IsSafeTeleportState()) return;
             var level = Manager<LevelManager>.Instance;
-            if (!availableTrapLevels.Contains(level.GetCurrentLevelEnum())) return;
+            if (!AvailableTrapLevels.Contains(level.GetCurrentLevelEnum())) return;
             PreTeleLocation = Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition;
             teleTrapped = true;
             queuedTeleports--;
@@ -161,30 +161,41 @@ namespace MessengerRando.GameOverrideManagers
 
         private static readonly List<List<string>> ProphecyTrapDialog = new List<List<string>>
         {
-            new List<string>
+            new()
             {
                 "*ahem* AS WAS FORETOLD IN THE VISIONS. <color=#6844fc>HE</color> CARRIES FORTH THE <color=#00fcfc>MESSAGE</color> FOR ALL THOSE TO BEAR WITNESS",
                 "AND THUS HE MASTERED TIME ITSELF (though maybe not those pesky pits as much)."
             },
-            new List<string>
+            new()
             {
                 "*ahem* THE MISTS OF LEGEND ARE QUITE COMPLEX AND FOGGY, BUT WE ARE HERE TO GUIDE YOU FURTHER.",
                 "ASK THUS AND BE THUSLY PROVIDED YE OF THE SHALLOW CUP FOR HE SHALL JUMP OVER THAT PROJECTILE.",
             },
+            new()
+            {
+                "*ahem* DID YOU EVER HEAR THE TRAGEDY OF <color=#F30709>DARTH PLAGUEIS</color> THE WISE?",
+                "I THOUGHT NOT. IT'S NOT A STORY THE JEDI WOULD TELL YOU.",
+                "IT'S A SITH LEGEND. <color=#F30709>DARTH PLAGUEIS</color> WAS A DARK LORD OF THE SITH, SO POWERFUL AND SO WISE, HE COULD USE THE FORCE TO INFLUENCE THE MIDICHLORIANS TO CREATE LIFE...",
+                "HE HAD SUCH A KNOWLEDGE OF THE DARK SIDE THAT HE COULD EVEN KEEP THE ONES HE CARED ABOUT FROM DYING.",
+                "THE DARK SIDE OF THE FORCE IS A PATHWAY TO MANY ABILITIES SOME CONSIDER TO BE UNNATURAL.",
+                "HE BECAME SO POWERFUL... THE ONLY THING HE WAS AFRAID OF WAS LOSING HIS POWER, WHICH EVENTUALLY, OF COURSE, HE DID.",
+                "UNFORTUNATELY, HE TAUGHT HIS APPRENTICE EVERYTHING HE KNEW, THEN HIS APPRENTICE KILLED HIM IN HIS SLEEP.",
+                "<color=#E2A720>IRONIC</color>.",
+                "HE COULD SAVE OTHERS FROM DEATH, BUT NOT HIMSELF."
+            }
         };
 
         private static readonly List<LevelConstants.RandoLevel> TeleportTrapLocations =
-            new List<LevelConstants.RandoLevel>
-            {
-                new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(127, -55)),
-                new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(457, 137)),
-                new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(797, -38)),
-                new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(162, -109)),
-                new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(253, -75)),
-                new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(458, -50)),
-            };
+        [
+            new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(127, -55)),
+            new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(457, 137)),
+            new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(797, -38)),
+            new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(162, -109)),
+            new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(253, -75)),
+            new LevelConstants.RandoLevel(ELevel.Level_02_AutumnHills, new Vector3(458, -50))
+        ];
 
-        private static readonly List<ELevel> availableTrapLevels =
+        private static readonly List<ELevel> AvailableTrapLevels =
             TeleportTrapLocations.Select(level => level.LevelName).ToList();
 
         public static void UpdateTrapStatus()

@@ -93,6 +93,7 @@ namespace MessengerRando.GameOverrideManagers
         {
             "You have been <color=#66ff66>randomized</color>.",
             "Echo!",
+            "Shoutouts to Simpleflips.",
         };
 
         static readonly List<Dictionary<string, string>> ProphetIntroReplacements = new List<Dictionary<string, string>>
@@ -129,10 +130,23 @@ namespace MessengerRando.GameOverrideManagers
                 },
                 { "...", "Messenger" },
                 { "<event=OpenPortals>Look just go find the things, ok?", "Prophet" },
+                { "...Right.", "Messenger" },
             },
             new Dictionary<string, string>
             {
                 { "<event=OpenPortals>I could really go for a pizza right now.", "Prophet" },
+                { "Get me anchovies.", "Messenger" },
+            },
+            new Dictionary<string, string>
+            {
+                { "Welcome, young Messenger", "Prophet" },
+                { "Who are you?" , "Messenger" },
+                { "I am your sister's cousin's father's brother's dog's veterinarian's nephew's parole officer's " +
+                  "evil twin's best friend's long lost roommate's third favorite singer's tax consultant's " +
+                  "chef's architect's dungeon master", "Prophet" },
+                { "And what does that make us?", "Messenger" },
+                { "<event=OpenPortals>-CHARACTER LIMIT EXCEEDED-", "Prophet" },
+                { "<color=#f30709>OVERFLOW ERROR</color>", "Prophet" },
             }
         };
     }

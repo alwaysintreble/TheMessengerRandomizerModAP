@@ -456,7 +456,7 @@ namespace MessengerRando
                 ArchipelagoClient.HasConnected = false;
                 ArchipelagoClient.Offline = false;
                 ArchipelagoClient.OfflineReceivedItems = 0;
-                RandoBossManager.DefeatedBosses = new List<string>();
+                RandoBossManager.DefeatedBosses = [];
                 RandoPortalManager.StartingPortals = null;
                 RandoPortalManager.PortalMapping = null;
                 RandoLevelManager.RandoLevelMapping = null;

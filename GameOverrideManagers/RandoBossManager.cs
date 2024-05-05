@@ -12,7 +12,7 @@ namespace MessengerRando.GameOverrideManagers
 {
     public abstract class RandoBossManager
     {
-        public static List<string> DefeatedBosses = new List<string>();
+        public static List<string> DefeatedBosses = [];
 
         private readonly Dictionary<string, string> origToNewBoss;
         private static bool bossOverride;
@@ -243,7 +243,7 @@ namespace MessengerRando.GameOverrideManagers
         {
             if (IDToBossMap.TryGetValue(locationID, out var boss))
             {
-                DefeatedBosses.Add(boss);
+                SetBossAsDefeated(boss);
             }
         }
 

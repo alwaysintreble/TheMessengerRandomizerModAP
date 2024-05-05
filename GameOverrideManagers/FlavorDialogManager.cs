@@ -63,7 +63,7 @@ namespace MessengerRando.GameOverrideManagers
                             characterDefinition = replaceChar,
                             skippable = false,
                             autoClose = true,
-                            autoCloseDelay = 2
+                            autoCloseDelay = 1
                         };
                         newInfoList.Add(newInfo);
                     }

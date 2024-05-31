@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
 using MessengerRando.Utils;
@@ -16,7 +17,7 @@ namespace MessengerRando.GameOverrideManagers
         private static readonly Queue FigurineQueue = new Queue();
         private static bool figurineOverride;
         private static int wrenchPrice;
-        
+
         public static int GetPrice(On.UpgradeButtonData.orig_GetPrice orig, UpgradeButtonData self)
         {
             //modify shop prices here
@@ -55,7 +56,7 @@ namespace MessengerRando.GameOverrideManagers
             bool camera, bool borders, bool transition)
         {
             orig(self, camera, borders, transition);
-            
+
             try
             {
                 while (FigurineQueue.Count > 0)
@@ -63,11 +64,16 @@ namespace MessengerRando.GameOverrideManagers
                     var figurine = (EFigurine)FigurineQueue.Dequeue();
                     Debug.Log($"Unlocking {figurine}");
                     UnlockFigurine(figurine);
-                }   
-            } catch (Exception e) {Console.WriteLine(e);}
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
-        public static ShopListItemData GetFigurineData(On.IronHoodShopScreen.orig_GetFigurineData orig, IronHoodShopScreen self,
+        public static ShopListItemData GetFigurineData(On.IronHoodShopScreen.orig_GetFigurineData orig,
+            IronHoodShopScreen self,
             FigurineDefinition figurineDefinition)
         {
             var figurine = figurineDefinition.figurineID;
@@ -103,7 +109,7 @@ namespace MessengerRando.GameOverrideManagers
                     .ContainsKey(wrenchID))
                 Manager<ProgressionManager>.Instance.UnsetFlag(Flags.MoneySinkUnclogged);
         }
-        
+
         public static bool IsStoryUnlocked(On.UpgradeButtonData.orig_IsStoryUnlocked orig, UpgradeButtonData self)
         {
             //Checking if this particular upgrade is the glide attack
@@ -126,10 +132,10 @@ namespace MessengerRando.GameOverrideManagers
                 e.LogDetailed();
             }
         }
-        
+
         public static string GetText(On.LocalizationManager.orig_GetText orig, LocalizationManager self, string locid)
         {
-            if (!InShop()) return orig(self, locid);
+            // if (!InShop()) return orig(self, locid);
             Console.WriteLine($"Requesting text for {locid}");
             if (!ArchipelagoClient.HasConnected) return orig(self, locid);
             var locType = TextType.None;
@@ -149,7 +155,7 @@ namespace MessengerRando.GameOverrideManagers
 
             if (locType.Equals(TextType.None))
                 return orig(self, locid);
-            
+
             if (!ShopTextToItems.TryGetValue(lookupName, out var itemType))
             {
                 return orig(self, locid);
@@ -171,9 +177,11 @@ namespace MessengerRando.GameOverrideManagers
             var itemOnLocation = RandomizerStateManager.Instance.ScoutedLocations[locationID];
             if (locType.Equals(TextType.Name) && !hinted.Contains(locationID) && ArchipelagoClient.Authenticated)
             {
-                ArchipelagoClient.Session.Locations.ScoutLocationsAsync(null, true, locationID);
+                ThreadPool.QueueUserWorkItem(_ =>
+                    ArchipelagoClient.Session.Locations.ScoutLocationsAsync(null, true, locationID));
                 hinted.Add(locationID);
             }
+
             var text = locType.Equals(TextType.Name)
                 ? itemOnLocation.Colorize()
                 : itemOnLocation.GetShopDescription();
@@ -215,7 +223,8 @@ namespace MessengerRando.GameOverrideManagers
 
         private static bool InShop()
         {
-            return Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE;
+            var currentLev = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
+            return currentLev is ELevel.NONE or ELevel.Level_13_TowerOfTimeHQ;
         }
     }
 }

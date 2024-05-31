@@ -15,6 +15,7 @@ namespace MessengerRando.Utils
                 text = $"Found {item.Colorize()} for <color=#{UserConfig.OtherPlayerColor}>{otherPlayer}</color>!";
                 return text;
             }
+
             var ownPlayer = ArchipelagoClient.Session.ConnectionInfo.Slot;
             if (item.Player.Equals(ownPlayer))
             {
@@ -29,10 +30,12 @@ namespace MessengerRando.Utils
                 text = $"Received {item.Colorize()} from {item.PlayerColor()}!";
                 return text;
             }
+
             return text;
         }
 
-        public static string Name(this NetworkItem item) => ArchipelagoClient.Session.Items.GetItemName(item.Item);
+        public static string Name(this NetworkItem item) =>
+            ArchipelagoClient.Session.Items.GetItemName(item.Item) ?? $"Unknown Item: {item.Item}";
 
         public static string Colorize(this NetworkItem item)
         {
@@ -55,7 +58,7 @@ namespace MessengerRando.Utils
                 item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot)
                     ? "Huh. How did this get here? "
                     : $"Looks like {item.PlayerColor()} lost this. ";
-            
+
             switch (item.Flags)
             {
                 case ItemFlags.Advancement:
@@ -71,6 +74,7 @@ namespace MessengerRando.Utils
                     description += "Seems like junk.";
                     break;
             }
+
             return description;
         }
 

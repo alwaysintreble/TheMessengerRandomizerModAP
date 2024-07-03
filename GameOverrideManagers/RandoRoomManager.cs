@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net.Enums;
 using MessengerRando.Archipelago;
+using MessengerRando.Utils;
 using MessengerRando.Utils.Constants;
 using WebSocketSharp;
 
@@ -71,6 +72,15 @@ namespace MessengerRando.GameOverrideManagers
                     var currentData = teleportStorage.To<List<bool>>();
                     currentData[index] = true;
                     ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"] = currentData;
+                    switch (index)
+                    {
+                        case 0:
+                            RandomizerStateManager.Instance.CanNinjaWarp = true;
+                            break;
+                        case 1:
+                            RandomizerStateManager.Instance.CanSearingWarp = true;
+                            break;
+                    }
                 }
             }
             if (roomOverride)

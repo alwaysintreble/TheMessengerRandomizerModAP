@@ -26,14 +26,14 @@ namespace MessengerRando.Utils
         // ReSharper disable once UnassignedField.Global
         // gets assigned externally
         public RandoBossManager BossManager;
-        public static List<NetworkItem> SeenHints = new List<NetworkItem>();
+        public static List<long> SeenHints = new ();
 
         public bool SkipMusicBox;
         // ReSharper disable once UnassignedField.Global
         // useful for debugging
         public bool SkipPhantom;
 
-        public Dictionary<long, NetworkItem> ScoutedLocations;
+        public Dictionary<long, ScoutedItemInfo> ScoutedLocations;
         public readonly Dictionary<int, ArchipelagoData> APSave;
 
         public static Random SeedRandom;
@@ -63,7 +63,7 @@ namespace MessengerRando.Utils
         public static void InitializeSeed()
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
-            SeenHints = new List<NetworkItem>();
+            SeenHints = new List<long>();
 
             if (ArchipelagoClient.ServerData.SeedName.IsNullOrEmpty() ||
                 ArchipelagoClient.ServerData.SeedName.Equals("Unknown"))
@@ -136,18 +136,13 @@ namespace MessengerRando.Utils
             }
         }
 
-        private static void SetupScoutedLocations(LocationInfoPacket scoutedLocationInfo)
+        private static void SetupScoutedLocations(Dictionary<long, ScoutedItemInfo> scoutedLocationInfo)
         {
-            Instance.ScoutedLocations = new Dictionary<long, NetworkItem>();
-            Console.WriteLine("scouting done");
-            foreach (var networkItem in scoutedLocationInfo.Locations)
+            foreach (var itemInfo in scoutedLocationInfo.Values)
             {
-                var item = networkItem;
-                Instance.ScoutedLocations.Add(item.Location, item);
             }
-
-            ArchipelagoClient.ServerData.ScoutedLocations = Instance.ScoutedLocations;
-            Console.WriteLine("Scouting done");
+            Instance.ScoutedLocations = scoutedLocationInfo;
+            Console.WriteLine("scouting done");
         }
 
         public static bool IsSafeTeleportState()
@@ -185,7 +180,7 @@ namespace MessengerRando.Utils
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
                 if (locationID == 0) return false;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
-                return ArchipelagoClient.ServerData.ScoutedLocations.ContainsKey(locationID) ||
+                return ScoutedLocations.ContainsKey(locationID) ||
                        ArchipelagoClient.ServerData.LocationData.ContainsKey(locationID);
             }
             catch (Exception e)
@@ -362,7 +357,7 @@ namespace MessengerRando.Utils
                 var fileNameParts = gameFile.Split('_');
                 foreach (var part in fileNameParts)
                 {
-                    if (!double.TryParse(part, out var num)) continue;
+                    if (!double.TryParse(part, out _)) continue;
                     ArchipelagoClient.ServerData.SeedName = part;
                     break;
                 }
@@ -372,7 +367,6 @@ namespace MessengerRando.Utils
                 Console.WriteLine("casting slot data");
                 ArchipelagoClient.ServerData.SlotData = gameData["slot_data"].ToObject<Dictionary<string, object>>();
                 Console.WriteLine("casting loc data");
-                ArchipelagoClient.ServerData.ScoutedLocations = new Dictionary<long, NetworkItem>();
                 ArchipelagoClient.ServerData.LocationData =
                     gameData["loc_data"].ToObject<Dictionary<long, Dictionary<string, List<long>>>>();
                 ArchipelagoClient.HasConnected = ArchipelagoClient.Offline = true;

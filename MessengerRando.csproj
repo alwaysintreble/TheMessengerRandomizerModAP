@@ -40,9 +40,6 @@
   </Target>
   
   <ItemGroup>
-    <Reference Include="Archipelago.MultiClient.Net, Version=5.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Archipelago.MultiClient.Net.5.0.6\lib\net35\Archipelago.MultiClient.Net.dll</HintPath>
-    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Messenger\TheMessenger_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
@@ -67,9 +64,6 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Messenger\TheMessenger_Data\Managed\System.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Archipelago.MultiClient.Net.5.0.6\lib\net35\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Messenger\TheMessenger_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
@@ -89,9 +83,6 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Messenger\TheMessenger_Data\Managed\UnityEngine.UIModule.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="websocket-sharp, Version=1.0.2.34775, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
-      <HintPath>packages\Archipelago.MultiClient.Net.5.0.6\lib\net35\websocket-sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   
@@ -126,7 +117,7 @@
     <Compile Include="Utils\RandoMenu.cs" />
     <Compile Include="Utils\RandomizerOptions.cs" />
     <Compile Include="Utils\RandoSave.cs" />
-    <Compile Include="Utils\NetworkItemExtensions.cs" />
+    <Compile Include="Utils\ItemInfoExtensions.cs" />
     <Compile Include="Utils\DialogChanger.cs" />
     <Compile Include="Utils\RandomizerConstants.cs" />
     <Compile Include="Utils\RandomizerStateManager.cs" />
@@ -142,6 +133,10 @@
   
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Archipelago.MultiClient.Net" Version="6.1.1" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

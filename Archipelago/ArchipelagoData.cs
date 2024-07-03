@@ -24,7 +24,6 @@ namespace MessengerRando.Archipelago
         public List<string> DefeatedBosses;
         public List<long> CheckedLocations;
         public Dictionary<long, int> ReceivedItems;
-        public Dictionary<long, NetworkItem> ScoutedLocations;
         public Dictionary<long, Dictionary<string, List<long>>> LocationData;
 
         public void StartNewSeed()
@@ -32,8 +31,8 @@ namespace MessengerRando.Archipelago
             Console.WriteLine("Creating new seed data");
             Index = ArchipelagoClient.OfflineReceivedItems;
             PowerSealsCollected = 0;
-            DefeatedBosses = new List<string>();
-            CheckedLocations = new List<long>();
+            DefeatedBosses = [];
+            CheckedLocations = [];
             ReceivedItems = new Dictionary<long, int>();
         }
         
@@ -71,10 +70,8 @@ namespace MessengerRando.Archipelago
                         RandoBossManager.DefeatedBosses = DefeatedBosses = 
                             tempServerData.DefeatedBosses ?? new List<string>();
                         ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
-                        RandomizerStateManager.Instance.ScoutedLocations = 
-                            ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
 
-                        ThreadPool.QueueUserWorkItem(o =>
+                        ThreadPool.QueueUserWorkItem(_ =>
                             ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                                 CheckedLocations.ToArray()));
                         Console.WriteLine("connected from main menu, but continuing a seed.");
@@ -82,11 +79,6 @@ namespace MessengerRando.Archipelago
                         Console.WriteLine($"saved index: {Index}");
                         while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)
                         {
-                            if (!ArchipelagoClient.Session.Items.AllItemsReceived[i].Player
-                                    .Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
-                            {
-                                ArchipelagoClient.DialogQueue.Dequeue();
-                            }
                             ArchipelagoClient.ItemQueue.Dequeue();
                             i += 1;
                         }
@@ -108,11 +100,9 @@ namespace MessengerRando.Archipelago
                 Index = tempServerData.Index;
                 Console.WriteLine($"saved index: {Index}");
                 PowerSealsCollected = tempServerData.PowerSealsCollected;
-                CheckedLocations = tempServerData.CheckedLocations ?? new List<long>();
-                RandoBossManager.DefeatedBosses = DefeatedBosses = tempServerData.DefeatedBosses ?? new List<string>();
+                CheckedLocations = tempServerData.CheckedLocations ?? [];
+                RandoBossManager.DefeatedBosses = DefeatedBosses = tempServerData.DefeatedBosses ?? [];
                 ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
-                RandomizerStateManager.Instance.ScoutedLocations = 
-                    ScoutedLocations = tempServerData.ScoutedLocations ?? new Dictionary<long, NetworkItem>();
                 SlotData = tempServerData.SlotData;
                 LocationData = tempServerData.LocationData;
 
@@ -129,11 +119,6 @@ namespace MessengerRando.Archipelago
                 ArchipelagoClient.Connect();
                 while (ArchipelagoClient.ItemQueue.Count > 0 && i < Index)
                 {
-                    if (!ArchipelagoClient.Session.Items.AllItemsReceived[i].Player
-                            .Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
-                    {
-                        ArchipelagoClient.DialogQueue.Dequeue();
-                    }
                     ArchipelagoClient.ItemQueue.Dequeue();
                     i += 1;
                 }

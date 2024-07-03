@@ -98,15 +98,13 @@ namespace MessengerRando.Utils
                             else
                             {
                                 var netItem = RandomizerStateManager.Instance.ScoutedLocations[locationID];
-                                var otherPlayer = netItem.Player;
-                                if (otherPlayer.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+                                if (netItem.Player.Slot.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
                                 {
                                     Loc[replaceableKey][0].text = netItem.ToReadableString();
                                 }
                                 else
                                 {
-                                    var otherPlayerName = ArchipelagoClient.Session.Players.GetPlayerAlias(otherPlayer);
-                                    netItem.Player = ArchipelagoClient.Session.ConnectionInfo.Slot;
+                                    var otherPlayerName = netItem.Player.Alias;
                                     Loc[replaceableKey][0].text = netItem.ToReadableString(otherPlayerName);
                                 }
                             }

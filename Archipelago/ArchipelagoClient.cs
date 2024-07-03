@@ -251,10 +251,9 @@ namespace MessengerRando.Archipelago
                 ColorizePlayerName(hintMessage.Sender.Slot));
             colorizedMessage = colorizedMessage.Replace(hintMessage.Receiver.Name,
                 ColorizePlayerName(hintMessage.Receiver.Slot));
-            colorizedMessage = colorizedMessage.Replace(
-                Session.Locations.GetLocationNameFromId(hintMessage.Item.Location),
-                ColorizeLocation(hintMessage.Item.Location));
-            colorizedMessage = colorizedMessage.Replace(hintMessage.Item.Name(),
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Item.LocationDisplayName,
+                hintMessage.Item.ColorizeLocation());
+            colorizedMessage = colorizedMessage.Replace(hintMessage.Item.ItemDisplayName,
                 hintMessage.Item.Colorize());
             Console.WriteLine(colorizedMessage);
             return colorizedMessage;
@@ -269,8 +268,8 @@ namespace MessengerRando.Archipelago
                 {
                     case HintItemSendLogMessage hintMessage:
                         if (hintMessage.IsFound || !hintMessage.IsRelatedToActivePlayer || !HintPopUps ||
-                            RandomizerStateManager.SeenHints.Contains(hintMessage.Item)) break;
-                        RandomizerStateManager.SeenHints.Add(hintMessage.Item);
+                            RandomizerStateManager.SeenHints.Contains(hintMessage.Item.ItemId)) break;
+                        RandomizerStateManager.SeenHints.Add(hintMessage.Item.ItemId);
                         messageQueue.Enqueue(hintMessage.ToString());
                         DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
                         break;
@@ -382,7 +381,7 @@ namespace MessengerRando.Archipelago
             {
                 ServerData.Index++;
             }
-            ItemQueue.Enqueue(itemToUnlock.Item);
+            ItemQueue.Enqueue(itemToUnlock.ItemId);
             if (itemToUnlock.Player != Session.ConnectionInfo.Slot)
                 DialogQueue.Enqueue(itemToUnlock.ToReadableString());
         }

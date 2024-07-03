@@ -69,7 +69,7 @@ namespace MessengerRando.Archipelago
             {
                 LocationsLookup.Add(progLocation, offset);
                 IDtoLocationsLookup.Add(offset, progLocation);
-                // Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
+                Console.WriteLine($"{progLocation.PrettyLocationName}: {offset}");
                 if (progLocation.VanillaItem != EItems.NONE &&
                     !EItemsLocationsLookup.ContainsKey(progLocation.VanillaItem))
                     EItemsLocationsLookup.Add(progLocation.VanillaItem, offset);
@@ -294,7 +294,7 @@ namespace MessengerRando.Archipelago
         {
             if (EItemsLocationsLookup == null)
                 Initialize();
-            return !EItemsLocationsLookup.ContainsKey(location) ? 0 : EItemsLocationsLookup[location];
+            return !EItemsLocationsLookup.TryGetValue(location, out var value) ? 0 : value;
         }
 
         public static bool ShopLocation(long locationID, out LocationRO shopLocation)
@@ -465,14 +465,14 @@ namespace MessengerRando.Archipelago
             Console.WriteLine("Sending location checks");
             if (ArchipelagoClient.Authenticated)
             {
-                ThreadPool.QueueUserWorkItem(o =>
+                ThreadPool.QueueUserWorkItem(_ =>
                     ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
                 if (!HasDialog(locationID))
                 {
                     var item = RandoStateManager.ScoutedLocations[locationID];
                     string dialog;
-                    if (item.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot))
+                    if (item.OwnItem())
                     {
                         dialog = item.ToReadableString();
                     }
@@ -514,7 +514,7 @@ namespace MessengerRando.Archipelago
                  ArchipelagoClient.ServerData.Index < ArchipelagoClient.Session.Items.AllItemsReceived.Count;
                  currentIndex++)
             {
-                ArchipelagoClient.ItemQueue.Enqueue(ArchipelagoClient.Session.Items.AllItemsReceived[currentIndex].Item);
+                ArchipelagoClient.ItemQueue.Enqueue(ArchipelagoClient.Session.Items.AllItemsReceived[currentIndex].ItemId);
             }
         }
         
@@ -526,15 +526,15 @@ namespace MessengerRando.Archipelago
             for (int i = 0; i < ArchipelagoClient.ServerData.Index; i++)
             {
                 var itemToUnlock = ArchipelagoClient.Session.Items.AllItemsReceived[i];
-                var currentItem = itemToUnlock.Item;
+                var currentItem = itemToUnlock.ItemId;
                 if (!receivedItems.ContainsKey(currentItem)) receivedItems.Add(currentItem, 1);
                 else receivedItems[currentItem] += 1;
                 if (ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(currentItem) &&
                     ArchipelagoClient.ServerData.ReceivedItems[currentItem] >= receivedItems[currentItem]) continue;
                 Console.WriteLine($"Determined {currentItem} missing while resyncing.");
                 Unlock(currentItem);
-                if (itemToUnlock.Player.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot) &&
-                    HasDialog(itemToUnlock.Location))
+                if (itemToUnlock.OwnItem() &&
+                    HasDialog(itemToUnlock.LocationId))
                     continue;
                 ArchipelagoClient.DialogQueue.Enqueue(itemToUnlock.ToReadableString());
             }

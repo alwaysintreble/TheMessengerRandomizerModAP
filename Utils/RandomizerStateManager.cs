@@ -112,13 +112,17 @@ namespace MessengerRando.Utils
                     RandoLevelManager.RandoLevelMapping =
                         new Dictionary<string, LevelConstants.RandoLevel>();
                     var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
-                    foreach (var pairing in transitionPairs)
+                    if (transitionPairs.Count == 0) RandoLevelManager.RandoLevelMapping = null;
+                    else
                     {
-                        var orig = LevelConstants.TransitionNames[pairing[0]];
-                        var replacement =
-                            LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
-                        RandoLevelManager.RandoLevelMapping[orig] = replacement;
-                        Console.WriteLine($"{orig}: {LevelConstants.TransitionNames[pairing[1]]}");
+                        foreach (var pairing in transitionPairs)
+                        {
+                            var orig = LevelConstants.TransitionNames[pairing[0]];
+                            var replacement =
+                                LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
+                            RandoLevelManager.RandoLevelMapping[orig] = replacement;
+                            Console.WriteLine($"{orig}: {LevelConstants.TransitionNames[pairing[1]]}");
+                        }
                     }
                 }
             }

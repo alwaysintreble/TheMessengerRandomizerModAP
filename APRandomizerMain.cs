@@ -691,7 +691,7 @@ namespace MessengerRando
 
         public static void OnSelectArchipelagoConnect()
         {
-            if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
+            ArchipelagoClient.ServerData ??= new ArchipelagoData();
             if (!UserConfig.SlotName.IsNullOrEmpty())
             {
                 ArchipelagoClient.ServerData.Uri = UserConfig.HostName;

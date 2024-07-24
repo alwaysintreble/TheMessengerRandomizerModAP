@@ -77,9 +77,8 @@ namespace MessengerRando.Archipelago
             }
         }
 
-        private static readonly List<RandoItemRO> ArchipelagoItems = new List<RandoItemRO>
-        {
-            //notes
+        private static readonly List<RandoItemRO> ArchipelagoItems =
+        [
             new RandoItemRO("Key_Of_Hope", EItems.KEY_OF_HOPE),
             new RandoItemRO("Key_Of_Chaos", EItems.KEY_OF_CHAOS),
             new RandoItemRO("Key_Of_Courage", EItems.KEY_OF_COURAGE),
@@ -135,12 +134,11 @@ namespace MessengerRando.Archipelago
             new RandoItemRO("Devil's Due", EItems.QUARBLE_DISCOUNT_50),
             new RandoItemRO("Time Sense", EItems.MAP_TIME_WARP),
             new RandoItemRO("Power Sense", EItems.MAP_POWER_SEAL_TOTAL),
-            new RandoItemRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS),
-        };
+            new RandoItemRO("Focused Power Sense", EItems.MAP_POWER_SEAL_PINS)
+        ];
 
-        public static readonly List<LocationRO> ArchipelagoLocations = new List<LocationRO>
-        {
-            //notes
+        public static readonly List<LocationRO> ArchipelagoLocations =
+        [
             new LocationRO("Key_Of_Love", EItems.KEY_OF_LOVE),
             new LocationRO("Key_Of_Courage", EItems.KEY_OF_COURAGE),
             new LocationRO("Key_Of_Chaos", EItems.KEY_OF_CHAOS),
@@ -228,20 +226,19 @@ namespace MessengerRando.Archipelago
             //Elemental Skylands
             new LocationRO("-52-20420436", "Elemental Skylands Seal - Air Seal"),
             new LocationRO("18361868372388", "Elemental Skylands Seal - Water Seal"),
-            new LocationRO("28602892356388", "Elemental Skylands Seal - Fire Seal"),
-        };
+            new LocationRO("28602892356388", "Elemental Skylands Seal - Fire Seal")
+        ];
 
-        private static readonly List<LocationRO> BossLocations = new List<LocationRO>
-        {
+        private static readonly List<LocationRO> BossLocations =
+        [
             new LocationRO("LeafGolem"),
             new LocationRO("Necromancer"),
             new LocationRO("EmeraldGolem"),
-            new LocationRO("QueenOfQuills"),
-        };
+            new LocationRO("QueenOfQuills")
+        ];
 
-        private static readonly List<LocationRO> ShopLocations = new List<LocationRO>
-        {
-            //shop items
+        private static readonly List<LocationRO> ShopLocations =
+        [
             new LocationRO("HP_UPGRADE_1", EItems.HEART_CONTAINER),
             new LocationRO("ENEMY_DROP_HP", EItems.ENEMY_DROP_HP),
             new LocationRO("DAMAGE_REDUCTION", EItems.DAMAGE_REDUCTION),
@@ -260,10 +257,10 @@ namespace MessengerRando.Archipelago
             new LocationRO("QUARBLE_DISCOUNT_50", EItems.QUARBLE_DISCOUNT_50),
             new LocationRO("TIME_WARP", EItems.MAP_TIME_WARP),
             new LocationRO("POWER_SEAL_WORLD_MAP", EItems.MAP_POWER_SEAL_TOTAL),
-            new LocationRO("POWER_SEAL", EItems.MAP_POWER_SEAL_PINS),
-        };
+            new LocationRO("POWER_SEAL", EItems.MAP_POWER_SEAL_PINS)
+        ];
 
-        private static readonly Dictionary<string, string> SpecialNames = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> SpecialNames = new()
         {
             { "HP_UPGRADE_1", "HP_UPGRADE_2" },
             { "SHURIKEN_UPGRADE_1", "SHURIKEN_UPGRADE_2" },

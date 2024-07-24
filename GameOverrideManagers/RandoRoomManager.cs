@@ -62,7 +62,7 @@ namespace MessengerRando.GameOverrideManagers
             //if we're in a room, it leaves the current room then enters the new room with the teleported bool
             //no idea what the teleported bool does currently
             orig(self, leftEdge, rightEdge, bottomEdge, topEdge, teleportedInRoom);
-            if (TeleportRoomKeys.Contains(oldRoomKey))
+            if (TeleportRoomKeys.Contains(oldRoomKey) && ArchipelagoClient.Authenticated)
             {
                 var index = TeleportRoomKeys.IndexOf(oldRoomKey);
                 if (oldRoomKey == TeleportRoomKeys[index])

@@ -174,6 +174,13 @@ namespace MessengerRando.GameOverrideManagers
                     break;
             }
 
+            if (ArchipelagoClient.Offline)
+            {
+                return locType.Equals(TextType.Description)
+                    ? SeedGenerator.GetOfflineShopDescription(locationID)
+                    : SeedGenerator.GetOfflineShopText(locationID);
+            }
+            
             var itemOnLocation = RandomizerStateManager.Instance.ScoutedLocations[locationID];
             if (locType.Equals(TextType.Name) && !hinted.Contains(locationID) && ArchipelagoClient.Authenticated)
             {

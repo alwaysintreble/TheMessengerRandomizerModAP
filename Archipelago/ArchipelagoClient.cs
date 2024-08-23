@@ -412,7 +412,7 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateArchipelagoState()
         {
-            while (ItemQueue.Count > 0)
+            if (ItemQueue.Count > 0)
             {
                 ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
             }

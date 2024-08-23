@@ -38,7 +38,7 @@ namespace MessengerRando.GameOverrideManagers
                     var newText =
                         ProphetIntroReplacements[
                             RandomizerStateManager.SeedRandom.Next(ProphetIntroReplacements.Count)];
-                    var toRemove = 0;
+                    // var toRemove = 0;
                     var newInfoList = new List<DialogInfo>();
                     foreach (var kvp in newText)
                     {

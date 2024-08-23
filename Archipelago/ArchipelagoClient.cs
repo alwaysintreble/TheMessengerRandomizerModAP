@@ -82,7 +82,7 @@ namespace MessengerRando.Archipelago
         private static void OnConnected(string outputText, SubMenuButtonInfo connectButton)
         {
             TextEntryPopup successPopup = InitTextEntryPopup(connectButton.addedTo, string.Empty,
-                entry => true, 0, null, CharsetFlags.Space);
+                _ => true, 0, null, CharsetFlags.Space);
             
             successPopup.Init(outputText);
             successPopup.gameObject.SetActive(true);
@@ -158,7 +158,7 @@ namespace MessengerRando.Archipelago
                 result = Session.TryConnectAndLogin(
                     "The Messenger",
                     ServerData.SlotName,
-                    ItemsHandlingFlags.AllItems,
+                    ItemsHandlingFlags.IncludeStartingInventory,
                     new Version(ApVersion),
                     password: ServerData.Password,
                     requestSlotData: needSlotData
@@ -202,7 +202,7 @@ namespace MessengerRando.Archipelago
                 
                 DeathLinkHandler = new DeathLinkInterface();
                 
-                ThreadPool.QueueUserWorkItem(o =>
+                ThreadPool.QueueUserWorkItem(_ =>
                     Session.Locations.CompleteLocationChecksAsync(null,
                         ServerData.CheckedLocations.ToArray()));
 

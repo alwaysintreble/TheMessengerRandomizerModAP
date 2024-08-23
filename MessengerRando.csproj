@@ -136,7 +136,11 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Archipelago.MultiClient.Net" Version="6.1.1" />
+    <PackageReference Include="Archipelago.MultiClient.Net" Version="6.3.0" />
+    <PackageReference Include="Archipelago.MultiClient.Net.Analyzers" Version="1.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

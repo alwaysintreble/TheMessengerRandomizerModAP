@@ -465,9 +465,10 @@ namespace MessengerRando.Archipelago
                 ThreadPool.QueueUserWorkItem(_ =>
                     ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
+                var item = RandoStateManager.ScoutedLocations[locationID];
+                ArchipelagoClient.ItemQueue.Enqueue(item.ItemId);
                 if (!HasDialog(locationID))
                 {
-                    var item = RandoStateManager.ScoutedLocations[locationID];
                     string dialog;
                     if (item.OwnItem())
                     {

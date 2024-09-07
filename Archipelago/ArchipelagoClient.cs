@@ -348,19 +348,25 @@ namespace MessengerRando.Archipelago
 
         private static void SyncEvents()
         {
-            if (hasSynced) return;
+            Session.DataStorage[Scope.Slot, "Events"].Initialize(new List<string>());
+            Session.DataStorage[Scope.Slot, "UnlockedTeleports"].Initialize(new List<bool> { false, false });
+            if (hasSynced)
+            {
+                if (RandomizerStateManager.Instance.CanNinjaWarp || RandomizerStateManager.Instance.CanSearingWarp)
+                {
+                    Session.DataStorage[Scope.Slot, "UnlockedTeleports"] = new List<bool>
+                        { RandomizerStateManager.Instance.CanNinjaWarp, RandomizerStateManager.Instance.CanSearingWarp };
+                }
+                return;
+            }
             Console.WriteLine("Checking datastorage events");
-            var eventStorage = Session.DataStorage[Scope.Slot, "Events"];
-            eventStorage.Initialize(new List<string>());
-            foreach (var cutscene in eventStorage.To<List<string>>())
+            foreach (var cutscene in Session.DataStorage[Scope.Slot, "Events"].To<List<string>>())
             {
                 Console.WriteLine(cutscene);
                 Manager<ProgressionManager>.Instance.cutscenesPlayed.Add(cutscene);
             }
 
-            var teleportStorage = Session.DataStorage[Scope.Slot, "UnlockedTeleports"];
-            teleportStorage.Initialize(new List<bool>{false, false});
-            var storedBools = teleportStorage.To<List<bool>>();
+            var storedBools = Session.DataStorage[Scope.Slot, "UnlockedTeleports"].To<List<bool>>();
             RandomizerStateManager.Instance.CanNinjaWarp = storedBools[0];
             RandomizerStateManager.Instance.CanSearingWarp = storedBools[1];
 
@@ -441,8 +447,6 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)
         {
-            if (newState == ArchipelagoClientState.ClientGoal)
-                Session.DataStorage[Scope.Slot, "HasFinished"] = true;
             Console.WriteLine($"Updating client status to {newState}");
             var statusUpdatePacket = new StatusUpdatePacket { Status = newState };
             Session.Socket.SendPacket(statusUpdatePacket);
@@ -451,7 +455,7 @@ namespace MessengerRando.Archipelago
         private static bool ClientFinished()
         {
             if (!Authenticated) return false;
-            return Session.DataStorage[Scope.Slot, "HasFinished"].To<bool?>() == true;
+            return Session.DataStorage.GetClientStatus() == ArchipelagoClientState.ClientGoal;
         }
 
         public static bool CanRelease()

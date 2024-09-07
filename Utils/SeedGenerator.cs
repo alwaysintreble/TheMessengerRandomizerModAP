@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using MessengerRando.Archipelago;
 using Microsoft.Win32;
 using Mod.Courier.UI;
@@ -112,25 +112,52 @@ namespace MessengerRando.Utils
             generating = false;
         }
 
+        private static string GetColor(KeyValuePair<string, List<long>> itemInfo)
+        {
+            return itemInfo.Value[1] switch
+            {
+                1 => UserConfig.AdvancementColor,
+                2 => UserConfig.UsefulColor,
+                4 => UserConfig.TrapColor,
+                _ => UserConfig.FillerColor,
+            };
+        }
         public static string GetOfflineDialog(long locId)
         {
-            var color = UserConfig.FillerColor;
             var itemInfo = ArchipelagoClient.ServerData.LocationData[locId].First();
             var itemName = itemInfo.Key;
+            var color = GetColor(itemInfo);
+
+            return $"Found <color=#{color}>{itemName}</color>!";
+        }
+
+        public static string GetOfflineShopDescription(long locId)
+        {
+            var description = "Huh. How did this get here? ";
+            var itemInfo = ArchipelagoClient.ServerData.LocationData[locId].First();
             switch (itemInfo.Value[1])
             {
                 case 1:
-                    color = UserConfig.AdvancementColor;
+                    description += "Seems important.";
                     break;
                 case 2:
-                    color = UserConfig.UsefulColor;
+                    description += "Seems useful.";
                     break;
-                case 4:
-                    color = UserConfig.TrapColor;
+                case 3:
+                    description += "Seems harmful.";
+                    break;
+                default:
+                    description += "Seems like junk.";
                     break;
             }
 
-            return $"Found <color=#{color}>{itemName}</color>";
+            return description;
+        }
+
+        public static string GetOfflineShopText(long locId)
+        {
+            var itemInfo = ArchipelagoClient.ServerData.LocationData[locId].First();
+            return $"<color=#{GetColor(itemInfo)}>{itemInfo.Key}</color>";
         }
     }
 }

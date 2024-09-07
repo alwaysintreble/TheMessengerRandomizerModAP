@@ -67,9 +67,8 @@ namespace MessengerRando.GameOverrideManagers
                 var index = TeleportRoomKeys.IndexOf(oldRoomKey);
                 if (oldRoomKey == TeleportRoomKeys[index])
                 {
-                    var teleportStorage = ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"];
-                    teleportStorage.Initialize(new List<bool>{false, false});
-                    var currentData = teleportStorage.To<List<bool>>();
+                    var currentData = ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"]
+                        .To<List<bool>>();
                     currentData[index] = true;
                     ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"] = currentData;
                     switch (index)

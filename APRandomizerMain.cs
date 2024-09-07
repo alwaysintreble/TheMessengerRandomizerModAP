@@ -378,14 +378,6 @@ namespace MessengerRando
         void SaveGameSelectionScreen_OnNewGame(On.SaveGameSelectionScreen.orig_OnNewGame orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
             Console.WriteLine("trying to load new game");
-            try
-            {
-                Environment.GetCommandLineArgs();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
             if (ArchipelagoClient.Authenticated)
                 RandomizerStateManager.InitializeNewSecondQuest(self, slot.slotIndex);
             else if (ArchipelagoClient.Offline)
@@ -642,7 +634,7 @@ namespace MessengerRando
         {
             ArchipelagoMenu.archipelagoScreen.Close(false);
             RandoLevelManager.TeleportInArea(new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags,
-                new Vector3(380.5f, 309)));
+                new Vector3(380.5f, 311)));
         }
 
         public static bool OnSelectArchipelagoHost(string answer)

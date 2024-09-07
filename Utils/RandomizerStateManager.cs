@@ -82,6 +82,10 @@ namespace MessengerRando.Utils
                     ArchipelagoClient.Session.Locations.AllLocations.ToArray()
                 );
             }
+            else if (Instance.ScoutedLocations == null && ArchipelagoClient.Offline)
+            {
+                Instance.ScoutedLocations = new();
+            }
 
             ArchipelagoData.DeathLink = Convert.ToBoolean(slotData.TryGetValue("deathlink", out var deathLink)
                 ? deathLink : slotData["death_link"]);

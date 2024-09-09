@@ -50,7 +50,7 @@ namespace MessengerRando.Utils
         }
         public static void ChangeSpoiler()
         {
-            SpoilerLevel = SpoilerLevel == 3 ? 0 : SpoilerLevel++;
+            SpoilerLevel = SpoilerLevel == 3 ? 0 : SpoilerLevel + 1;
         }
 
         public static string OptionsOverride = "";
@@ -102,7 +102,7 @@ namespace MessengerRando.Utils
         }
         public static void ChangeAccessibility()
         {
-            accessibility = accessibility == 2 ? 0 : accessibility++;
+            accessibility = accessibility == 2 ? 0 : accessibility + 1;
         }
         
         // logic
@@ -151,11 +151,11 @@ namespace MessengerRando.Utils
         }
         public static void ChangeAvailablePortals()
         {
-            availablePortals = availablePortals == 6 ? 3 : availablePortals++;
+            availablePortals = availablePortals == 6 ? 3 : availablePortals + 1;
         }
         
         // portal shuffle
-        private static int portalShuffle;
+        private static int portalShuffle = 0;
         private static readonly List<string> PortalShuffleText =
         [
             "No Portal Shuffle",
@@ -169,7 +169,7 @@ namespace MessengerRando.Utils
         }
         public static void ChangePortalShuffle()
         {
-            portalShuffle = portalShuffle == 3 ? 0 : portalShuffle++;
+            portalShuffle = portalShuffle == 3 ? 0 : portalShuffle + 1;
         }
         
         // transition shuffle
@@ -186,7 +186,7 @@ namespace MessengerRando.Utils
         }
         public static void ChangeTransitionShuffle()
         {
-            transitionShuffle = transitionShuffle == 2 ? 0 : transitionShuffle++;
+            transitionShuffle = transitionShuffle == 2 ? 0 : transitionShuffle + 1;
         }
         
         // goal

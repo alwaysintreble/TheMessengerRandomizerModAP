@@ -82,10 +82,6 @@ namespace MessengerRando.Utils
                     ArchipelagoClient.Session.Locations.AllLocations.ToArray()
                 );
             }
-            else if (Instance.ScoutedLocations == null && ArchipelagoClient.Offline)
-            {
-                Instance.ScoutedLocations = new();
-            }
 
             ArchipelagoData.DeathLink = Convert.ToBoolean(slotData.TryGetValue("deathlink", out var deathLink)
                 ? deathLink : slotData["death_link"]);
@@ -188,7 +184,7 @@ namespace MessengerRando.Utils
                     ItemsAndLocationsHandler.LocationFromEItem(vanillaLocationItem);
                 if (locationID == 0) return false;
                 Console.WriteLine($"Checking if {vanillaLocationItem}, id: {locationID} is randomized.");
-                return ScoutedLocations.ContainsKey(locationID) ||
+                return (ScoutedLocations != null && ScoutedLocations.ContainsKey(locationID)) ||
                        ArchipelagoClient.ServerData.LocationData.ContainsKey(locationID);
             }
             catch (Exception e)

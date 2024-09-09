@@ -65,22 +65,7 @@ namespace MessengerRando.GameOverrideManagers
             if (TeleportRoomKeys.Contains(oldRoomKey))
             {
                 var index = TeleportRoomKeys.IndexOf(oldRoomKey);
-                switch (index)
-                {
-                    case 0:
-                        RandomizerStateManager.Instance.CanNinjaWarp = true;
-                        break;
-                    case 1:
-                        RandomizerStateManager.Instance.CanSearingWarp = true;
-                        break;
-                }
-                if (ArchipelagoClient.Authenticated)
-                {
-                    var currentData = ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"]
-                        .To<List<bool>>();
-                    currentData[index] = true;
-                    ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"] = currentData;
-                }
+                ArchipelagoClient.ServerData.AvailableTeleports[index] = true;
             }
             if (roomOverride)
             {

@@ -349,26 +349,12 @@ namespace MessengerRando.Archipelago
         private static void SyncEvents()
         {
             Session.DataStorage[Scope.Slot, "Events"].Initialize(new List<string>());
-            Session.DataStorage[Scope.Slot, "UnlockedTeleports"].Initialize(new List<bool> { false, false });
-            if (hasSynced)
-            {
-                if (RandomizerStateManager.Instance.CanNinjaWarp || RandomizerStateManager.Instance.CanSearingWarp)
-                {
-                    Session.DataStorage[Scope.Slot, "UnlockedTeleports"] = new List<bool>
-                        { RandomizerStateManager.Instance.CanNinjaWarp, RandomizerStateManager.Instance.CanSearingWarp };
-                }
-                return;
-            }
             Console.WriteLine("Checking datastorage events");
             foreach (var cutscene in Session.DataStorage[Scope.Slot, "Events"].To<List<string>>())
             {
                 Console.WriteLine(cutscene);
                 Manager<ProgressionManager>.Instance.cutscenesPlayed.Add(cutscene);
             }
-
-            var storedBools = Session.DataStorage[Scope.Slot, "UnlockedTeleports"].To<List<bool>>();
-            RandomizerStateManager.Instance.CanNinjaWarp = storedBools[0];
-            RandomizerStateManager.Instance.CanSearingWarp = storedBools[1];
 
             hasSynced = true;
         }

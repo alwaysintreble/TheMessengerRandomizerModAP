@@ -25,6 +25,7 @@ namespace MessengerRando.Archipelago
         public List<long> CheckedLocations;
         public Dictionary<long, int> ReceivedItems;
         public Dictionary<long, Dictionary<string, List<long>>> LocationData;
+        public List<bool> AvailableTeleports;
 
         public void StartNewSeed()
         {
@@ -34,6 +35,7 @@ namespace MessengerRando.Archipelago
             DefeatedBosses = [];
             CheckedLocations = [];
             ReceivedItems = new Dictionary<long, int>();
+            AvailableTeleports = [false, false];
         }
         
         public override string ToString()
@@ -45,7 +47,7 @@ namespace MessengerRando.Archipelago
         {
             if (ArchipelagoClient.Offline) return false;
             Console.WriteLine($"Loading Archipelago data for slot {slot}");
-            if (ArchipelagoClient.ServerData == null) ArchipelagoClient.ServerData = new ArchipelagoData();
+            ArchipelagoClient.ServerData ??= new ArchipelagoData();
             return ArchipelagoClient.ServerData.loadData(slot);
         }
 
@@ -66,10 +68,11 @@ namespace MessengerRando.Archipelago
                         //We're continuing an existing multiworld so likely a port change. Save the new data
                         Index = tempServerData.Index;
                         PowerSealsCollected = tempServerData.PowerSealsCollected;
-                        CheckedLocations = tempServerData.CheckedLocations ?? new List<long>();
+                        CheckedLocations = tempServerData.CheckedLocations ?? [];
                         RandoBossManager.DefeatedBosses = DefeatedBosses = 
-                            tempServerData.DefeatedBosses ?? new List<string>();
-                        ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
+                            tempServerData.DefeatedBosses ?? [];
+                        ReceivedItems = tempServerData.ReceivedItems ?? [];
+                        AvailableTeleports = tempServerData.AvailableTeleports ?? [false, false];
 
                         ThreadPool.QueueUserWorkItem(_ =>
                             ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
@@ -105,6 +108,7 @@ namespace MessengerRando.Archipelago
                 ReceivedItems = tempServerData.ReceivedItems ?? new Dictionary<long, int>();
                 SlotData = tempServerData.SlotData;
                 LocationData = tempServerData.LocationData;
+                AvailableTeleports = tempServerData.AvailableTeleports ?? [false, false];
 
                 //Attempt to connect to the server and save the new data
                 Console.WriteLine("Rando save found!");

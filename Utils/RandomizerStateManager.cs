@@ -38,8 +38,6 @@ namespace MessengerRando.Utils
 
         public static Random SeedRandom;
         public static bool OnMainMenu = true;
-        public bool CanNinjaWarp;
-        public bool CanSearingWarp;
 
         public RandomizerStateManager()
         {

@@ -62,24 +62,24 @@ namespace MessengerRando.GameOverrideManagers
             //if we're in a room, it leaves the current room then enters the new room with the teleported bool
             //no idea what the teleported bool does currently
             orig(self, leftEdge, rightEdge, bottomEdge, topEdge, teleportedInRoom);
-            if (TeleportRoomKeys.Contains(oldRoomKey) && ArchipelagoClient.Authenticated)
+            if (TeleportRoomKeys.Contains(oldRoomKey))
             {
                 var index = TeleportRoomKeys.IndexOf(oldRoomKey);
-                if (oldRoomKey == TeleportRoomKeys[index])
+                switch (index)
+                {
+                    case 0:
+                        RandomizerStateManager.Instance.CanNinjaWarp = true;
+                        break;
+                    case 1:
+                        RandomizerStateManager.Instance.CanSearingWarp = true;
+                        break;
+                }
+                if (ArchipelagoClient.Authenticated)
                 {
                     var currentData = ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"]
                         .To<List<bool>>();
                     currentData[index] = true;
                     ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedTeleports"] = currentData;
-                    switch (index)
-                    {
-                        case 0:
-                            RandomizerStateManager.Instance.CanNinjaWarp = true;
-                            break;
-                        case 1:
-                            RandomizerStateManager.Instance.CanSearingWarp = true;
-                            break;
-                    }
                 }
             }
             if (roomOverride)

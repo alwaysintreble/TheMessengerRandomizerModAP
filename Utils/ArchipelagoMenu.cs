@@ -593,12 +593,16 @@ namespace MessengerRando.Utils
                 () => "Teleport to Ninja Village",
                 APRandomizerMain.OnSelectTeleportToNinjaVillage);
             TeleportToNinjaVillage.IsEnabled = () =>
+                Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
+                RandomizerStateManager.IsSafeTeleportState() &&
                 ArchipelagoClient.ServerData?.AvailableTeleports != null &&
                 ArchipelagoClient.ServerData.AvailableTeleports[0] && RandoLevelManager.RandoLevelMapping == null;
 
             TeleportToSearingShop = RegisterSubRandoButton(() => "Teleport to Searing Crags",
                 APRandomizerMain.OnSelectTeleportToSearing);
             TeleportToSearingShop.IsEnabled = () =>
+                Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
+                RandomizerStateManager.IsSafeTeleportState() &&
                 ArchipelagoClient.ServerData?.AvailableTeleports != null &&
                 ArchipelagoClient.ServerData.AvailableTeleports[1] && RandoLevelManager.RandoLevelMapping == null;
 

@@ -7,6 +7,7 @@ using MessengerRando.RO;
 using MessengerRando.Utils;
 using Mod.Courier;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace MessengerRando.GameOverrideManagers
 {
@@ -49,7 +50,7 @@ namespace MessengerRando.GameOverrideManagers
         public static void UnlockFigurine(EFigurine figurine)
         {
             figurineOverride = true;
-            UnityEngine.Object.FindObjectOfType<SousSol>().UnlockFigurine(figurine);
+            Object.FindObjectOfType<SousSol>().UnlockFigurine(figurine);
         }
 
         public static void GoToSousSol(On.GoToSousSolCutscene.orig_EndCutScene orig, GoToSousSolCutscene self,
@@ -180,13 +181,16 @@ namespace MessengerRando.GameOverrideManagers
                     ? SeedGenerator.GetOfflineShopDescription(locationID)
                     : SeedGenerator.GetOfflineShopText(locationID);
             }
-            
+
             var itemOnLocation = RandomizerStateManager.Instance.ScoutedLocations[locationID];
             if (locType.Equals(TextType.Name) && !hinted.Contains(locationID) && ArchipelagoClient.Authenticated)
             {
-                ThreadPool.QueueUserWorkItem(_ =>
-                    ArchipelagoClient.Session.Locations.ScoutLocationsAsync(null, true, locationID));
-                hinted.Add(locationID);
+                if(!ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
+                {
+                    ThreadPool.QueueUserWorkItem(_ =>
+                        ArchipelagoClient.Session.Locations.ScoutLocationsAsync(null, true, locationID));
+                    hinted.Add(locationID);
+                }
             }
 
             var text = locType.Equals(TextType.Name)
@@ -203,7 +207,7 @@ namespace MessengerRando.GameOverrideManagers
             Description,
         }
 
-        private static readonly Dictionary<string, EItems> ShopTextToItems = new Dictionary<string, EItems>
+        private static readonly Dictionary<string, EItems> ShopTextToItems = new()
         {
             { "MAP_PORTALS", EItems.MAP_TIME_WARP },
             { "CHALLENGE_ROOM_WORLDMAP", EItems.MAP_POWER_SEAL_TOTAL },
@@ -226,7 +230,7 @@ namespace MessengerRando.GameOverrideManagers
             { "GLIDE_ATTACK", EItems.GLIDE_ATTACK },
         };
 
-        private static List<long> hinted = new List<long>();
+        private static List<long> hinted = [];
 
         private static bool InShop()
         {

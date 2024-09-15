@@ -22,6 +22,7 @@ namespace MessengerRando.Archipelago
         public static ArchipelagoData ServerData = new ArchipelagoData();
 
         private delegate void OnConnectAttempt(string result);
+
         public static bool Authenticated;
         public static bool HasConnected;
         private static bool attemptingConnection;
@@ -35,21 +36,19 @@ namespace MessengerRando.Archipelago
         public static ArchipelagoSession Session;
         public static DeathLinkInterface DeathLinkHandler;
 
-        public static Queue ItemQueue = new Queue();
-        public static Queue DialogQueue = new Queue();
-        private static Queue messageQueue = new Queue();
+        public static Queue ItemQueue = new();
+        public static Queue DialogQueue = new();
+        private static Queue messageQueue = new();
         public static int OfflineReceivedItems;
 
-        public static List<string> EventsICareAbout = new List<string>
-        {
+        public static List<string> EventsICareAbout =
+        [
             "DecurseQueenCutscene",
             "QueenDefrostLanternsCutscene",
             "ElderAwardSeedCutscene",
             "PlantTeaSeedCutscene",
-        };
+        ];
 
-        private static bool hasSynced;
-        
         public static void ConnectAsync()
         {
             if (attemptingConnection || Authenticated) return;
@@ -76,6 +75,7 @@ namespace MessengerRando.Archipelago
                     _ => ServerData.CheckedLocations = Session.Locations.AllLocationsChecked.ToList(),
                     ServerData.CheckedLocations.ToArray());
             }
+
             attemptingConnection = false;
         }
 
@@ -83,7 +83,7 @@ namespace MessengerRando.Archipelago
         {
             TextEntryPopup successPopup = InitTextEntryPopup(connectButton.addedTo, string.Empty,
                 _ => true, 0, null, CharsetFlags.Space);
-            
+
             successPopup.Init(outputText);
             successPopup.gameObject.SetActive(true);
             // Object.Destroy(successPopup.transform.Find("BigFrame").Find("SymbolsGrid").gameObject);
@@ -116,7 +116,7 @@ namespace MessengerRando.Archipelago
         public static string Connect(Uri uri)
         {
             if (Authenticated) return "already connected";
-            
+
             try
             {
                 Session = CreateSession(uri);
@@ -199,9 +199,9 @@ namespace MessengerRando.Archipelago
                     Disconnect();
                     return outputText;
                 }
-                
+
                 DeathLinkHandler = new DeathLinkInterface();
-                
+
                 ThreadPool.QueueUserWorkItem(_ =>
                     Session.Locations.CompleteLocationChecksAsync(null,
                         ServerData.CheckedLocations.ToArray()));
@@ -264,6 +264,7 @@ namespace MessengerRando.Archipelago
             Console.WriteLine(message.ToString());
             if (FilterAPMessages)
             {
+                
                 switch (message)
                 {
                     case HintItemSendLogMessage hintMessage:
@@ -278,6 +279,7 @@ namespace MessengerRando.Archipelago
                         {
                             messageQueue.Enqueue(itemSendMessage.ToString());
                         }
+
                         break;
                 }
             }
@@ -355,9 +357,8 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine(cutscene);
                 Manager<ProgressionManager>.Instance.cutscenesPlayed.Add(cutscene);
             }
-
-            hasSynced = true;
         }
+
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
             var itemToUnlock = helper.DequeueItem();
@@ -373,6 +374,7 @@ namespace MessengerRando.Archipelago
             {
                 ServerData.Index++;
             }
+
             ItemQueue.Enqueue(itemToUnlock.ItemId);
             if (itemToUnlock.Player != Session.ConnectionInfo.Slot)
                 DialogQueue.Enqueue(itemToUnlock.ToReadableString());
@@ -384,7 +386,7 @@ namespace MessengerRando.Archipelago
             Console.WriteLine(e.GetBaseException().Message);
         }
 
-        private static void SessionSocketClosed(string reason) 
+        private static void SessionSocketClosed(string reason)
         {
             Console.WriteLine($"Connection to Archipelago lost: {reason}");
             Disconnect();
@@ -424,7 +426,7 @@ namespace MessengerRando.Archipelago
                 ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
                 return;
             }
-            
+
             if (ServerData.Index < Session.Items.AllItemsReceived.Count)
                 return;
             Debug.Log("re-syncing...");
@@ -454,6 +456,7 @@ namespace MessengerRando.Archipelago
                 case Permissions.Enabled:
                     return true;
             }
+
             return false;
         }
 
@@ -467,6 +470,7 @@ namespace MessengerRando.Archipelago
                 case Permissions.Enabled:
                     return true;
             }
+
             return false;
         }
 
@@ -478,6 +482,7 @@ namespace MessengerRando.Archipelago
                 var totalLocations = Session.Locations.AllLocations.Count;
                 hintPercent = (int)Math.Round(totalLocations * (hintPercent * 0.01));
             }
+
             return hintPercent;
         }
 
@@ -508,6 +513,7 @@ namespace MessengerRando.Archipelago
             {
                 text = "Disconnected from Archipelago server.";
             }
+
             return text;
         }
 

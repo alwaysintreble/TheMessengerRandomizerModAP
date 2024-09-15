@@ -269,7 +269,8 @@ namespace MessengerRando.Archipelago
                 {
                     case HintItemSendLogMessage hintMessage:
                         if (hintMessage.IsFound || !hintMessage.IsRelatedToActivePlayer || !HintPopUps ||
-                            RandomizerStateManager.SeenHints.Contains(hintMessage.Item.ItemId)) break;
+                            RandomizerStateManager.SeenHints.Contains(hintMessage.Item.ItemId) ||
+                            ItemsAndLocationsHandler.ShopLocation(hintMessage.Item.LocationId, out var shopLoc)) break;
                         RandomizerStateManager.SeenHints.Add(hintMessage.Item.ItemId);
                         messageQueue.Enqueue(hintMessage.ToString());
                         DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
@@ -285,7 +286,8 @@ namespace MessengerRando.Archipelago
             }
             else
             {
-                if (HintPopUps && message is HintItemSendLogMessage hintMessage)
+                if (HintPopUps && message is HintItemSendLogMessage hintMessage &&
+                    !ItemsAndLocationsHandler.ShopLocation(hintMessage.Item.LocationId, out var shopLoc))
                     DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
                 messageQueue.Enqueue(message.ToString());
             }

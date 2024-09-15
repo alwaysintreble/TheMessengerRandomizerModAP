@@ -297,7 +297,6 @@ namespace MessengerRando.Archipelago
         {
             if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
             var checkedLocations = Session.Locations.AllLocationsChecked;
-            SyncEvents();
             if (ServerData.CheckedLocations.Count == checkedLocations.Count) return;
             foreach (var location in checkedLocations)
             {

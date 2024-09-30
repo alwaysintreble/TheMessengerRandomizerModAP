@@ -2,9 +2,9 @@
 ---
 
 This project is based on the work from minous27 and is forked from [TheMessengerRandomizerMod](https://github.com/minous27/TheMessengerRandomizerMod).
-This is a randomizer mod for the video game, *The Messenger*. It randomizes the items that can be found in the game
-amongst each other as well as with other players' items by utilizing network connections in a multiworld setting, by
-using the [Archipelago](https://archipelago.gg) architecture.
+This is a randomizer mod for the video game, *The Messenger*. It randomizes many aspects of the game, including the
+items that can be found in the game amongst each other as well as with other players' items by utilizing network
+connections in a multiworld setting, through the [Archipelago](https://archipelago.gg) architecture.
 
 ## Changes
 

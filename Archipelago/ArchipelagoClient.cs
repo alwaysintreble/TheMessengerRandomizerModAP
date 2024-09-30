@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Exceptions;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
@@ -430,7 +431,6 @@ namespace MessengerRando.Archipelago
 
             if (ServerData.Index < Session.Items.AllItemsReceived.Count)
                 return;
-            Debug.Log("re-syncing...");
             ItemsAndLocationsHandler.ReSync();
         }
 
@@ -443,36 +443,53 @@ namespace MessengerRando.Archipelago
 
         private static bool ClientFinished()
         {
-            if (!Authenticated) return false;
             return Session.DataStorage.GetClientStatus() == ArchipelagoClientState.ClientGoal;
         }
 
         public static bool CanRelease()
         {
             if (!Authenticated) return false;
-            switch (Session.RoomState.ReleasePermissions)
+            try
             {
-                case Permissions.Goal:
-                    return ClientFinished();
-                case Permissions.Enabled:
-                    return true;
+                return Session.RoomState.ReleasePermissions switch
+                {
+                    Permissions.Goal => ClientFinished(),
+                    Permissions.Enabled => true,
+                    _ => false
+                };
             }
-
-            return false;
+            catch (Exception e)
+            {
+                if (e is ArchipelagoSocketClosedException)
+                {
+                    Disconnect();
+                }
+                Debug.Log(e);
+                return false;
+            }
         }
 
         public static bool CanCollect()
         {
             if (!Authenticated) return false;
-            switch (Session.RoomState.CollectPermissions)
+            try
             {
-                case Permissions.Goal:
-                    return ClientFinished();
-                case Permissions.Enabled:
-                    return true;
+                return Session.RoomState.CollectPermissions switch
+                {
+                    Permissions.Goal => ClientFinished(),
+                    Permissions.Enabled => true,
+                    _ => false
+                };
             }
-
-            return false;
+            catch (Exception e)
+            {
+                if (e is ArchipelagoSocketClosedException)
+                {
+                    Disconnect();
+                }
+                Debug.Log(e);
+                return false;
+            }
         }
 
         private static int GetHintCost()

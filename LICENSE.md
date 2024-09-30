@@ -1,7 +1,7 @@
 MIT License
 
-Copyright (c) 2023 minous27(Dillon Wilson)
-Copyright (c) 2023 alwaysintreble
+Copyright (c) 2023 minous27(Dillon Wilson)\
+Copyright (c) 2024 alwaysintreble(Aaron Wagener)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

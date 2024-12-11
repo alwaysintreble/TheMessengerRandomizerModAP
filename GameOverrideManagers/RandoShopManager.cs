@@ -163,6 +163,8 @@ namespace MessengerRando.GameOverrideManagers
                 return orig(self, locid);
             }
 
+            if (RaceMode) return locType.Equals(TextType.Name) ? "Unknown Item" : "???";
+
             var locationID = ItemsAndLocationsHandler.LocationFromEItem(itemType);
             switch (itemType)
             {
@@ -175,8 +177,6 @@ namespace MessengerRando.GameOverrideManagers
                         EItems.SHURIKEN_UPGRADE), out locationID);
                     break;
             }
-
-            if (RaceMode) return locType.Equals(TextType.Name) ? "Unknown Item" : "???";
 
             if (ArchipelagoClient.Offline)
             {

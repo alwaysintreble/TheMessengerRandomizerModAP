@@ -76,17 +76,10 @@ public static class ItemInfoExtensions
 
     private static string Color(this ItemInfo item)
     {
-        switch (item.Flags)
-        {
-            case ItemFlags.Advancement:
-                return UserConfig.AdvancementColor;
-            case ItemFlags.NeverExclude:
-                return UserConfig.UsefulColor;
-            case ItemFlags.Trap:
-                return UserConfig.TrapColor;
-            default:
-                return UserConfig.FillerColor;
-        }
+        if ((item.Flags & ItemFlags.Advancement) != 0) return UserConfig.AdvancementColor;
+        if ((item.Flags & ItemFlags.NeverExclude) != 0) return UserConfig.UsefulColor;
+        if ((item.Flags & ItemFlags.Trap) != 0) return UserConfig.TrapColor;
+        return UserConfig.FillerColor;
     }
 
     public static bool OwnItem(this ItemInfo item) =>

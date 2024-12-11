@@ -20,6 +20,8 @@ namespace MessengerRando.Archipelago
         public const int APQuantity = 69;
         public const long BaseOffset = 0xADD_000;
 
+        public static bool Synced;
+
         /// <summary>
         /// Builds the item and lookup dictionaries for converting to and from AP checks. Will always make every location
         /// a check, whether they are or not, for simplicity's sake.
@@ -343,7 +345,6 @@ namespace MessengerRando.Archipelago
                     if (!ArchipelagoClient.ServerData.ReceivedItems.ContainsKey(shurikenID))
                     {
                         Manager<InventoryManager>.Instance.AddItem(EItems.SHURIKEN, APQuantity);
-                        ArchipelagoClient.ServerData.ReceivedItems.Add(shurikenID, 1);
                     }
                     APRandomizerMain.OnToggleWindmillShuriken();
                     break;
@@ -440,6 +441,7 @@ namespace MessengerRando.Archipelago
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                ArchipelagoClient.Disconnect();
             }
         }
 
@@ -454,10 +456,10 @@ namespace MessengerRando.Archipelago
                 {
                     LocationsLookup.TryGetValue(new LocationRO(name,
                         (EItems)Enum.Parse(typeof(EItems), loc.PrettyLocationName)), out locationID);
-                    ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
                 }
+                else return;
             }
-            else ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
+            ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
             
             Console.WriteLine("Sending location checks");
             if (ArchipelagoClient.Authenticated)
@@ -466,7 +468,6 @@ namespace MessengerRando.Archipelago
                     ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
                 var item = RandoStateManager.ScoutedLocations[locationID];
-                ArchipelagoClient.ItemQueue.Enqueue(item.ItemId);
                 if (!HasDialog(locationID))
                 {
                     string dialog;
@@ -507,20 +508,21 @@ namespace MessengerRando.Archipelago
 
         public static void UnlockItems()
         {
-            if (ArchipelagoClient.ServerData.Index == ArchipelagoClient.Session.Items.AllItemsReceived.Count) return;
-            for (var currentIndex = ArchipelagoClient.ServerData.Index;
-                 ArchipelagoClient.ServerData.Index < ArchipelagoClient.Session.Items.AllItemsReceived.Count;
-                 currentIndex++)
+            while (ArchipelagoClient.ServerData.Index < ArchipelagoClient.Session.Items.AllItemsReceived.Count)
             {
-                ArchipelagoClient.ItemQueue.Enqueue(ArchipelagoClient.Session.Items.AllItemsReceived[currentIndex].ItemId);
+                Unlock(ArchipelagoClient.Session.Items
+                    .AllItemsReceived[ArchipelagoClient.ServerData.Index].ItemId);
+                ArchipelagoClient.ServerData.Index++;
             }
+
+            Synced = false;
         }
         
         public static void ReSync()
         {
+            Synced = true;
             var receivedItems = new Dictionary<long, int>();
 
-            ArchipelagoClient.ServerData.Index = ArchipelagoClient.Session.Items.AllItemsReceived.Count;
             for (int i = 0; i < ArchipelagoClient.ServerData.Index; i++)
             {
                 var itemToUnlock = ArchipelagoClient.Session.Items.AllItemsReceived[i];

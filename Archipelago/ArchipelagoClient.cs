@@ -109,7 +109,6 @@ namespace MessengerRando.Archipelago
         private static void SetupSession(ArchipelagoSession session)
         {
             session.MessageLog.OnMessageReceived += OnMessageReceived;
-            session.Items.ItemReceived += OnItemReceived;
             session.Socket.ErrorReceived += SessionErrorReceived;
             session.Socket.SocketClosed += SessionSocketClosed;
         }
@@ -159,7 +158,7 @@ namespace MessengerRando.Archipelago
                 result = Session.TryConnectAndLogin(
                     "The Messenger",
                     ServerData.SlotName,
-                    ItemsHandlingFlags.IncludeStartingInventory,
+                    ItemsHandlingFlags.AllItems,
                     new Version(ApVersion),
                     password: ServerData.Password,
                     requestSlotData: needSlotData
@@ -408,7 +407,7 @@ namespace MessengerRando.Archipelago
 
         public static void UpdateArchipelagoState()
         {
-            if (ItemQueue.Count > 0)
+            while (ItemQueue.Count > 0)
             {
                 ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
             }
@@ -430,8 +429,11 @@ namespace MessengerRando.Archipelago
             }
 
             if (ServerData.Index < Session.Items.AllItemsReceived.Count)
+            {
+                ItemsAndLocationsHandler.UnlockItems();
                 return;
-            ItemsAndLocationsHandler.ReSync();
+            }
+            if (!ItemsAndLocationsHandler.Synced) ItemsAndLocationsHandler.ReSync();
         }
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)

@@ -26,7 +26,7 @@ namespace MessengerRando.Utils
         // ReSharper disable once UnassignedField.Global
         // gets assigned externally
         public RandoBossManager BossManager;
-        public static List<long> SeenHints = new ();
+        public static List<long> SeenHints = [];
 
         public bool SkipMusicBox;
         // ReSharper disable once UnassignedField.Global
@@ -61,7 +61,7 @@ namespace MessengerRando.Utils
         public static void InitializeSeed()
         {
             var slotData = ArchipelagoClient.ServerData.SlotData;
-            SeenHints = new List<long>();
+            SeenHints = [];
 
             if (ArchipelagoClient.ServerData.SeedName.IsNullOrEmpty() ||
                 ArchipelagoClient.ServerData.SeedName.Equals("Unknown"))
@@ -91,7 +91,7 @@ namespace MessengerRando.Utils
             if (slotData.TryGetValue("starting_portals", out var portals))
             {
                 var startingPortals = ((JArray)portals).ToObject<List<string>>();
-                RandoPortalManager.StartingPortals = new List<string>();
+                RandoPortalManager.StartingPortals = [];
                 foreach (var portal in startingPortals)
                 {
                     Console.WriteLine(portal);
@@ -99,50 +99,48 @@ namespace MessengerRando.Utils
                 }
 
                 var portalExits = ((JArray)slotData["portal_exits"]).ToObject<List<int>>();
-                RandoPortalManager.PortalMapping = new List<RandoPortalManager.Portal>();
+                RandoPortalManager.PortalMapping = [];
                 foreach (var portalExit in portalExits)
                 {
                     RandoPortalManager.PortalMapping.Add(new RandoPortalManager.Portal(portalExit));
                 }
 
-                if (slotData.TryGetValue("transitions", out var transitions))
+                if (!slotData.TryGetValue("transitions", out var transitions)) return;
+                RandoLevelManager.RandoLevelMapping =
+                    new Dictionary<string, LevelConstants.RandoLevel>();
+                var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
+                if (transitionPairs.Count == 0) RandoLevelManager.RandoLevelMapping = null;
+                else
                 {
-                    RandoLevelManager.RandoLevelMapping =
-                        new Dictionary<string, LevelConstants.RandoLevel>();
-                    var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
-                    if (transitionPairs.Count == 0) RandoLevelManager.RandoLevelMapping = null;
-                    else
+                    foreach (var pairing in transitionPairs)
                     {
-                        foreach (var pairing in transitionPairs)
-                        {
-                            var orig = LevelConstants.TransitionNames[pairing[0]];
-                            var replacement =
-                                LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
-                            RandoLevelManager.RandoLevelMapping[orig] = replacement;
-                            Console.WriteLine($"{orig}: {LevelConstants.TransitionNames[pairing[1]]}");
-                        }
+                        var orig = LevelConstants.TransitionNames[pairing[0]];
+                        var replacement =
+                            LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
+                        RandoLevelManager.RandoLevelMapping[orig] = replacement;
+                        Console.WriteLine($"{orig}: {LevelConstants.TransitionNames[pairing[1]]}");
                     }
                 }
             }
             else
             {
-                RandoPortalManager.StartingPortals = new List<string>
-                {
+                RandoPortalManager.StartingPortals =
+                [
                     "AutumnHillsPortal",
                     "RiviereTurquoisePortal",
                     "HowlingGrottoPortal",
                     "SunkenShrinePortal",
                     "SearingCragsPortal",
-                    "GlacialPeakPortal",
-                };
+                    "GlacialPeakPortal"
+                ];
             }
         }
 
         private static void SetupScoutedLocations(Dictionary<long, ScoutedItemInfo> scoutedLocationInfo)
         {
-            foreach (var itemInfo in scoutedLocationInfo.Values)
-            {
-            }
+            // foreach (var itemInfo in scoutedLocationInfo.Values)
+            // {
+            // }
             Instance.ScoutedLocations = scoutedLocationInfo;
             Console.WriteLine("scouting done");
         }
@@ -233,7 +231,7 @@ namespace MessengerRando.Utils
             }
 
             var invManager = Manager<InventoryManager>.Instance;
-            invManager.ItemQuantityByItemId = new();
+            invManager.ItemQuantityByItemId = new ItemQuantityByItemID();
             invManager.shopUpgradeUnlocked = [];
             invManager.figurinesCollected = [];
             

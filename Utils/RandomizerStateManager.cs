@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
@@ -73,6 +74,7 @@ namespace MessengerRando.Utils
                 SeedRandom = new Random(ArchipelagoClient.ServerData.SeedName.GetHashCode());
             }
 
+            RandoShopManager.RaceMode = ArchipelagoClient.Session.DataStorage[Scope.ReadOnly, "race_mode"].To<bool>();
             if ((Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1) && ArchipelagoClient.Authenticated)
             {
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(

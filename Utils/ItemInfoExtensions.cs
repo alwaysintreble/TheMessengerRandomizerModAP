@@ -54,8 +54,8 @@ public static class ItemInfoExtensions
             item.Player.Slot.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot)
                 ? "Huh. How did this get here? "
                 : $"Looks like {item.PlayerColor()} lost this. ";
-
-        switch (item.Flags)
+        
+        switch (item.GetSingleFlag())
         {
             case ItemFlags.Advancement:
                 description += "Seems important.";
@@ -76,10 +76,21 @@ public static class ItemInfoExtensions
 
     private static string Color(this ItemInfo item)
     {
-        if ((item.Flags & ItemFlags.Advancement) != 0) return UserConfig.AdvancementColor;
-        if ((item.Flags & ItemFlags.NeverExclude) != 0) return UserConfig.UsefulColor;
-        if ((item.Flags & ItemFlags.Trap) != 0) return UserConfig.TrapColor;
-        return UserConfig.FillerColor;
+        return item.GetSingleFlag() switch
+        {
+            ItemFlags.Advancement => UserConfig.AdvancementColor,
+            ItemFlags.NeverExclude => UserConfig.UsefulColor,
+            ItemFlags.Trap => UserConfig.TrapColor,
+            _ => UserConfig.FillerColor
+        };
+    }
+
+    private static ItemFlags GetSingleFlag(this ItemInfo item)
+    {
+        if ((item.Flags & ItemFlags.Advancement) != 0) return ItemFlags.Advancement;
+        if ((item.Flags & ItemFlags.NeverExclude) != 0) return ItemFlags.NeverExclude;
+        if ((item.Flags & ItemFlags.Trap) != 0) return ItemFlags.Trap;
+        return ItemFlags.None;
     }
 
     public static bool OwnItem(this ItemInfo item) =>

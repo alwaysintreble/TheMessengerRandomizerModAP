@@ -18,6 +18,7 @@ namespace MessengerRando.GameOverrideManagers
         private static readonly Queue FigurineQueue = new Queue();
         private static bool figurineOverride;
         private static int wrenchPrice;
+        public static bool RaceMode;
 
         public static int GetPrice(On.UpgradeButtonData.orig_GetPrice orig, UpgradeButtonData self)
         {
@@ -175,6 +176,8 @@ namespace MessengerRando.GameOverrideManagers
                     break;
             }
 
+            if (RaceMode) return locType.Equals(TextType.Name) ? "Unknown Item" : "???";
+
             if (ArchipelagoClient.Offline)
             {
                 return locType.Equals(TextType.Description)
@@ -193,11 +196,9 @@ namespace MessengerRando.GameOverrideManagers
                 }
             }
 
-            var text = locType.Equals(TextType.Name)
+            return locType.Equals(TextType.Name)
                 ? itemOnLocation.Colorize()
                 : itemOnLocation.GetShopDescription();
-            Console.WriteLine(text);
-            return text;
         }
 
         private enum TextType

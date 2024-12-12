@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using MessengerRando.Archipelago;
+using MessengerRando.GameOverrideManagers;
 using Microsoft.Win32;
 using Mod.Courier.UI;
 using WebSocketSharp;
@@ -73,6 +74,8 @@ namespace MessengerRando.Utils
                 $"--outputpath \"{outDirectory}\\output\"";
             if (!RandomizerOptions.Seed.IsNullOrEmpty())
                 args += $" --seed {RandomizerOptions.Seed}";
+            if (RandoShopManager.RaceMode)
+                args += " --race";
             archipelago.StartInfo.Arguments = args;
             // archipelago.StartInfo.UseShellExecute = false;
             // archipelago.StartInfo.RedirectStandardInput = true;

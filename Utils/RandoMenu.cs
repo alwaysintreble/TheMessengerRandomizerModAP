@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MessengerRando.Archipelago;
+using MessengerRando.GameOverrideManagers;
 using Mod.Courier;
 using Mod.Courier.UI;
 using TMPro;
@@ -28,6 +29,7 @@ namespace MessengerRando.Utils
         public static SubMenuButtonInfo SeedNumButton;
         public static SubMenuButtonInfo GenerateSeed;
         public static SubMenuButtonInfo SpoilerLevel;
+        public static SubMenuButtonInfo RaceMode;
         public static SubMenuButtonInfo BlankSpaceOne;
         // options
         public static SubMenuButtonInfo Accessibility;
@@ -520,6 +522,10 @@ namespace MessengerRando.Utils
             SpoilerLevel = RegisterSubRandoButton(
                 RandomizerOptions.GetSpoilerText,
                 RandomizerOptions.ChangeSpoiler);
+
+            RaceMode = RegisterSubRandoButton(
+                () => RandoShopManager.RaceMode ? "Disable Race Mode" : "Enable Race Mode",
+                () => RandoShopManager.RaceMode = !RandoShopManager.RaceMode);
             
             BlankSpaceOne = RegisterSubRandoButton(null, null);
             

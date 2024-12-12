@@ -349,9 +349,8 @@ namespace MessengerRando.Archipelago
             }
         }
 
-        private static void SyncEvents()
+        public static void SyncEvents()
         {
-            Session.DataStorage[Scope.Slot, "Events"].Initialize(new List<string>());
             Console.WriteLine("Checking datastorage events");
             foreach (var cutscene in Session.DataStorage[Scope.Slot, "Events"].To<List<string>>())
             {

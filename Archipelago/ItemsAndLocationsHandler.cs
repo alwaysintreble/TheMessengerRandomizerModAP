@@ -521,6 +521,7 @@ namespace MessengerRando.Archipelago
         public static void ReSync()
         {
             Synced = true;
+            ArchipelagoClient.SyncEvents();
             var receivedItems = new Dictionary<long, int>();
 
             for (int i = 0; i < ArchipelagoClient.ServerData.Index; i++)

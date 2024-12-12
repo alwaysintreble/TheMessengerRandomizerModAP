@@ -75,6 +75,7 @@ namespace MessengerRando.Utils
             }
 
             RandoShopManager.RaceMode = ArchipelagoClient.Session.DataStorage[Scope.ReadOnly, "race_mode"].To<bool>();
+            ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"].Initialize(new List<string>());
             if ((Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1) && ArchipelagoClient.Authenticated)
             {
                 ArchipelagoClient.Session.Locations.ScoutLocationsAsync(

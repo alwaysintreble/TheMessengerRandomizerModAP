@@ -19,6 +19,7 @@ namespace MessengerRando.GameOverrideManagers
         private static bool figurineOverride;
         private static int wrenchPrice;
         public static bool RaceMode;
+        public static bool ShopHints = true;
 
         public static int GetPrice(On.UpgradeButtonData.orig_GetPrice orig, UpgradeButtonData self)
         {

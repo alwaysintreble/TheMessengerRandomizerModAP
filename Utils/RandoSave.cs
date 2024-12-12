@@ -24,6 +24,7 @@ namespace MessengerRando.Utils
 
             if (ArchipelagoClient.Authenticated)
                 ArchipelagoClient.SyncLocations();
+            UserConfig.UpdateConfig(APRandomizerMain.ModPath);
             APSaveData = GetSaveData();
         }
 

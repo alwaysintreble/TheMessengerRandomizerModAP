@@ -45,6 +45,7 @@ namespace MessengerRando.Utils
         public static SubMenuButtonInfo ArchipelagoToggleHintPopupButton;
         public static SubMenuButtonInfo ArchipelagoStatusButton;
         public static SubMenuButtonInfo ArchipelagoDeathLinkButton;
+        public static SubMenuButtonInfo ShopHintsButton;
         public static SubMenuButtonInfo ArchipelagoMessageTimerButton;
 
 
@@ -641,7 +642,7 @@ namespace MessengerRando.Utils
             ArchipelagoMessageTimerButton = RegisterTextRandoButton(
                 () => "AP Message Display Time",
                 APRandomizerMain.OnSelectMessageTimer,
-                1,
+                3,
                 () => "Enter amount of time to display Archipelago messages, in seconds",
                 () => APRandomizerMain.UpdateTime.ToString(CultureInfo.InvariantCulture), TextEntryButtonInfo.CharsetFlags.Number);
             ArchipelagoMessageTimerButton.IsEnabled =
@@ -654,7 +655,7 @@ namespace MessengerRando.Utils
                 () => RandoMusicManager.ShuffleMusic = !RandoMusicManager.ShuffleMusic);
             ShuffleMusicButton.IsEnabled =
                 () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
-
+            
             //Add Archipelago death link button
             ArchipelagoDeathLinkButton = RegisterSubRandoButton(
                 () => ArchipelagoData.DeathLink
@@ -663,6 +664,11 @@ namespace MessengerRando.Utils
                 APRandomizerMain.OnToggleDeathLink);
             ArchipelagoDeathLinkButton.IsEnabled = () => ArchipelagoClient.Authenticated;
 
+            //Add button to toggle shop hints
+            ShopHintsButton = RegisterSubRandoButton(
+                () => RandoShopManager.ShopHints ? "Enable Shop Hints" : "Disable Shop Hints",
+                () => RandoShopManager.ShopHints = !RandoShopManager.ShopHints);
+            
             //Add Archipelago release button
             ArchipelagoReleaseButton = RegisterSubRandoButton(
                 () => "Release remaining items",

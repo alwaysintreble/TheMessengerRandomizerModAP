@@ -35,6 +35,7 @@ namespace MessengerRando
         private TextMeshProUGUI apTextDisplay16;
         private TextMeshProUGUI apMessagesDisplay8;
         private TextMeshProUGUI apMessagesDisplay16;
+        public static string ModPath = Courier.ModsFolder.Replace("/Mods", "");
 
         //Set up save data
         public override Type ModuleSaveType => typeof(RandoSave);
@@ -151,8 +152,7 @@ namespace MessengerRando
             Debug.Log("Loading config from APConfig.toml");
             try
             {
-                var path = Courier.ModsFolder.Replace("/Mods", "");
-                UserConfig.ReadConfig(path);
+                UserConfig.ReadConfig(ModPath);
             }
             catch (Exception e) {Console.Write(e);}
             ArchipelagoMenu.BuildArchipelagoMenu();

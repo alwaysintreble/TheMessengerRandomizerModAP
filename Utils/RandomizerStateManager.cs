@@ -74,14 +74,18 @@ namespace MessengerRando.Utils
                 SeedRandom = new Random(ArchipelagoClient.ServerData.SeedName.GetHashCode());
             }
 
-            RandoShopManager.RaceMode = ArchipelagoClient.Session.DataStorage[Scope.ReadOnly, "race_mode"].To<bool>();
-            ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"].Initialize(new List<string>());
-            if ((Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1) && ArchipelagoClient.Authenticated)
+            if (ArchipelagoClient.Session is not null)
             {
-                ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
-                    SetupScoutedLocations,
-                    ArchipelagoClient.Session.Locations.AllLocations.ToArray()
-                );
+                var raceMode = ArchipelagoClient.Session.DataStorage[Scope.ReadOnly, "race_mode"];
+                RandoShopManager.RaceMode = raceMode is not null && (bool)raceMode;
+                ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"].Initialize(new List<string>());
+                if ((Instance.ScoutedLocations == null || Instance.ScoutedLocations.Count < 1) && ArchipelagoClient.Authenticated)
+                {
+                    ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
+                        SetupScoutedLocations,
+                        ArchipelagoClient.Session.Locations.AllLocations.ToArray()
+                    );
+                }
             }
 
             ArchipelagoData.DeathLink = Convert.ToBoolean(slotData.TryGetValue("deathlink", out var deathLink)
@@ -338,9 +342,10 @@ namespace MessengerRando.Utils
             string gameFile = "";
             foreach (var file in Directory.GetFiles(filePath))
             {
-                if (File.GetCreationTime(file) > latestTime && file.EndsWith("aptm"))
+                var fileTime = File.GetCreationTime(file);
+                if (fileTime > latestTime && file.EndsWith("aptm"))
                 {
-                    latestTime = File.GetCreationTime(file);
+                    latestTime = fileTime;
                     gameFile = file;
                 }
             }

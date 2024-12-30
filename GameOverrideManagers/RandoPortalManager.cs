@@ -44,6 +44,7 @@ namespace MessengerRando.GameOverrideManagers
         }
 
         public static bool LeftHQPortal;
+        public static bool ForceTeleport;
         public static bool EnteredTower;
         public static List<string> StartingPortals;
         public static List<Portal> PortalMapping;
@@ -380,6 +381,11 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void Teleport()
         {
+            if (PortalMapping is null || PortalMapping.Count == 0)
+            {
+                LeftHQPortal = false;
+                return;
+            }
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
             if (LevelConstants.TransitionToEntranceName.TryGetValue(
                     new LevelConstants.Transition(ELevel.Level_13_TowerOfTimeHQ,
@@ -413,8 +419,9 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void LeaveHQ(On.TotHQ.orig_LeaveToLevel orig, TotHQ self, bool playLevelMusic, bool loadingNewLevel)
         {
-            Console.WriteLine($"leaving hq.. should be teleporting: {PortalMapping != null}");
-            LeftHQPortal = PortalMapping != null && PortalMapping.Count > 0;
+            Console.WriteLine("leaving hq...");
+            LeftHQPortal = true;
+            ForceTeleport = !loadingNewLevel;
             orig(self, playLevelMusic, loadingNewLevel);
         }
     }

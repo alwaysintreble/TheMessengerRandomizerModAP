@@ -826,7 +826,7 @@ namespace MessengerRando
             Save?.Update();
             try
             {
-                if (RandoPortalManager.LeftHQPortal)
+                if (RandoPortalManager.LeftHQPortal && RandoPortalManager.ForceTeleport)
                 {
                     RandoPortalManager.Teleport();
                     return;

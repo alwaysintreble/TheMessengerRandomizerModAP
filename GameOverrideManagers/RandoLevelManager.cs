@@ -150,17 +150,13 @@ namespace MessengerRando.GameOverrideManagers
             if (teleporting)
             {
                 teleporting = false;
-                // put the region we just loaded into in AP data storage for tracking
-                if (ArchipelagoClient.Authenticated)
-                {
-                    if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
-                        ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
-                            ELevel.Level_13_TowerOfTimeHQ.ToString();
-                    else
-                        ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
-                            self.GetCurrentLevelEnum().ToString();
-                }
+                AddCurrentRegionToStorage(self);
                 return;
+            }
+            if ((RandoPortalManager.PortalMapping is null || RandoPortalManager.PortalMapping.Count == 0)
+                     && (RandoLevelMapping is null || RandoLevelMapping.Count == 0))
+            {
+                AddCurrentRegionToStorage(self);
             }
             
             if (currentLevel.Equals(ELevel.Level_11_B_MusicBox) &&
@@ -176,8 +172,16 @@ namespace MessengerRando.GameOverrideManagers
             if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
             {
                 // we just teleported into HQ
-                
+                return;
             }
+
+            if (RandoPortalManager.LeftHQPortal)
+            {
+                RandoPortalManager.Teleport();
+                return;
+            }
+            
+            // level transition shuffling
             var newLevel = FindEntrance();
             switch (newLevel.LevelName)
             {
@@ -194,7 +198,10 @@ namespace MessengerRando.GameOverrideManagers
                     newLevel.LevelName,
                     newLevel.PlayerPos,
                     newLevel.Dimension);
+        }
 
+        private static void AddCurrentRegionToStorage(LevelManager self)
+        {
             if (!ArchipelagoClient.Authenticated) return;
             // put the region we just loaded into in AP data storage for tracking
             if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
@@ -204,7 +211,6 @@ namespace MessengerRando.GameOverrideManagers
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
                     self.GetCurrentLevelEnum().ToString();
         }
-        
         public static void SkipMusicBox()
         {
             Manager<AudioManager>.Instance.StopMusic();

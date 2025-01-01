@@ -666,7 +666,7 @@ namespace MessengerRando.Utils
 
             //Add button to toggle shop hints
             ShopHintsButton = RegisterSubRandoButton(
-                () => RandoShopManager.ShopHints ? "Enable Shop Hints" : "Disable Shop Hints",
+                () => RandoShopManager.ShopHints ? "Disable Shop Hints" : "Enable Shop Hints",
                 () => RandoShopManager.ShopHints = !RandoShopManager.ShopHints);
             
             //Add Archipelago release button

@@ -86,6 +86,7 @@ namespace MessengerRando.Utils
                         ArchipelagoClient.Session.Locations.AllLocations.ToArray()
                     );
                 }
+                ArchipelagoClient.Session.DataStorage.TrackHints(HintMenu.onHintsUpdated);
             }
 
             ArchipelagoData.DeathLink = Convert.ToBoolean(slotData.TryGetValue("deathlink", out var deathLink)

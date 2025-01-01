@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using MessengerRando.Archipelago;
 using Mod.Courier;
 using Mod.Courier.UI;
@@ -10,6 +12,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Color = UnityEngine.Color;
 
 namespace MessengerRando.Utils
 {
@@ -19,7 +22,10 @@ namespace MessengerRando.Utils
         private static HintScreen hintScreen;
 
         public static SubMenuButtonInfo archipelagoHintButton;
+        public static SubMenuButtonInfo hintMenuTitleButton;
 
+        private static Dictionary<long, List<SubMenuButtonInfo>> hintButtons = new();
+        
         public static void DisplayHintMenu()
         {
             Manager<UIManager>.Instance.GetView<OptionScreen>().gameObject.SetActive(false);
@@ -435,20 +441,101 @@ namespace MessengerRando.Utils
             RegisterRandoButton(buttonInfo);
             return buttonInfo;
         }
+
+        public static void onHintsUpdated(Hint[] hints)
+        {
+            foreach (var hint in hints)
+            {
+                if (hintButtons.ContainsKey(hint.LocationId))
+                    UpdateHintEntry(hint);
+                else
+                {
+                    if (hint.Found) continue;
+                    AddNewHintEntry(hint);
+                }
+            }
+        }
+        
+        private static void AddNewHintEntry(Hint hint)
+        {
+#if RELEASE
+            if (ItemsAndLocationsHandler.ShopLocation(item.LocationId, out var shopLoc)) return;
+#endif
+            
+            var newHint = RegisterSubRandoButton(
+                () => GetHintEntryText(hint),
+                null);
+            newHint.IsEnabled = () => true;
+
+            var blankSpace = RegisterSubRandoButton(() => "", null);
+            blankSpace.IsEnabled = () => true;
+            hintButtons.Add(hint.LocationId, [newHint, blankSpace]);
+        }
+
+        private static void UpdateHintEntry(Hint hint)
+        {
+            var hintButton = hintButtons[hint.LocationId];
+            hintButton[0].GetText = () => GetHintEntryText(hint);
+            if (hint.Found)
+            {
+                hintButton[0].IsEnabled = () => false;
+                hintButton[1].IsEnabled = () => false;
+            }
+        }
+
+        private static string GetHintEntryText(Hint hint)
+        {
+            var findingPlayerInfo = ArchipelagoClient.Session.Players.GetPlayerInfo(hint.FindingPlayer);
+            var receivingPlayerInfo = ArchipelagoClient.Session.Players.GetPlayerInfo(hint.ReceivingPlayer);
+            var locName =
+                ArchipelagoClient.Session.Locations.GetLocationNameFromId(hint.LocationId, findingPlayerInfo.Game);
+            var itemName = ArchipelagoClient.Session.Items.GetItemName(hint.ItemId, receivingPlayerInfo.Game);
+
+            var itemColor = GetItemColor(hint.ItemFlags);
+            return string.Format(
+                $"<color=#{itemColor}>{itemName}</color> for {ArchipelagoClient.ColorizePlayerName(hint.ReceivingPlayer)}" +
+                $"at <color=#{UserConfig.LocationColor}>{locName}</color>\n" +
+                $"status: {hint.Status}");
+        }
+
+        private static string GetItemColor(ItemFlags flags)
+        {
+            if ((flags & ItemFlags.Advancement) != 0) return UserConfig.AdvancementColor;
+            if ((flags & ItemFlags.NeverExclude) != 0) return UserConfig.UsefulColor;
+            return (flags & ItemFlags.Trap) != 0 ? UserConfig.TrapColor : UserConfig.FillerColor;
+        }
+
+        private static void UpdateHintStatus()
+        {
+            
+        }
         
         public static void BuildHintMenu()
         {
-            // HintMenu.ArchipelagoHintMenuButton =
-            //     Courier.UI.RegisterSubMenuOptionButton(() => "Hint Menu", HintMenu.DisplayHintMenu);
-            // HintMenu.ArchipelagoHintMenuButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-
+#if DEBUG
+            ArchipelagoHintMenuButton =
+                Courier.UI.RegisterSubMenuOptionButton(() => "Hint Menu", DisplayHintMenu);
+            ArchipelagoHintMenuButton.IsEnabled = () => ArchipelagoClient.Authenticated;
+            
             //Add Archipelago hint button
+            archipelagoHintButton = RegisterTextRandoButton(
+                () => "Hint for an item",
+                APRandomizerMain.OnSelectArchipelagoHint,
+                30,
+                () => "Enter item name:");
+            archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
+            
+            var blankSpace = RegisterSubRandoButton(() => "", null);
+            blankSpace.IsEnabled = () => true;
+
+#else
             archipelagoHintButton = ArchipelagoMenu.RegisterTextRandoButton(
                 () => "Hint for an item",
                 APRandomizerMain.OnSelectArchipelagoHint,
                 30,
                 () => "Enter item name:");
             archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
+#endif
         }
     }
 }

@@ -89,8 +89,7 @@ public static class ItemInfoExtensions
     {
         if ((item.Flags & ItemFlags.Advancement) != 0) return ItemFlags.Advancement;
         if ((item.Flags & ItemFlags.NeverExclude) != 0) return ItemFlags.NeverExclude;
-        if ((item.Flags & ItemFlags.Trap) != 0) return ItemFlags.Trap;
-        return ItemFlags.None;
+        return (item.Flags & ItemFlags.Trap) != 0 ? ItemFlags.Trap : ItemFlags.None;
     }
 
     public static bool OwnItem(this ItemInfo item) =>

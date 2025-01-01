@@ -230,7 +230,7 @@ namespace MessengerRando.Archipelago
             attempt(Connect());
         }
 
-        private static string ColorizePlayerName(int player)
+        public static string ColorizePlayerName(int player)
         {
             var color = player.Equals(Session.ConnectionInfo.Slot)
                 ? UserConfig.PlayerColor
@@ -238,7 +238,7 @@ namespace MessengerRando.Archipelago
             return $"<color=#{color}>{Session.Players.GetPlayerAlias(player)}</color>";
         }
 
-        private static string ColorizeLocation(long locID)
+        public static string ColorizeLocation(long locID)
         {
             var color = UserConfig.LocationColor;
             return $"<color=#{color}>{Session.Locations.GetLocationNameFromId(locID)}</color>";

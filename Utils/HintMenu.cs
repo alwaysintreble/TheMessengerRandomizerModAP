@@ -512,7 +512,6 @@ namespace MessengerRando.Utils
         
         public static void BuildHintMenu()
         {
-#if DEBUG
             ArchipelagoHintMenuButton =
                 Courier.UI.RegisterSubMenuOptionButton(() => "Hint Menu", DisplayHintMenu);
             ArchipelagoHintMenuButton.IsEnabled = () => ArchipelagoClient.Authenticated;
@@ -527,15 +526,6 @@ namespace MessengerRando.Utils
             
             var blankSpace = RegisterSubRandoButton(() => "", null);
             blankSpace.IsEnabled = () => true;
-
-#else
-            archipelagoHintButton = ArchipelagoMenu.RegisterTextRandoButton(
-                () => "Hint for an item",
-                APRandomizerMain.OnSelectArchipelagoHint,
-                30,
-                () => "Enter item name:");
-            archipelagoHintButton.IsEnabled = ArchipelagoClient.CanHint;
-#endif
         }
     }
 }

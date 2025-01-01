@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
+using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using Mod.Courier;
 using Mod.Courier.UI;
@@ -464,7 +465,7 @@ namespace MessengerRando.Utils
             
             var newHint = RegisterSubRandoButton(
                 () => GetHintEntryText(hint),
-                null);
+                () => UpdateHintStatus(hint));
             newHint.IsEnabled = () => true;
 
             var blankSpace = RegisterSubRandoButton(() => "", null);
@@ -493,9 +494,9 @@ namespace MessengerRando.Utils
 
             var itemColor = GetItemColor(hint.ItemFlags);
             return string.Format(
-                $"<color=#{itemColor}>{itemName}</color> for {ArchipelagoClient.ColorizePlayerName(hint.ReceivingPlayer)}" +
+                $"<color=#{itemColor}>{itemName}</color> for {ArchipelagoClient.ColorizePlayerName(hint.ReceivingPlayer)} " +
                 $"at <color=#{UserConfig.LocationColor}>{locName}</color>\n" +
-                $"status: {hint.Status}");
+                $"status: {GetStatusColor(hint.Status)}");
         }
 
         private static string GetItemColor(ItemFlags flags)
@@ -505,9 +506,46 @@ namespace MessengerRando.Utils
             return (flags & ItemFlags.Trap) != 0 ? UserConfig.TrapColor : UserConfig.FillerColor;
         }
 
-        private static void UpdateHintStatus()
+        private static string GetStatusColor(HintStatus status)
         {
-            
+            string color = UserConfig.UnspecifiedColor;
+            switch (status)
+            {
+                case HintStatus.Priority:
+                    color = UserConfig.PriorityColor;
+                    break;
+                case HintStatus.Avoid:
+                    color = UserConfig.AvoidColor;
+                    break;
+                case HintStatus.NoPriority:
+                    color = UserConfig.NoPriorityColor;
+                    break;
+            }
+            return $"<color=#{color}>{status}</color>";
+        }
+
+        private static void UpdateHintStatus(Hint hint)
+        {
+            if (hint.ReceivingPlayer != ArchipelagoClient.Session.ConnectionInfo.Slot) return;
+            switch (hint.Status)
+            {
+                case HintStatus.Unspecified:
+                    hint.Status = HintStatus.Priority;
+                    break;
+                case HintStatus.Priority:
+                    hint.Status = HintStatus.Avoid;
+                    break;
+                case HintStatus.Avoid:
+                    hint.Status = HintStatus.NoPriority;
+                    break;
+                default:
+                    hint.Status = HintStatus.Unspecified;
+                    break;
+            }
+
+            ArchipelagoClient.Session.Socket.SendPacket(new UpdateHintPacket
+                { Location = hint.LocationId, Player = hint.ReceivingPlayer, Status = hint.Status });
+            UpdateHintEntry(hint);
         }
         
         public static void BuildHintMenu()

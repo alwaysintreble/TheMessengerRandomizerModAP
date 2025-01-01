@@ -23,6 +23,10 @@ namespace MessengerRando.Utils
         public static string PlayerColor = "EE00EE";
         public static string OtherPlayerColor = "FAFAD2";
         public static string LocationColor = "00FF7F";
+        public static string PriorityColor = "AF99EF";
+        public static string AvoidColor = "FA8072";
+        public static string NoPriorityColor = "00EEEE";
+        public static string UnspecifiedColor = "FFFFFF";
         
         private static TomlTable configTable;
 
@@ -68,6 +72,10 @@ namespace MessengerRando.Utils
             PlayerColor = configTable.get_Item("player_color").AsString.Value;
             OtherPlayerColor = configTable.get_Item("other_player_color").AsString.Value;
             LocationColor = configTable.get_Item("location_color").AsString.Value;
+            PriorityColor = configTable.get_Item("priority_color").AsString.Value;
+            AvoidColor = configTable.get_Item("avoid_color").AsString.Value;
+            NoPriorityColor = configTable.get_Item("no_priority_color").AsString.Value;
+            UnspecifiedColor = configTable.get_Item("unspecified_color").AsString.Value;
             RandoMusicManager.ShuffleMusic = configTable.get_Item("music_shuffle").AsBoolean.Value;
             ArchipelagoClient.DisplayStatus = configTable.get_Item("show_status_info").AsBoolean.Value;
             ArchipelagoClient.DisplayAPMessages = configTable.get_Item("show_server_messages").AsBoolean.Value;
@@ -129,6 +137,26 @@ namespace MessengerRando.Utils
                 {
                     Value = "00EEEE",
                     Comment = "Hex ID of the color used for Filler items sent and received"
+                },
+                ["priority_color"] = new TomlString
+                {
+                    Value = "AF99EF",
+                    Comment = "Hex ID of the color used for Priority hints"
+                },
+                ["avoid_color"] = new TomlString
+                {
+                    Value = "FA8072",
+                    Comment = "Hex ID of the color used for Avoid hints"
+                },
+                ["no_priority_color"] = new TomlString
+                {
+                    Value = "00EEEE",
+                    Comment = "Hex ID of the color used for No Priority hints"
+                },
+                ["unspecified_color"] = new TomlString
+                {
+                    Value = "000000",
+                    Comment = "Hex ID of the color used for Unspecified hints"
                 },
                 ["player_color"] = new TomlString
                 {

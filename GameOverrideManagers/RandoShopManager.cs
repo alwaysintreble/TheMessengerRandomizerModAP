@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using Archipelago.MultiClient.Net.Enums;
 using MessengerRando.Archipelago;
 using MessengerRando.RO;
 using MessengerRando.Utils;
@@ -164,7 +165,7 @@ namespace MessengerRando.GameOverrideManagers
                 return orig(self, locid);
             }
 
-            if (RaceMode) return locType.Equals(TextType.Name) ? "Unknown Item" : "???";
+            if (RaceMode || !ShopHints) return locType.Equals(TextType.Name) ? "Unknown Item" : "???";
 
             var locationID = ItemsAndLocationsHandler.LocationFromEItem(itemType);
             switch (itemType)
@@ -187,13 +188,13 @@ namespace MessengerRando.GameOverrideManagers
             }
 
             var itemOnLocation = RandomizerStateManager.Instance.ScoutedLocations[locationID];
-            if (locType.Equals(TextType.Name) && !hinted.Contains(locationID) && ArchipelagoClient.Authenticated)
+            if (locType.Equals(TextType.Name) && ArchipelagoClient.Authenticated)
             {
                 if(!ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
                 {
                     ThreadPool.QueueUserWorkItem(_ =>
-                        ArchipelagoClient.Session.Locations.ScoutLocationsAsync(null, true, locationID));
-                    hinted.Add(locationID);
+                        ArchipelagoClient.Session.Locations.ScoutLocationsAsync(
+                            null, HintCreationPolicy.CreateAndAnnounceOnce, locationID));
                 }
             }
 
@@ -231,8 +232,6 @@ namespace MessengerRando.GameOverrideManagers
             { "SWIM_DASH", EItems.SWIM_DASH },
             { "GLIDE_ATTACK", EItems.GLIDE_ATTACK },
         };
-
-        private static List<long> hinted = [];
 
         private static bool InShop()
         {

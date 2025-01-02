@@ -543,8 +543,11 @@ namespace MessengerRando.Utils
                     break;
             }
 
-            ArchipelagoClient.Session.Socket.SendPacket(new UpdateHintPacket
-                { Location = hint.LocationId, Player = hint.ReceivingPlayer, Status = hint.Status });
+            if (ArchipelagoClient.Session.RoomState.GeneratorVersion >= new Version(0, 5, 1))
+            {
+                ArchipelagoClient.Session.Socket.SendPacket(new UpdateHintPacket
+                    { Location = hint.LocationId, Player = hint.ReceivingPlayer, Status = hint.Status });
+            }
             UpdateHintEntry(hint);
         }
         

@@ -68,26 +68,114 @@ namespace MessengerRando.Utils
 
             if (configTable.HasKey("advancement_color"))
                 AdvancementColor = configTable.get_Item("advancement_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("advancement_color", new TomlString
+                {
+                    Value = AdvancementColor,
+                    Comment = "Hex ID of the color used for Progression items sent and received"
+                });
+            }
             if (configTable.HasKey("useful_color"))
                 UsefulColor = configTable.get_Item("useful_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("useful_color", new TomlString
+                {
+                    Value = UsefulColor,
+                    Comment = "Hex ID of the color used for Useful items sent and received"
+                });
+            }
             if (configTable.HasKey("trap_color"))
                 TrapColor = configTable.get_Item("trap_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("trap_color", new TomlString
+                {
+                    Value = TrapColor,
+                    Comment = "Hex ID of the color used for Trap items sent and received"
+                });
+            }
             if (configTable.HasKey("filler_color"))
                 FillerColor = configTable.get_Item("filler_color").AsString.Value;
-            if (configTable.HasKey("player_color"))
-                PlayerColor = configTable.get_Item("player_color").AsString.Value;
-            if (configTable.HasKey("other_player_color"))
-                OtherPlayerColor = configTable.get_Item("other_player_color").AsString.Value;
-            if (configTable.HasKey("location_color"))
-                LocationColor = configTable.get_Item("location_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("filler_color", new TomlString
+                {
+                    Value = FillerColor,
+                    Comment = "Hex ID of the color used for Filler items sent and received"
+                });
+            }
             if (configTable.HasKey("priority_color"))
                 PriorityColor = configTable.get_Item("priority_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("priority_color", new TomlString
+                {
+                    Value = PriorityColor,
+                    Comment = "Hex ID of the color used for Priority hints"
+                });
+            }
             if (configTable.HasKey("avoid_color"))
                 AvoidColor = configTable.get_Item("avoid_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("avoid_color", new TomlString
+                {
+                    Value = AvoidColor,
+                    Comment = "Hex ID of the color used for Avoid hints"
+                });
+            }
             if (configTable.HasKey("no_priority_color"))
                 NoPriorityColor = configTable.get_Item("no_priority_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("no_priority_color", new TomlString
+                {
+                    Value = NoPriorityColor,
+                    Comment = "Hex ID of the color used for No priority hints"
+                });
+            }
             if (configTable.HasKey("unspecified_color"))
                 UnspecifiedColor = configTable.get_Item("unspecified_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("unspecified_color", new TomlString
+                {
+                    Value = UnspecifiedColor,
+                    Comment = "Hex ID of the color used for Unspecified hints"
+                });
+            }
+            if (configTable.HasKey("player_color"))
+                PlayerColor = configTable.get_Item("player_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("player_color", new TomlString
+                {
+                    Value = PlayerColor,
+                    Comment = "Hex ID of the color used for your own name"
+                });
+            }
+            if (configTable.HasKey("other_player_color"))
+                OtherPlayerColor = configTable.get_Item("other_player_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("other_player_color", new TomlString
+                {
+                    Value = OtherPlayerColor,
+                    Comment = "Hex ID of the color used for other players"
+                });
+            }
+            if (configTable.HasKey("location_color"))
+                LocationColor = configTable.get_Item("location_color").AsString.Value;
+            else
+            {
+                configTable.set_Item("location_color", new TomlString
+                {
+                    Value = LocationColor,
+                    Comment = "Hex ID of the color used for locations"
+                });
+            }
             if (configTable.HasKey("music_shuffle"))
                 RandoMusicManager.ShuffleMusic = configTable.get_Item("music_shuffle").AsBoolean.Value;
             if (configTable.HasKey("show_status_info"))
@@ -255,61 +343,6 @@ namespace MessengerRando.Utils
             {
                 Value = MessageTextSize,
                 Comment = "Size of the text for messages from the Archipelago server"
-            });
-            configTable.set_Item("advancement_color", new TomlString
-            {
-                Value = AdvancementColor,
-                Comment = "Hex ID of the color used for Progression items sent and received"]
-            });
-            configTable.set_Item("useful_color", new TomlString
-            {
-                Value = UsefulColor,
-                Comment = "Hex ID of the color used for Useful items sent and received"
-            });
-            configTable.set_Item("trap_color", new TomlString
-            {
-                Value = TrapColor,
-                Comment = "Hex ID of the color used for Trap items sent and received"
-            });
-            configTable.set_Item("filler_color", new TomlString
-            {
-                Value = FillerColor,
-                Comment = "Hex ID of the color used for Filler items sent and received"
-            });
-            configTable.set_Item("priority_color", new TomlString
-            {
-                Value = PriorityColor,
-                Comment = "Hex ID of the color used for Priority hints"
-            });
-            configTable.set_Item("avoid_color", new TomlString
-            {
-                Value = AvoidColor,
-                Comment = "Hex ID of the color used for Avoid hints"
-            });
-            configTable.set_Item("no_priority_color", new TomlString
-            {
-                Value = NoPriorityColor,
-                Comment = "Hex ID of the color used for No priority hints"
-            });
-            configTable.set_Item("unspecified_color", new TomlString
-            {
-                Value = UnspecifiedColor,
-                Comment = "Hex ID of the color used for Unspecified hints"
-            });
-            configTable.set_Item("player_color", new TomlString
-            {
-                Value = PlayerColor,
-                Comment = "Hex ID of the color used for your own name"
-            });
-            configTable.set_Item("other_player_color", new TomlString
-            {
-                Value = OtherPlayerColor,
-                Comment = "Hex ID of the color used for other players"
-            });
-            configTable.set_Item("location_color", new TomlString
-            {
-                Value = LocationColor,
-                Comment = "Hex ID of the color used for locations"
             });
             configTable.set_Item("music_shuffle", new TomlBoolean
             {

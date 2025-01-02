@@ -66,31 +66,42 @@ namespace MessengerRando.Utils
                 MessageTextSize = configTable.get_Item("message_text_size").AsInteger.Value;
             }
 
-            try
-            {
+            if (configTable.HasKey("advancement_color"))
                 AdvancementColor = configTable.get_Item("advancement_color").AsString.Value;
+            if (configTable.HasKey("useful_color"))
                 UsefulColor = configTable.get_Item("useful_color").AsString.Value;
+            if (configTable.HasKey("trap_color"))
                 TrapColor = configTable.get_Item("trap_color").AsString.Value;
+            if (configTable.HasKey("filler_color"))
                 FillerColor = configTable.get_Item("filler_color").AsString.Value;
+            if (configTable.HasKey("player_color"))
                 PlayerColor = configTable.get_Item("player_color").AsString.Value;
+            if (configTable.HasKey("other_player_color"))
                 OtherPlayerColor = configTable.get_Item("other_player_color").AsString.Value;
+            if (configTable.HasKey("location_color"))
                 LocationColor = configTable.get_Item("location_color").AsString.Value;
-                RandoMusicManager.ShuffleMusic = configTable.get_Item("music_shuffle").AsBoolean.Value;
-                ArchipelagoClient.DisplayStatus = configTable.get_Item("show_status_info").AsBoolean.Value;
-                ArchipelagoClient.DisplayAPMessages = configTable.get_Item("show_server_messages").AsBoolean.Value;
-                ArchipelagoClient.FilterAPMessages = configTable.get_Item("filter_server_messages").AsBoolean.Value;
-                ArchipelagoClient.HintPopUps = configTable.get_Item("hint_popups").AsBoolean.Value;
-                APRandomizerMain.UpdateTime = (float)configTable.get_Item("message_display_timer").AsFloat.Value;
-                RandoShopManager.ShopHints = configTable.get_Item("shop_hints").AsBoolean.Value;
+            if (configTable.HasKey("priority_color"))
                 PriorityColor = configTable.get_Item("priority_color").AsString.Value;
+            if (configTable.HasKey("avoid_color"))
                 AvoidColor = configTable.get_Item("avoid_color").AsString.Value;
+            if (configTable.HasKey("no_priority_color"))
                 NoPriorityColor = configTable.get_Item("no_priority_color").AsString.Value;
+            if (configTable.HasKey("unspecified_color"))
                 UnspecifiedColor = configTable.get_Item("unspecified_color").AsString.Value;
-            }
-            catch (Exception e)
-            {
-                Debug.Log(e);
-            }
+            if (configTable.HasKey("music_shuffle"))
+                RandoMusicManager.ShuffleMusic = configTable.get_Item("music_shuffle").AsBoolean.Value;
+            if (configTable.HasKey("show_status_info"))
+                ArchipelagoClient.DisplayStatus = configTable.get_Item("show_status_info").AsBoolean.Value;
+            if (configTable.HasKey("show_server_messages"))
+                ArchipelagoClient.DisplayAPMessages = configTable.get_Item("show_server_messages").AsBoolean.Value;
+            if (configTable.HasKey("filter_server_messages"))
+                ArchipelagoClient.FilterAPMessages = configTable.get_Item("filter_server_messages").AsBoolean.Value;
+            if (configTable.HasKey("hint_popups"))
+                ArchipelagoClient.HintPopUps = configTable.get_Item("hint_popups").AsBoolean.Value;
+            if (configTable.HasKey("message_display_timer"))
+                APRandomizerMain.UpdateTime = (float)configTable.get_Item("message_display_timer").AsFloat.Value;
+            if (configTable.HasKey("shop_hints"))
+                RandoShopManager.ShopHints = configTable.get_Item("shop_hints").AsBoolean.Value;
         }
 
         private static void GenerateConfig(string path)
@@ -227,14 +238,79 @@ namespace MessengerRando.Utils
             path += "\\" + configFileName;
             configTable.set_Item("host_name", new TomlString
             {
-                Value = "archipelago.gg",
+                Value = HostName,
                 Comment =
                     "Connection info defined here is only used if no slot name is entered in the in-game menu.\n" +
                     "If a slot name is defined here, then all information here is used."
             });
-            configTable.set_Item("port", 38281);
-            configTable.set_Item("slot_name", "");
-            configTable.set_Item("password", "");
+            configTable.set_Item("port", Port);
+            configTable.set_Item("slot_name", SlotName);
+            configTable.set_Item("password", Password);
+            configTable.set_Item("status_text_size", new TomlFloat
+            {
+                Value = StatusTextSize,
+                Comment = "Size of the text for the current Archipelago status (Connected and hint info)"
+            });
+            configTable.set_Item("message_text_size", new TomlFloat
+            {
+                Value = MessageTextSize,
+                Comment = "Size of the text for messages from the Archipelago server"
+            });
+            configTable.set_Item("advancement_color", new TomlString
+            {
+                Value = AdvancementColor,
+                Comment = "Hex ID of the color used for Progression items sent and received"]
+            });
+            configTable.set_Item("useful_color", new TomlString
+            {
+                Value = UsefulColor,
+                Comment = "Hex ID of the color used for Useful items sent and received"
+            });
+            configTable.set_Item("trap_color", new TomlString
+            {
+                Value = TrapColor,
+                Comment = "Hex ID of the color used for Trap items sent and received"
+            });
+            configTable.set_Item("filler_color", new TomlString
+            {
+                Value = FillerColor,
+                Comment = "Hex ID of the color used for Filler items sent and received"
+            });
+            configTable.set_Item("priority_color", new TomlString
+            {
+                Value = PriorityColor,
+                Comment = "Hex ID of the color used for Priority hints"
+            });
+            configTable.set_Item("avoid_color", new TomlString
+            {
+                Value = AvoidColor,
+                Comment = "Hex ID of the color used for Avoid hints"
+            });
+            configTable.set_Item("no_priority_color", new TomlString
+            {
+                Value = NoPriorityColor,
+                Comment = "Hex ID of the color used for No priority hints"
+            });
+            configTable.set_Item("unspecified_color", new TomlString
+            {
+                Value = UnspecifiedColor,
+                Comment = "Hex ID of the color used for Unspecified hints"
+            });
+            configTable.set_Item("player_color", new TomlString
+            {
+                Value = PlayerColor,
+                Comment = "Hex ID of the color used for your own name"
+            });
+            configTable.set_Item("other_player_color", new TomlString
+            {
+                Value = OtherPlayerColor,
+                Comment = "Hex ID of the color used for other players"
+            });
+            configTable.set_Item("location_color", new TomlString
+            {
+                Value = LocationColor,
+                Comment = "Hex ID of the color used for locations"
+            });
             configTable.set_Item("music_shuffle", new TomlBoolean
             {
                 Value = RandoMusicManager.ShuffleMusic,

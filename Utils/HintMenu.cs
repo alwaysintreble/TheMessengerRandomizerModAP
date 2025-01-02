@@ -492,18 +492,37 @@ namespace MessengerRando.Utils
                 ArchipelagoClient.Session.Locations.GetLocationNameFromId(hint.LocationId, findingPlayerInfo.Game);
             var itemName = ArchipelagoClient.Session.Items.GetItemName(hint.ItemId, receivingPlayerInfo.Game);
 
-            var itemColor = GetItemColor(hint.ItemFlags);
-            return string.Format(
-                $"<color=#{itemColor}>{itemName}</color> for {ArchipelagoClient.ColorizePlayerName(hint.ReceivingPlayer)} " +
+            var slot = ArchipelagoClient.Session.ConnectionInfo.Slot;
+            var coloredItemName = GetItemColor(itemName, hint.ItemFlags);
+            
+            if (hint.FindingPlayer == slot)
+            {
+                if (hint.ReceivingPlayer == slot)
+                {
+                    return $"Your {coloredItemName} can be found at " +
+                           $"<color=#{UserConfig.LocationColor}>{locName}</color>\n" +
+                           $"status: {GetStatusColor(hint.Status)}";
+                }
+                return $"{ArchipelagoClient.ColorizePlayerName(hint.ReceivingPlayer)}'s " +
+                       $"{coloredItemName} can be found at " +
+                       $"<color=#{UserConfig.LocationColor}>{locName}</color>\n" +
+                       $"status: {GetStatusColor(hint.Status)}";
+            }
+            return
+                $"Your {coloredItemName} is in {ArchipelagoClient.ColorizePlayerName(hint.FindingPlayer)}'s world " +
                 $"at <color=#{UserConfig.LocationColor}>{locName}</color>\n" +
-                $"status: {GetStatusColor(hint.Status)}");
+                $"status: {GetStatusColor(hint.Status)}";
         }
 
-        private static string GetItemColor(ItemFlags flags)
+        private static string GetItemColor(string itemName, ItemFlags flags)
         {
-            if ((flags & ItemFlags.Advancement) != 0) return UserConfig.AdvancementColor;
-            if ((flags & ItemFlags.NeverExclude) != 0) return UserConfig.UsefulColor;
-            return (flags & ItemFlags.Trap) != 0 ? UserConfig.TrapColor : UserConfig.FillerColor;
+            var colorString = "<color=#";
+            if ((flags & ItemFlags.Advancement) != 0) colorString += UserConfig.AdvancementColor;
+            else if ((flags & ItemFlags.NeverExclude) != 0) colorString += UserConfig.UsefulColor;
+            else if ((flags & ItemFlags.Trap) != 0) colorString += UserConfig.TrapColor;
+            else colorString += UserConfig.FillerColor;
+            colorString += $">{itemName}</color>";
+            return colorString;
         }
 
         private static string GetStatusColor(HintStatus status)

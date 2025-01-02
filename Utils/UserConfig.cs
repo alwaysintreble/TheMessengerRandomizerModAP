@@ -65,24 +65,32 @@ namespace MessengerRando.Utils
                 Debug.Log("failed to get message size as float, trying int");
                 MessageTextSize = configTable.get_Item("message_text_size").AsInteger.Value;
             }
-            AdvancementColor = configTable.get_Item("advancement_color").AsString.Value;
-            UsefulColor = configTable.get_Item("useful_color").AsString.Value;
-            TrapColor = configTable.get_Item("trap_color").AsString.Value;
-            FillerColor = configTable.get_Item("filler_color").AsString.Value;
-            PlayerColor = configTable.get_Item("player_color").AsString.Value;
-            OtherPlayerColor = configTable.get_Item("other_player_color").AsString.Value;
-            LocationColor = configTable.get_Item("location_color").AsString.Value;
-            PriorityColor = configTable.get_Item("priority_color").AsString.Value;
-            AvoidColor = configTable.get_Item("avoid_color").AsString.Value;
-            NoPriorityColor = configTable.get_Item("no_priority_color").AsString.Value;
-            UnspecifiedColor = configTable.get_Item("unspecified_color").AsString.Value;
-            RandoMusicManager.ShuffleMusic = configTable.get_Item("music_shuffle").AsBoolean.Value;
-            ArchipelagoClient.DisplayStatus = configTable.get_Item("show_status_info").AsBoolean.Value;
-            ArchipelagoClient.DisplayAPMessages = configTable.get_Item("show_server_messages").AsBoolean.Value;
-            ArchipelagoClient.FilterAPMessages = configTable.get_Item("filter_server_messages").AsBoolean.Value;
-            ArchipelagoClient.HintPopUps = configTable.get_Item("hint_popups").AsBoolean.Value;
-            APRandomizerMain.UpdateTime = (float)configTable.get_Item("message_display_timer").AsFloat.Value;
-            RandoShopManager.ShopHints = configTable.get_Item("shop_hints").AsBoolean.Value;
+
+            try
+            {
+                AdvancementColor = configTable.get_Item("advancement_color").AsString.Value;
+                UsefulColor = configTable.get_Item("useful_color").AsString.Value;
+                TrapColor = configTable.get_Item("trap_color").AsString.Value;
+                FillerColor = configTable.get_Item("filler_color").AsString.Value;
+                PlayerColor = configTable.get_Item("player_color").AsString.Value;
+                OtherPlayerColor = configTable.get_Item("other_player_color").AsString.Value;
+                LocationColor = configTable.get_Item("location_color").AsString.Value;
+                RandoMusicManager.ShuffleMusic = configTable.get_Item("music_shuffle").AsBoolean.Value;
+                ArchipelagoClient.DisplayStatus = configTable.get_Item("show_status_info").AsBoolean.Value;
+                ArchipelagoClient.DisplayAPMessages = configTable.get_Item("show_server_messages").AsBoolean.Value;
+                ArchipelagoClient.FilterAPMessages = configTable.get_Item("filter_server_messages").AsBoolean.Value;
+                ArchipelagoClient.HintPopUps = configTable.get_Item("hint_popups").AsBoolean.Value;
+                APRandomizerMain.UpdateTime = (float)configTable.get_Item("message_display_timer").AsFloat.Value;
+                RandoShopManager.ShopHints = configTable.get_Item("shop_hints").AsBoolean.Value;
+                PriorityColor = configTable.get_Item("priority_color").AsString.Value;
+                AvoidColor = configTable.get_Item("avoid_color").AsString.Value;
+                NoPriorityColor = configTable.get_Item("no_priority_color").AsString.Value;
+                UnspecifiedColor = configTable.get_Item("unspecified_color").AsString.Value;
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+            }
         }
 
         private static void GenerateConfig(string path)

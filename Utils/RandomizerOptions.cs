@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using MessengerRando.Exceptions;
+using MessengerRando.Utils.Menus;
 using Mod.Courier.UI;
 using static Mod.Courier.UI.TextEntryButtonInfo;
 

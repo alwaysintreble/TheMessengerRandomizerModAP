@@ -12,7 +12,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace MessengerRando.Utils
+namespace MessengerRando.Utils.Menus
 {
     /// <summary>
     /// Options menu for solo rando stuff. allows player to select various options to generate with, then either

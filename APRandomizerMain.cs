@@ -9,6 +9,7 @@ using MessengerRando.Overrides;
 using MessengerRando.RO;
 using MessengerRando.Utils;
 using MessengerRando.Utils.Constants;
+using MessengerRando.Utils.Menus;
 using Mod.Courier;
 using Mod.Courier.Module;
 using MonoMod.Cil;

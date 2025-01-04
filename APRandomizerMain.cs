@@ -829,6 +829,7 @@ namespace MessengerRando
                 if (RandoPortalManager.LeftHQPortal && RandoPortalManager.ForceTeleport)
                 {
                     RandoPortalManager.Teleport();
+                    RandoPortalManager.ForceTeleport = false;
                     return;
                 }
             }

@@ -369,11 +369,6 @@ namespace MessengerRando.GameOverrideManagers
         private static LevelConstants.RandoLevel GetPortalExit(string enteredPortal)
         {
             Console.WriteLine($"getting portal. entered {enteredPortal}");
-            if (enteredPortal.Equals("Tower of Time - Left"))
-            {
-                EnteredTower = true;
-                return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
-            }
             var portalExit = PortalMapping[Portals.IndexOf(enteredPortal)];
             Console.WriteLine($"{portalExit.Region}, {portalExit.PortalType}, {portalExit.Index}");
             return AreaCheckpoints[portalExit.Region][portalExit.PortalType][portalExit.Index];
@@ -381,16 +376,33 @@ namespace MessengerRando.GameOverrideManagers
 
         public static void Teleport()
         {
-            if (PortalMapping is null || PortalMapping.Count == 0)
-            {
-                LeftHQPortal = false;
-                return;
-            }
             var currentLevel = Manager<LevelManager>.Instance.GetCurrentLevelEnum();
-            if (LevelConstants.TransitionToEntranceName.TryGetValue(
+            if (!LevelConstants.TransitionToEntranceName.TryGetValue(
                     new LevelConstants.Transition(ELevel.Level_13_TowerOfTimeHQ,
                         currentLevel), out var portal))
             {
+                Console.WriteLine($"unable to find portal for {currentLevel}");
+            }
+            else
+            {
+                if (portal.Equals("Tower of Time - Left") || portal.Equals("Corrupted Future"))
+                {
+                    if (portal.Equals("Tower of Time - Left"))
+                        EnteredTower = true;
+                    LeftHQPortal = false;
+                    var newLevel = RandoLevelManager.FindEntrance();
+                    if (RandoLevelManager.RandoLevelMapping != null && RandoLevelManager.RandoLevelMapping.Count > 0)
+                    {
+                        RandoLevelManager.TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newLevel.Dimension);
+                    }
+                    return;
+                }
+
+                if (PortalMapping is null || PortalMapping.Count == 0)
+                {
+                    LeftHQPortal = false;
+                    return;
+                }
                 try
                 {
                     var newLevel = GetPortalExit(portal);
@@ -403,6 +415,7 @@ namespace MessengerRando.GameOverrideManagers
                             LeftHQPortal = false;
                             return;
                     }
+
                     RandoLevelManager.TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newLevel.Dimension);
                 }
                 catch (Exception e)
@@ -410,10 +423,7 @@ namespace MessengerRando.GameOverrideManagers
                     Console.WriteLine(e);
                 }
             }
-            else
-            {
-                Console.WriteLine($"unable to find portal for {currentLevel}");
-            }
+
             LeftHQPortal = false;
         }
 
@@ -422,6 +432,7 @@ namespace MessengerRando.GameOverrideManagers
             Console.WriteLine("leaving hq...");
             LeftHQPortal = true;
             ForceTeleport = !loadingNewLevel;
+            Console.WriteLine($"Force teleport: {ForceTeleport}");
             orig(self, playLevelMusic, loadingNewLevel);
         }
     }

@@ -52,7 +52,7 @@ namespace MessengerRando.GameOverrideManagers
             return comparison <= 50;
         }
 
-        private static LevelConstants.RandoLevel FindEntrance()
+        public static LevelConstants.RandoLevel FindEntrance()
         {
             try
             {
@@ -181,6 +181,19 @@ namespace MessengerRando.GameOverrideManagers
                 return;
             }
             
+
+            if (RandoLevelMapping is null || RandoLevelMapping.Count == 0)
+            {
+                AddCurrentRegionToStorage(self);
+                return;
+            }
+            
+            if (currentLevel.Equals(ELevel.Level_14_CorruptedFuture) ||
+                currentLevel.Equals(ELevel.Level_10_A_TowerOfTime))
+            {
+                //have to be handled by the portal manager
+                return;
+            }
             // level transition shuffling
             var newLevel = FindEntrance();
             switch (newLevel.LevelName)

@@ -11,7 +11,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <Version>0.15.1</Version>
+    <Version>0.15.2</Version>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   

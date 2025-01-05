@@ -38,6 +38,7 @@ namespace MessengerRando.Utils.Menus
 
         public class HintScreen : ModOptionScreen
         {
+            // public new float heightPerButton = 30f;
             public static bool ConnectScreenLoaded;
             public static readonly List<OptionsButtonInfo> OptionButtons = new List<OptionsButtonInfo>();
 
@@ -156,7 +157,7 @@ namespace MessengerRando.Utils.Menus
 
             private void InitStuffUnityWouldDo()
             {
-                //transform.position = new Vector3(0, Math.Max(-90 - heightPerButton * Courier.UI.ModOptionButtons.Count, startYMax));
+                // transform.position = new Vector3(0, Math.Max(-90 - heightPerButton * OptionsCount(), startYMax));
                 backgroundFrame = (RectTransform)transform.Find("Container").Find("BackgroundFrame");
                 initialHeight = backgroundFrame.sizeDelta.y;
                 gameObject.AddComponent<Canvas>();
@@ -322,6 +323,16 @@ namespace MessengerRando.Utils.Menus
 
                 foreach (OptionsButtonInfo buttonInfo in OptionButtons)
                 {
+                    buttonInfo.nameTextMesh.fontSize = 5f;
+                    // buttonInfo.nameTextMesh.margin = new Vector4(0, 0, -15f, 0);
+                    // var bounds = buttonInfo.nameTextMesh.margin;
+                    // if (bounds.extents.x < 500f)
+                    // {
+                    //     bounds.extents.Set(120f, 12f, 0f);
+                    // }
+                    // Debug.Log($"button bounds extent: {bounds.extents.x}, {bounds.extents.y}, {bounds.extents.z}");
+                    // Debug.Log($"button bounds size: {bounds.x}, {bounds.y}, {bounds.z}");
+                    // buttonInfo.nameTextMesh.bounds = new ;
                     buttonInfo.UpdateNameText();
                 }
 

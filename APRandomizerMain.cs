@@ -392,7 +392,7 @@ namespace MessengerRando
                     Console.WriteLine(e);
                 }
             }
-            else if (Environment.GetCommandLineArgs().Length > 0)
+            else if (Environment.GetCommandLineArgs().Length > 1)
             {
                 Console.WriteLine("loading new game save... found command line args");
                 foreach (var arg in Environment.GetCommandLineArgs())
@@ -611,9 +611,9 @@ namespace MessengerRando
             var position = Manager<PlayerManager>.Instance.Player.transform.position;
             Console.WriteLine($"{position.x} {position.y} {position.z}");
 #endif
-            ArchipelagoMenu.archipelagoScreen.Close(false);
+            // ArchipelagoMenu.archipelagoScreen.Close(false);
 
-            RandoLevelManager.CleanupBeforeTeleport();
+            RandoLevelManager.CleanupBeforeOptionsTeleport();
             //Load the HQ
             Manager<TowerOfTimeHQManager>.Instance.TeleportInToTHQ(true, ELevelEntranceID.ENTRANCE_A, null);
         }
@@ -621,10 +621,10 @@ namespace MessengerRando
         public static void OnSelectTeleportToNinjaVillage()
         {
             Console.WriteLine("Teleporting to Ninja Village.");
-            ArchipelagoMenu.archipelagoScreen.Close(false);
+            // ArchipelagoMenu.archipelagoScreen.Close(false);
             EBits dimension = Manager<DimensionManager>.Instance.currentDimension;
 
-            RandoLevelManager.CleanupBeforeTeleport();
+            RandoLevelManager.CleanupBeforeOptionsTeleport();
             //Load to Ninja Village
             Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition = new Vector2(-153.3f, -56.5f);
             LevelLoadingInfo levelLoadingInfo = new LevelLoadingInfo("Level_01_NinjaVillage_Build", false, true, LoadSceneMode.Single, ELevelEntranceID.NONE, dimension);

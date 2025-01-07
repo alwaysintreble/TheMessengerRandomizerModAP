@@ -188,7 +188,7 @@ namespace MessengerRando.GameOverrideManagers
         private static readonly List<LevelConstants.RandoLevel> TeleportTrapLocations =
         [
             new LevelConstants.RandoLevel(ELevel.Level_09_A_GlacialPeak, new Vector3(127, -55)),
-            new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(457, 137)),
+            // new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags, new Vector3(456, 136)),
             new LevelConstants.RandoLevel(ELevel.Level_07_QuillshroomMarsh, new Vector3(797, -38)),
             new LevelConstants.RandoLevel(ELevel.Level_05_B_SunkenShrine, new Vector3(162, -109)),
             new LevelConstants.RandoLevel(ELevel.Level_05_A_HowlingGrotto, new Vector3(253, -75)),

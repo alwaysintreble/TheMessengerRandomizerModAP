@@ -34,8 +34,8 @@ namespace MessengerRando.GameOverrideManagers
                         : levelInfo.levelName;
                     currentLevel = Manager<LevelManager>.Instance.GetLevelEnumFromLevelName(levelName);
                 }
-                Console.WriteLine(lastLevel);
-                Console.WriteLine(currentLevel);
+                // Console.WriteLine(lastLevel);
+                // Console.WriteLine(currentLevel);
             }
             catch (Exception e)
             {
@@ -147,14 +147,19 @@ namespace MessengerRando.GameOverrideManagers
                 // progManager.levelsDiscovered.Remove(ELevel.Level_05_B_SunkenShrine);
                 // progManager.allTimeDiscoveredLevels.Remove(ELevel.Level_05_B_SunkenShrine);
             // }
+            
             if (teleporting)
             {
                 teleporting = false;
                 AddCurrentRegionToStorage(self);
                 return;
             }
-            if ((RandoPortalManager.PortalMapping is null || RandoPortalManager.PortalMapping.Count == 0)
-                     && (RandoLevelMapping is null || RandoLevelMapping.Count == 0))
+
+            var shouldTeleport =
+                (RandoPortalManager.PortalMapping != null && RandoPortalManager.PortalMapping.Count > 0 &&
+                 RandoPortalManager.LeftHQPortal) || RandoLevelMapping is { Count: > 0 };
+            
+            if (!shouldTeleport)
             {
                 AddCurrentRegionToStorage(self);
             }
@@ -178,13 +183,6 @@ namespace MessengerRando.GameOverrideManagers
             if (RandoPortalManager.LeftHQPortal)
             {
                 RandoPortalManager.Teleport();
-                return;
-            }
-            
-
-            if (RandoLevelMapping is null || RandoLevelMapping.Count == 0)
-            {
-                AddCurrentRegionToStorage(self);
                 return;
             }
             
@@ -226,11 +224,11 @@ namespace MessengerRando.GameOverrideManagers
         }
         public static void SkipMusicBox()
         {
-            Manager<AudioManager>.Instance.StopMusic();
             var playerPosition = RandomizerStateManager.Instance.SkipMusicBox
                 ? new Vector2(125, 40)
                 : new Vector2(-428, -55);
 
+            CleanupBeforeTeleport();
             TeleportInArea(ELevel.Level_11_B_MusicBox, playerPosition, EBits.BITS_16);
         }
 
@@ -267,7 +265,7 @@ namespace MessengerRando.GameOverrideManagers
             KillManfred = false;
         }
 
-        public static void CleanupBeforeTeleport()
+        public static void CleanupBeforeOptionsTeleport()
         {
             Manager<AudioManager>.Instance.StopMusic();
             Manager<PauseManager>.Instance.Resume();
@@ -276,6 +274,15 @@ namespace MessengerRando.GameOverrideManagers
             Manager<UIManager>.Instance.CloseAllScreensOfType<TransitionScreen>(false);
             Manager<UIManager>.Instance.CloseAllScreensOfType<SavingScreen>(false);
             Manager<UIManager>.Instance.CloseAllScreensOfType<LoadingAnimation>(false);
+        }
+
+        public static void CleanupBeforeTeleport()
+        {
+            Manager<AudioManager>.Instance.StopMusic();
+            // Manager<UIManager>.Instance.CloseAllScreensOfType<CinematicBordersScreen>(false);
+            // Manager<UIManager>.Instance.CloseAllScreensOfType<TransitionScreen>(false);
+            // Manager<UIManager>.Instance.CloseAllScreensOfType<SavingScreen>(false);
+            // Manager<UIManager>.Instance.CloseAllScreensOfType<LoadingAnimation>(false);
         }
     }
 }

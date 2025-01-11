@@ -510,9 +510,10 @@ namespace MessengerRando.Archipelago
         {
             while (ArchipelagoClient.ServerData.Index < ArchipelagoClient.Session.Items.AllItemsReceived.Count)
             {
-                Unlock(ArchipelagoClient.Session.Items
-                    .AllItemsReceived[ArchipelagoClient.ServerData.Index].ItemId);
-                ArchipelagoClient.ServerData.Index++;
+                var item = ArchipelagoClient.Session.Items.AllItemsReceived[ArchipelagoClient.ServerData.Index++];
+                Unlock(item.ItemId);
+                if (item.Player != ArchipelagoClient.Session.ConnectionInfo.Slot)
+                    ArchipelagoClient.DialogQueue.Enqueue(item.ToReadableString());
             }
 
             Synced = false;

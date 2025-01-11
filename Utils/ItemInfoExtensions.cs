@@ -20,9 +20,9 @@ public static class ItemInfoExtensions
         {
             text = $"Found {item.Colorize()}!";
         }
-        else if (item.Player.Slot.Equals(-1))
+        else if (item.Player.Slot.Equals(-1) || item.Player.Slot.Equals(0))
         {
-            text = $"Cheated {item.Colorize()}";
+            text = $"Cheated for {item.Colorize()}!";
         }
         else
         {

@@ -116,6 +116,7 @@
     <Compile Include="RO\RandoItemRO.cs" />
     <Compile Include="RO\LocationRO.cs" />
     <Compile Include="Utils\Menus\ArchipelagoMenu.cs" />
+    <Compile Include="Utils\Menus\HintButtonInfo.cs" />
     <Compile Include="Utils\Menus\HintMenu.cs" />
     <Compile Include="Utils\Menus\RandoMenu.cs" />
     <Compile Include="Utils\OptionsExporter.cs" />

@@ -603,6 +603,7 @@ namespace MessengerRando.Utils.Menus
                 APRandomizerMain.OnSelectTeleportToSearing);
             TeleportToSearingShop.IsEnabled = () =>
                 Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE &&
+                Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.Level_08_SearingCrags &&
                 RandomizerStateManager.IsSafeTeleportState() &&
                 ArchipelagoClient.ServerData?.AvailableTeleports != null &&
                 ArchipelagoClient.ServerData.AvailableTeleports[1] && RandoLevelManager.RandoLevelMapping == null;

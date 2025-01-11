@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Archipelago.MultiClient.Net.Enums;
 using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
+using MessengerRando.Utils.Menus;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -269,6 +270,7 @@ namespace MessengerRando.GameOverrideManagers
         {
             Manager<AudioManager>.Instance.StopMusic();
             Manager<PauseManager>.Instance.Resume();
+            ArchipelagoMenu.archipelagoScreen.Close(false);
             Manager<UIManager>.Instance.CloseAllScreensOfType<OptionScreen>(false);
             Manager<UIManager>.Instance.CloseAllScreensOfType<CinematicBordersScreen>(false);
             Manager<UIManager>.Instance.CloseAllScreensOfType<TransitionScreen>(false);

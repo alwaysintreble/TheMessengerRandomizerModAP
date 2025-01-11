@@ -633,7 +633,7 @@ namespace MessengerRando
 
         public static void OnSelectTeleportToSearing()
         {
-            ArchipelagoMenu.archipelagoScreen.Close(false);
+            RandoLevelManager.CleanupBeforeOptionsTeleport();
             RandoLevelManager.TeleportInArea(new LevelConstants.RandoLevel(ELevel.Level_08_SearingCrags,
                 new Vector3(380.5f, 311)));
         }
@@ -783,7 +783,8 @@ namespace MessengerRando
             apMessagesDisplay16.text = apMessagesDisplay8.text = ArchipelagoClient.UpdateMessagesText();
             updateTimer = 0;
             if (Manager<PlayerManager>.Instance.Player.InputBlocked() ||
-                Manager<GameManager>.Instance.IsCutscenePlaying()) return;
+                Manager<GameManager>.Instance.IsCutscenePlaying() ||
+                Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE) return;
             ArchipelagoClient.UpdateArchipelagoState();
         }
 

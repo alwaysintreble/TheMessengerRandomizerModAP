@@ -25,7 +25,7 @@ namespace MessengerRando.Utils.Menus
         public static SubMenuButtonInfo archipelagoHintButton;
         public static SubMenuButtonInfo hintMenuTitleButton;
 
-        private static Dictionary<long, List<SubMenuButtonInfo>> hintButtons = new();
+        private static Dictionary<long, List<OptionsButtonInfo>> hintButtons = new();
         
         public static void DisplayHintMenu()
         {
@@ -71,6 +71,7 @@ namespace MessengerRando.Utils.Menus
                 {
                     switch (button)
                     {
+                        case HintButtonInfo _:
                         case ToggleButtonInfo _:
                             button.gameObject = Instantiate(optionScreen.fullscreenOption, parent);
                             break;
@@ -431,16 +432,6 @@ namespace MessengerRando.Utils.Menus
             return buttonInfo;
         }
 
-        public static ToggleButtonInfo RegisterToggleRandoButton(Func<string> getText, UnityAction onClick,
-            Func<ToggleButtonInfo, bool> getState)
-        {
-            var buttonInfo = new ToggleButtonInfo(getText, onClick, getState,
-                optionScreen => Manager<LocalizationManager>.Instance.GetText(ModOptionScreen.onLocID),
-                optionScreen => Manager<LocalizationManager>.Instance.GetText(ModOptionScreen.offLocID));
-            RegisterRandoButton(buttonInfo);
-            return buttonInfo;
-        }
-
         public static TextEntryButtonInfo RegisterTextRandoButton(Func<string> getText, Func<string, bool> onEntry,
             int maxCharacter = 15, Func<string> getEntryText = null, Func<string> getInitialText = null,
             TextEntryButtonInfo.CharsetFlags charset = TextEntryButtonInfo.CharsetFlags.Letter |
@@ -456,8 +447,14 @@ namespace MessengerRando.Utils.Menus
 
         public static void onHintsUpdated(Hint[] hints)
         {
+            Console.WriteLine("hints updated");
             foreach (var hint in hints)
             {
+#if DEBUG
+                Console.WriteLine(hint.ItemId);
+                Console.WriteLine(hint.Status);
+                Console.WriteLine(hint.Found);
+#endif
                 if (hintButtons.ContainsKey(hint.LocationId))
                     UpdateHintEntry(hint);
                 else
@@ -470,115 +467,27 @@ namespace MessengerRando.Utils.Menus
         
         private static void AddNewHintEntry(Hint hint)
         {
-#if RELEASE
-            if (ItemsAndLocationsHandler.ShopLocation(item.LocationId, out var shopLoc)) return;
-#endif
-            
-            var newHint = RegisterSubRandoButton(
-                () => GetHintEntryText(hint),
-                () => UpdateHintStatus(hint));
-            newHint.IsEnabled = () => true;
+            if (ItemsAndLocationsHandler.ShopLocation(hint.LocationId, out var shopLoc)) return;
+
+            var newHint = new HintButtonInfo(null, null, null, null, null, hint);
+            RegisterRandoButton(newHint);
 
             var blankSpace = RegisterSubRandoButton(() => "", null);
-            blankSpace.IsEnabled = () => true;
             hintButtons.Add(hint.LocationId, [newHint, blankSpace]);
         }
 
-        private static void UpdateHintEntry(Hint hint)
+        public static void UpdateHintEntry(Hint hint)
         {
-            var hintButton = hintButtons[hint.LocationId];
-            hintButton[0].GetText = () => GetHintEntryText(hint);
+            var hintButtonSet = hintButtons[hint.LocationId];
+            HintButtonInfo hintButton = (HintButtonInfo)hintButtonSet[0];
+            hintButton.UpdateHint(hint);
+            hintButton.UpdateNameText();
+            hintButton.UpdateStateText();
             if (hint.Found)
             {
-                hintButton[0].IsEnabled = () => false;
-                hintButton[1].IsEnabled = () => false;
+                hintButton.IsEnabled = () => false;
+                hintButtonSet[1].IsEnabled = () => false;
             }
-        }
-
-        private static string GetHintEntryText(Hint hint)
-        {
-            var findingPlayerInfo = ArchipelagoClient.Session.Players.GetPlayerInfo(hint.FindingPlayer);
-            var receivingPlayerInfo = ArchipelagoClient.Session.Players.GetPlayerInfo(hint.ReceivingPlayer);
-            var locName =
-                ArchipelagoClient.Session.Locations.GetLocationNameFromId(hint.LocationId, findingPlayerInfo.Game);
-            var itemName = ArchipelagoClient.Session.Items.GetItemName(hint.ItemId, receivingPlayerInfo.Game);
-
-            var slot = ArchipelagoClient.Session.ConnectionInfo.Slot;
-            var coloredItemName = GetItemColor(itemName, hint.ItemFlags);
-            
-            if (hint.FindingPlayer == slot)
-            {
-                if (hint.ReceivingPlayer == slot)
-                {
-                    return $"Your {coloredItemName} can be found at " +
-                           $"<color=#{UserConfig.LocationColor}>{locName}</color>\n" +
-                           $"status: {GetStatusColor(hint.Status)}";
-                }
-                return $"{ArchipelagoClient.ColorizePlayerName(hint.ReceivingPlayer)}'s " +
-                       $"{coloredItemName} can be found at " +
-                       $"<color=#{UserConfig.LocationColor}>{locName}</color>\n" +
-                       $"status: {GetStatusColor(hint.Status)}";
-            }
-            return
-                $"Your {coloredItemName} is in {ArchipelagoClient.ColorizePlayerName(hint.FindingPlayer)}'s world " +
-                $"at <color=#{UserConfig.LocationColor}>{locName}</color>\n" +
-                $"status: {GetStatusColor(hint.Status)}";
-        }
-
-        private static string GetItemColor(string itemName, ItemFlags flags)
-        {
-            var colorString = "<color=#";
-            if ((flags & ItemFlags.Advancement) != 0) colorString += UserConfig.AdvancementColor;
-            else if ((flags & ItemFlags.NeverExclude) != 0) colorString += UserConfig.UsefulColor;
-            else if ((flags & ItemFlags.Trap) != 0) colorString += UserConfig.TrapColor;
-            else colorString += UserConfig.FillerColor;
-            colorString += $">{itemName}</color>";
-            return colorString;
-        }
-
-        private static string GetStatusColor(HintStatus status)
-        {
-            string color = UserConfig.UnspecifiedColor;
-            switch (status)
-            {
-                case HintStatus.Priority:
-                    color = UserConfig.PriorityColor;
-                    break;
-                case HintStatus.Avoid:
-                    color = UserConfig.AvoidColor;
-                    break;
-                case HintStatus.NoPriority:
-                    color = UserConfig.NoPriorityColor;
-                    break;
-            }
-            return $"<color=#{color}>{status}</color>";
-        }
-
-        private static void UpdateHintStatus(Hint hint)
-        {
-            if (hint.ReceivingPlayer != ArchipelagoClient.Session.ConnectionInfo.Slot) return;
-            switch (hint.Status)
-            {
-                case HintStatus.Unspecified:
-                    hint.Status = HintStatus.Priority;
-                    break;
-                case HintStatus.Priority:
-                    hint.Status = HintStatus.Avoid;
-                    break;
-                case HintStatus.Avoid:
-                    hint.Status = HintStatus.NoPriority;
-                    break;
-                default:
-                    hint.Status = HintStatus.Unspecified;
-                    break;
-            }
-
-            if (ArchipelagoClient.Session.RoomState.GeneratorVersion >= new Version(0, 5, 1))
-            {
-                ArchipelagoClient.Session.Socket.SendPacket(new UpdateHintPacket
-                    { Location = hint.LocationId, Player = hint.ReceivingPlayer, Status = hint.Status });
-            }
-            UpdateHintEntry(hint);
         }
         
         public static void BuildHintMenu()
@@ -597,6 +506,12 @@ namespace MessengerRando.Utils.Menus
             
             var blankSpace = RegisterSubRandoButton(() => "", null);
             blankSpace.IsEnabled = () => true;
+        }
+
+        public static void ReBuildHintMenu()
+        {
+            HintScreen.OptionButtons.Clear();
+            BuildHintMenu();
         }
     }
 }

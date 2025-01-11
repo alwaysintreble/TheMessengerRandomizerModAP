@@ -454,6 +454,7 @@ namespace MessengerRando
                 RandoPortalManager.PortalMapping = null;
                 RandoLevelManager.RandoLevelMapping = null;
                 Manager<ProgressionManager>.Instance.powerSealTotal = 0;
+                HintMenu.ReBuildHintMenu();
             }
             randoStateManager = new RandomizerStateManager();
             ArchipelagoClient.ServerData = new ArchipelagoData();

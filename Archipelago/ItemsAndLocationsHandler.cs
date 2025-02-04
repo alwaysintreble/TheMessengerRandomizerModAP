@@ -467,7 +467,7 @@ namespace MessengerRando.Archipelago
                 ThreadPool.QueueUserWorkItem(_ =>
                     ArchipelagoClient.Session.Locations.CompleteLocationChecksAsync(null,
                         ArchipelagoClient.ServerData.CheckedLocations.ToArray()));
-                var item = RandoStateManager.ScoutedLocations[locationID];
+                if (!RandoStateManager.ScoutedLocations.TryGetValue(locationID, out var item)) return;
                 if (!HasDialog(locationID))
                 {
                     string dialog;
@@ -515,13 +515,10 @@ namespace MessengerRando.Archipelago
                 if (item.Player.Slot != ArchipelagoClient.Session.ConnectionInfo.Slot)
                     ArchipelagoClient.DialogQueue.Enqueue(item.ToReadableString());
             }
-
-            Synced = false;
         }
         
         public static void ReSync()
         {
-            Synced = true;
             ArchipelagoClient.SyncEvents();
             var receivedItems = new Dictionary<long, int>();
 

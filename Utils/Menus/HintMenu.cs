@@ -460,6 +460,10 @@ namespace MessengerRando.Utils.Menus
                 else
                 {
                     if (hint.Found) continue;
+                    if (hint.Status.Equals(HintStatus.Found))
+                    {
+                        hint.Status = HintStatus.Unspecified;
+                    }
                     AddNewHintEntry(hint);
                 }
             }

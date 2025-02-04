@@ -467,7 +467,8 @@ namespace MessengerRando.Utils.Menus
         
         private static void AddNewHintEntry(Hint hint)
         {
-            if (ItemsAndLocationsHandler.ShopLocation(hint.LocationId, out var shopLoc)) return;
+            if (hint.FindingPlayer.Equals(ArchipelagoClient.Session.ConnectionInfo.Slot) &&
+                ItemsAndLocationsHandler.ShopLocation(hint.LocationId, out var shopLoc)) return;
 
             var newHint = new HintButtonInfo(null, null, null, null, null, hint);
             RegisterRandoButton(newHint);
@@ -489,13 +490,18 @@ namespace MessengerRando.Utils.Menus
                 hintButtonSet[1].IsEnabled = () => false;
             }
         }
-        
+
         public static void BuildHintMenu()
         {
+
             ArchipelagoHintMenuButton =
                 Courier.UI.RegisterSubMenuOptionButton(() => "Hint Menu", DisplayHintMenu);
             ArchipelagoHintMenuButton.IsEnabled = () => ArchipelagoClient.Authenticated;
-            
+            AddBaseButtons();
+        }
+
+        private static void AddBaseButtons()
+        {
             //Add Archipelago hint button
             archipelagoHintButton = RegisterTextRandoButton(
                 () => "Hint for an item",
@@ -511,7 +517,7 @@ namespace MessengerRando.Utils.Menus
         public static void ReBuildHintMenu()
         {
             HintScreen.OptionButtons.Clear();
-            BuildHintMenu();
+            AddBaseButtons();
         }
     }
 }

@@ -432,7 +432,8 @@ namespace MessengerRando.Archipelago
                 ItemsAndLocationsHandler.UnlockItems();
                 return;
             }
-            ItemsAndLocationsHandler.ReSync();
+            if (!ItemsAndLocationsHandler.Synced)
+                ItemsAndLocationsHandler.ReSync();
         }
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)

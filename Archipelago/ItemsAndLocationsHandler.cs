@@ -515,10 +515,13 @@ namespace MessengerRando.Archipelago
                 if (item.Player.Slot != ArchipelagoClient.Session.ConnectionInfo.Slot)
                     ArchipelagoClient.DialogQueue.Enqueue(item.ToReadableString());
             }
+
+            Synced = false;
         }
         
         public static void ReSync()
         {
+            Synced = true;
             ArchipelagoClient.SyncEvents();
             var receivedItems = new Dictionary<long, int>();
 

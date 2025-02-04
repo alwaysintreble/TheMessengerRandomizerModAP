@@ -436,6 +436,7 @@ namespace MessengerRando
             {
                 RandoSave.TryLoad(Save.APSaveData);
                 randoStateManager.APSave[randoStateManager.CurrentFileSlot] = new ArchipelagoData();
+                randoStateManager.CurrentFileSlot = 0;
                 Save?.ForceUpdate();
             }
             orig(self, delete);
@@ -457,6 +458,7 @@ namespace MessengerRando
                 HintMenu.ReBuildHintMenu();
             }
             randoStateManager = new RandomizerStateManager();
+            randoStateManager.CurrentFileSlot = 0;
             ArchipelagoClient.ServerData = new ArchipelagoData();
             RandomizerStateManager.OnMainMenu = true;
             orig();

@@ -426,7 +426,6 @@ namespace MessengerRando
 
         private void SaveGameSelectionScreen_ConfirmSaveDelete(On.SaveGameSelectionScreen.orig_ConfirmSaveDelete orig, SaveGameSelectionScreen self, SaveSlotUI slot)
         {
-            randoStateManager.CurrentFileSlot = slot.slotIndex + 1;
             orig(self, slot);
         }
 
@@ -435,8 +434,8 @@ namespace MessengerRando
             if (delete)
             {
                 RandoSave.TryLoad(Save.APSaveData);
-                randoStateManager.APSave[randoStateManager.CurrentFileSlot] = new ArchipelagoData();
-                randoStateManager.CurrentFileSlot = 0;
+                var slotIndex = self.GetPrivateField<SaveSlotUI>("focusedSlot").slotIndex + 1;
+                randoStateManager.APSave[slotIndex] = new ArchipelagoData();
                 Save?.ForceUpdate();
             }
             orig(self, delete);
@@ -458,7 +457,6 @@ namespace MessengerRando
                 HintMenu.ReBuildHintMenu();
             }
             randoStateManager = new RandomizerStateManager();
-            randoStateManager.CurrentFileSlot = 0;
             ArchipelagoClient.ServerData = new ArchipelagoData();
             RandomizerStateManager.OnMainMenu = true;
             orig();

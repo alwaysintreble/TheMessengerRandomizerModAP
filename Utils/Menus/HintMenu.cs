@@ -461,9 +461,7 @@ namespace MessengerRando.Utils.Menus
                 {
                     if (hint.Found) continue;
                     if (hint.Status.Equals(HintStatus.Found))
-                    {
                         hint.Status = HintStatus.Unspecified;
-                    }
                     AddNewHintEntry(hint);
                 }
             }
@@ -485,13 +483,19 @@ namespace MessengerRando.Utils.Menus
         {
             var hintButtonSet = hintButtons[hint.LocationId];
             HintButtonInfo hintButton = (HintButtonInfo)hintButtonSet[0];
-            hintButton.UpdateHint(hint);
-            hintButton.UpdateNameText();
-            hintButton.UpdateStateText();
             if (hint.Found)
             {
                 hintButton.IsEnabled = () => false;
                 hintButtonSet[1].IsEnabled = () => false;
+                return;
+            }
+            if (hint.Status.Equals(HintStatus.Found))
+                hint.Status = HintStatus.Unspecified;
+            hintButton.UpdateHint(hint);
+            if (HintScreen.ConnectScreenLoaded)
+            {
+                hintButton.UpdateNameText();
+                hintButton.UpdateStateText();
             }
         }
 
@@ -521,6 +525,7 @@ namespace MessengerRando.Utils.Menus
         public static void ReBuildHintMenu()
         {
             HintScreen.OptionButtons.Clear();
+            hintButtons.Clear();
             AddBaseButtons();
         }
     }

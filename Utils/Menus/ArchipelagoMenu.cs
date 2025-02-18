@@ -26,6 +26,7 @@ namespace MessengerRando.Utils.Menus
         public static SubMenuButtonInfo VersionButton;
         public static SubMenuButtonInfo SeedNumButton;
 
+        public static SubMenuButtonInfo SendChatMessageButton;
         public static SubMenuButtonInfo WindmillShurikenToggleButton;
         public static SubMenuButtonInfo TeleportToHqButton;
         public static SubMenuButtonInfo TeleportToNinjaVillage;
@@ -555,7 +556,7 @@ namespace MessengerRando.Utils.Menus
                 () => "Enter Archipelago Password",
                 APRandomizerMain.OnSelectArchipelagoPass,
                 30,
-                () => "Enter session password:",
+                () => "Enter password:",
                 () => ArchipelagoClient.ServerData?.Password);
             ArchipelagoPassButton.IsEnabled = () =>
                 Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
@@ -568,6 +569,21 @@ namespace MessengerRando.Utils.Menus
             ArchipelagoConnectButton.IsEnabled = () =>
                 Manager<LevelManager>.Instance.GetCurrentLevelEnum() == ELevel.NONE &&
                 (!ArchipelagoClient.Authenticated || !ArchipelagoClient.Offline);
+
+            //Add chat message button
+            SendChatMessageButton = RegisterTextRandoButton(
+                () => "Send Chat Message",
+                text =>
+                {
+                    ArchipelagoClient.SendSayPacket(text);
+                    return true;
+                },
+                30,
+                () => "Enter chat message (max 30 characters):",
+                charset: TextEntryButtonInfo.CharsetFlags.Letter | TextEntryButtonInfo.CharsetFlags.Number |
+                         TextEntryButtonInfo.CharsetFlags.Space | TextEntryButtonInfo.CharsetFlags.Dash |
+                         TextEntryButtonInfo.CharsetFlags.Dot
+            );
 
             //Add windmill shuriken toggle button
             WindmillShurikenToggleButton = RegisterSubRandoButton(
@@ -645,7 +661,8 @@ namespace MessengerRando.Utils.Menus
                 APRandomizerMain.OnSelectMessageTimer,
                 3,
                 () => "Enter amount of time to display Archipelago messages, in seconds",
-                () => APRandomizerMain.UpdateTime.ToString(CultureInfo.InvariantCulture), TextEntryButtonInfo.CharsetFlags.Number);
+                () => APRandomizerMain.UpdateTime.ToString(CultureInfo.InvariantCulture),
+                TextEntryButtonInfo.CharsetFlags.Number);
             ArchipelagoMessageTimerButton.IsEnabled =
                 () => ArchipelagoClient.Authenticated && ArchipelagoClient.DisplayStatus;
 
@@ -656,7 +673,7 @@ namespace MessengerRando.Utils.Menus
                 () => RandoMusicManager.ShuffleMusic = !RandoMusicManager.ShuffleMusic);
             ShuffleMusicButton.IsEnabled =
                 () => Manager<LevelManager>.Instance.GetCurrentLevelEnum() != ELevel.NONE;
-            
+
             //Add Archipelago death link button
             ArchipelagoDeathLinkButton = RegisterSubRandoButton(
                 () => ArchipelagoData.DeathLink
@@ -669,7 +686,7 @@ namespace MessengerRando.Utils.Menus
             ShopHintsButton = RegisterSubRandoButton(
                 () => RandoShopManager.ShopHints ? "Disable Shop Hints" : "Enable Shop Hints",
                 () => RandoShopManager.ShopHints = !RandoShopManager.ShopHints);
-            
+
             //Add Archipelago release button
             ArchipelagoReleaseButton = RegisterSubRandoButton(
                 () => "Release remaining items",

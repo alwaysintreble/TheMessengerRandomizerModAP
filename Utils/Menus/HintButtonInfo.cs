@@ -109,7 +109,7 @@ public class HintButtonInfo : ToggleButtonInfo
                 break;
         }
 
-        if (ArchipelagoClient.Session.RoomState.GeneratorVersion >= new Version(0, 5, 1))
+        if (ArchipelagoClient.Session.RoomState.GeneratorVersion >= new Version(0, 6, 0))
         {
             ArchipelagoClient.Session.Socket.SendPacket(new UpdateHintPacket
                 { Location = hint.LocationId, Player = hint.ReceivingPlayer, Status = hint.Status });

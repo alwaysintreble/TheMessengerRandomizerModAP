@@ -703,17 +703,17 @@ namespace MessengerRando
 
         public static void OnSelectArchipelagoRelease()
         {
-            ArchipelagoClient.Session.Socket.SendPacket(new SayPacket { Text = "!release" });
+            ArchipelagoClient.SendSayPacket("!release");
         }
 
         public static void OnSelectArchipelagoCollect()
         {
-            ArchipelagoClient.Session.Socket.SendPacket(new SayPacket { Text = "!collect" });
+            ArchipelagoClient.SendSayPacket("!collect");
         }
 
         public static bool OnSelectArchipelagoHint(string answer)
         {
-            ArchipelagoClient.Session.Socket.SendPacket(new SayPacket { Text = $"!hint {answer}" });
+            ArchipelagoClient.SendSayPacket($"!hint {answer}");
             return true;
         }
 

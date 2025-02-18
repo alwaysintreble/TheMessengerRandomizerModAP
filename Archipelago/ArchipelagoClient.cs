@@ -538,5 +538,10 @@ namespace MessengerRando.Archipelago
                 text = (string)messageQueue.Dequeue();
             return text;
         }
+
+        public static void SendSayPacket(string text)
+        {
+            Session.Socket.SendPacket(new SayPacket { Text = text });
+        }
     }
 }

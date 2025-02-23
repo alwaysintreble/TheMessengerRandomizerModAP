@@ -455,14 +455,21 @@ namespace MessengerRando.Utils.Menus
                 Console.WriteLine(hint.Status);
                 Console.WriteLine(hint.Found);
 #endif
-                if (hintButtons.ContainsKey(hint.LocationId))
-                    UpdateHintEntry(hint);
-                else
+                try
                 {
-                    if (hint.Found) continue;
-                    if (hint.Status.Equals(HintStatus.Found))
-                        hint.Status = HintStatus.Unspecified;
-                    AddNewHintEntry(hint);
+                    if (hintButtons.ContainsKey(hint.LocationId))
+                        UpdateHintEntry(hint);
+                    else
+                    {
+                        if (hint.Found) continue;
+                        if (hint.Status.Equals(HintStatus.Found))
+                            hint.Status = HintStatus.Unspecified;
+                        AddNewHintEntry(hint);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
             }
         }

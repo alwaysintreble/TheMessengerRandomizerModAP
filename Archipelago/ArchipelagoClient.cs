@@ -370,6 +370,13 @@ namespace MessengerRando.Archipelago
             }
         }
 
+        public static void SyncVisitedEntrances()
+        {
+            Console.WriteLine("Checking datastorage visited entrances");
+            RandoLevelManager.VisitedEntrances =
+                Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>() ?? new List<string>();
+        }
+
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
             var itemToUnlock = helper.DequeueItem();

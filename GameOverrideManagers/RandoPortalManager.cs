@@ -416,6 +416,7 @@ namespace MessengerRando.GameOverrideManagers
                             return;
                     }
 
+                    RandoLevelManager.AddVisitedEntrance("HQ - " + portal.Replace("- ", ""));
                     RandoLevelManager.TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newLevel.Dimension);
                 }
                 catch (Exception e)

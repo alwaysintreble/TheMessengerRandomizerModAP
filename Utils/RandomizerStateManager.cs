@@ -119,6 +119,9 @@ namespace MessengerRando.Utils
                 if (!slotData.TryGetValue("transitions", out var transitions)) return;
                 RandoLevelManager.RandoLevelMapping =
                     new Dictionary<string, LevelConstants.RandoLevel>();
+                RandoLevelManager.VisitedEntrances = new List<string>();
+                if (ArchipelagoClient.Session is not null)
+                    ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"].Initialize(new List<string>());
                 var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
                 if (transitionPairs.Count == 0) RandoLevelManager.RandoLevelMapping = null;
                 else
@@ -302,9 +305,9 @@ namespace MessengerRando.Utils
                 // "HowlingGrottoBossOutroCutscene",
                 // "HowlingGrottoToQuillshroomFirstQuestCutScene",
                 // "QuillshroomMarshBossIntroCutscene",
-                // "QuillshroomMarshBossOutroCutscene",
+                // "QuillshroomMarshBossOutroCutScene",
                 // "SearingCragsBossIntroCutscene",
-                // "SearingCragsBossOutroCutscene",
+                // "SearingCragsBossOutroCutScene",
                 // "SearagToGlacialPeakEntranceCutscene",
                 // "GlacialPeakTowerOfTimeCutscene",
                 // "GlacialPeakTowerOutCutscene",

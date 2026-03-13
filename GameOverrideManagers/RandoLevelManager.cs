@@ -19,6 +19,7 @@ public static class RandoLevelManager
 
     // ReSharper disable once UnassignedField.Global
     public static Dictionary<string, LevelConstants.RandoLevel> RandoLevelMapping;
+    public static List<string> VisitedEntrances = new List<string>();
 
     public static void LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
     {
@@ -119,6 +120,32 @@ public static class RandoLevelManager
                 }
             }
             Console.WriteLine(entrance);
+            string sourceExit;
+            if (LevelConstants.SpecialConnectionSourceExits.TryGetValue(entrance, out var specialSource))
+            {
+                sourceExit = specialSource + " exit";
+            }
+            else if (entrance.Equals("Corrupted Future"))
+            {
+                sourceExit = "HQ - Artificer's Portal";
+            }
+            else if (entrance.Equals("Tower of Time - Left"))
+            {
+                sourceExit = "HQ - Artificer's Challenge";
+            }
+            else if (entrance.Equals("Glacial Peak - Left"))
+            {
+                sourceExit = "Elemental Skylands - Right exit";
+            }
+            else if (!LevelConstants.TransitionToEntranceName.TryGetValue(new LevelConstants.Transition(currentLevel, lastLevel), out sourceExit))
+            {
+                sourceExit = entrance;
+            }
+            else
+            {
+                sourceExit = sourceExit + " exit";
+            }
+            AddVisitedEntrance(sourceExit);
             return RandoLevelMapping[entrance];
         } catch (Exception e){ Console.WriteLine(e);}
         return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
@@ -290,5 +317,12 @@ public static class RandoLevelManager
         Manager<UIManager>.Instance.CloseAllScreensOfType<TransitionScreen>(false);
         Manager<UIManager>.Instance.CloseAllScreensOfType<SavingScreen>(false);
         Manager<UIManager>.Instance.CloseAllScreensOfType<LoadingAnimation>(false);
+    }
+
+    public static void AddVisitedEntrance(string entrance)
+    {
+        if (!ArchipelagoClient.Authenticated || VisitedEntrances.Contains(entrance)) return;
+        VisitedEntrances.Add(entrance);
+        ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"] = VisitedEntrances;
     }
 }

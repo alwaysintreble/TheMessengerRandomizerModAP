@@ -23,5 +23,10 @@ namespace MessengerRando.Utils
         {
             o.GetType().GetMethod(methodName, Flags)?.Invoke(o, parameters ?? []);
         }
+
+        public static object InvokeMethodWithReturn(this object o, string methodName, object[] parameters = null)
+        {
+            return o.GetType().GetMethod(methodName, Flags)?.Invoke(o, parameters ?? []);
+        }
     }
 }

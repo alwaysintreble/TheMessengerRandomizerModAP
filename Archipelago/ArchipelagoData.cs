@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using Archipelago.MultiClient.Net.Models;
-using MessengerRando.GameOverrideManagers;
+﻿using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils;
 using Newtonsoft.Json;
-using UnityEngine;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace MessengerRando.Archipelago
 {
@@ -37,7 +34,7 @@ namespace MessengerRando.Archipelago
             ReceivedItems = new Dictionary<long, int>();
             AvailableTeleports = [false, false];
         }
-        
+
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this);
@@ -70,7 +67,7 @@ namespace MessengerRando.Archipelago
                         Index = tempServerData.Index;
                         PowerSealsCollected = tempServerData.PowerSealsCollected;
                         CheckedLocations = tempServerData.CheckedLocations ?? [];
-                        RandoBossManager.DefeatedBosses = DefeatedBosses = 
+                        RandoBossManager.DefeatedBosses = DefeatedBosses =
                             tempServerData.DefeatedBosses ?? [];
                         ReceivedItems = tempServerData.ReceivedItems ?? [];
                         AvailableTeleports = tempServerData.AvailableTeleports ?? [false, false];
@@ -131,10 +128,10 @@ namespace MessengerRando.Archipelago
                 }
                 return ArchipelagoClient.HasConnected = true;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                return false; 
+                return false;
             }
         }
     }

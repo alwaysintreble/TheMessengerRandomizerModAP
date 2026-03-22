@@ -22,7 +22,7 @@ namespace MessengerRando.Hooks
 
         public static void ElementalSkylandGenerator_Start(On.ElementalSkylandGenerator.orig_Start orig, global::ElementalSkylandGenerator self)
         {
-            ElementalSkylandGeneratorStateManager.RegisterGenerator(self);
+            SkylandsGeneratorStateManager.RegisterGenerator(self);
             orig(self);
         }
 
@@ -34,15 +34,15 @@ namespace MessengerRando.Hooks
                 return;
             }
 
-            var generatorType = ElementalSkylandGeneratorStateManager.ToGeneratorType(self.name);
+            var generatorType = SkylandsGeneratorStateManager.ToGeneratorType(self.name);
             if (Manager<ProgressionManager>.Instance.IsFlagSet(self.deactivatedFlag))
             {
                 Console.WriteLine($"Deactivating {self.name}");
                 self.animator.SetTrigger("DeactivateInstant");
             }
 
-            bool isLocationSent = ElementalSkylandGeneratorStateManager.IsLocationSent(generatorType);
-            if ((generatorType == GeneratorType.FIRE && ElementalSkylandGeneratorStateManager.AreAllGeneratorsShutdownReceived())
+            bool isLocationSent = SkylandsGeneratorStateManager.IsLocationSent(generatorType);
+            if ((generatorType == GeneratorType.FIRE && SkylandsGeneratorStateManager.AreAllGeneratorsShutdownReceived())
                 || (generatorType != GeneratorType.FIRE && isLocationSent))
             {
                 Console.WriteLine($"Opening door for {self.name}");
@@ -91,9 +91,9 @@ namespace MessengerRando.Hooks
                 return;
             }
 
-            ElementalSkylandGeneratorStateManager.SendLocation(self);
+            SkylandsGeneratorStateManager.SendLocation(self);
 
-            if (ElementalSkylandGeneratorStateManager.ToGeneratorType(self.name) != GeneratorType.FIRE)
+            if (SkylandsGeneratorStateManager.ToGeneratorType(self.name) != GeneratorType.FIRE)
             {
                 Manager<AudioManager>.Instance.PlaySoundEffect(self.wallDisappearSFX);
                 self.wall.SetActive(value: false);
@@ -102,16 +102,16 @@ namespace MessengerRando.Hooks
 
         public static void ElementalSkylandGenerator_OnDeactivateDone(On.ElementalSkylandGenerator.orig_OnDeactivateDone orig, global::ElementalSkylandGenerator self)
         {
-            if (ElementalSkylandGeneratorStateManager.AreAllGeneratorsShutdownReceived())
+            if (SkylandsGeneratorStateManager.AreAllGeneratorsShutdownReceived())
             {
-                ElementalSkylandGeneratorStateManager.OpenFireGeneratorDoor();
+                SkylandsGeneratorStateManager.OpenFireGeneratorDoor();
             }
             self.StartCoroutine((IEnumerator)ReflectionHelpers.InvokeMethodWithReturn(self, "ShakeCamCoroutine"));
         }
 
         public static void ElementalSkylandGenerator_OnDisable(On.ElementalSkylandGenerator.orig_OnDisable orig, global::ElementalSkylandGenerator self)
         {
-            ElementalSkylandGeneratorStateManager.CleanupGenerator(self);
+            SkylandsGeneratorStateManager.CleanupGenerator(self);
             orig(self);
         }
     }

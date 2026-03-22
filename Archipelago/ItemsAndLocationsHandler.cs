@@ -395,7 +395,7 @@ namespace MessengerRando.Archipelago
                     {
                         if (randoItem.Name.EndsWith("Generator Shutdown"))
                         {
-                            ElementalSkylandGeneratorStateManager.ReceiveGeneratorShutdown(randoItem.Name);
+                            SkylandsGeneratorStateManager.ReceiveGeneratorShutdown(randoItem.Name);
                             break;
                         }
                         switch (randoItem.Name)

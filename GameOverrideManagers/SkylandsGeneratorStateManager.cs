@@ -24,6 +24,8 @@ namespace MessengerRando.GameOverrideManagers
             { GeneratorType.FIRE, new LocationRO("Elemental Skylands - Shutdown Fire Generator") },
         };
 
+        public static bool AreGeneratorsShuffled = false;
+
         public static void RegisterGenerator(ElementalSkylandGenerator generator)
         {
             var generatorType = ToGeneratorType(generator.name);

@@ -22,17 +22,16 @@ namespace MessengerRando.Hooks
 
         public static void ElementalSkylandGenerator_Start(On.ElementalSkylandGenerator.orig_Start orig, global::ElementalSkylandGenerator self)
         {
+            if (!SkylandsGeneratorStateManager.AreGeneratorsShuffled) { orig(self); return; }
+
             SkylandsGeneratorStateManager.RegisterGenerator(self);
             orig(self);
         }
 
         public static void ElementalSkylandGenerator_SetState(On.ElementalSkylandGenerator.orig_SetState orig, global::ElementalSkylandGenerator self)
         {
-            if (!ArchipelagoClient.HasConnected)
-            {
-                orig(self);
-                return;
-            }
+            if (!SkylandsGeneratorStateManager.AreGeneratorsShuffled) { orig(self); return; }
+            if (!ArchipelagoClient.HasConnected) { orig(self); return; }
 
             var generatorType = SkylandsGeneratorStateManager.ToGeneratorType(self.name);
             if (Manager<ProgressionManager>.Instance.IsFlagSet(self.deactivatedFlag))
@@ -43,7 +42,7 @@ namespace MessengerRando.Hooks
 
             bool isLocationSent = SkylandsGeneratorStateManager.IsLocationSent(generatorType);
             if ((generatorType == GeneratorType.FIRE && SkylandsGeneratorStateManager.AreAllGeneratorsShutdownReceived())
-                || (generatorType != GeneratorType.FIRE && isLocationSent))
+                || (generatorType != GeneratorType.FIRE && (isLocationSent || Manager<ProgressionManager>.Instance.IsFlagSet(self.deactivatedFlag))))
             {
                 Console.WriteLine($"Opening door for {self.name}");
                 self.wall.gameObject.SetActive(value: false);
@@ -57,6 +56,8 @@ namespace MessengerRando.Hooks
 
         public static void ElementalSkylandGenerator_OnLanternHit(On.ElementalSkylandGenerator.orig_OnLanternHit orig, global::ElementalSkylandGenerator self, global::Hittable lantern, global::HitData hitData)
         {
+            if (!SkylandsGeneratorStateManager.AreGeneratorsShuffled) { orig(self, lantern, hitData); return; }
+
             if (!(lantern as Lantern).Full)
             {
                 return;
@@ -85,15 +86,12 @@ namespace MessengerRando.Hooks
 
         public static void ElementalSkylandGenerator_Shutdown(On.ElementalSkylandGenerator.orig_Shutdown orig, global::ElementalSkylandGenerator self)
         {
-            if (!ArchipelagoClient.HasConnected)
-            {
-                orig(self);
-                return;
-            }
+            if (!SkylandsGeneratorStateManager.AreGeneratorsShuffled) { orig(self); return; }
+            if (!ArchipelagoClient.HasConnected) { orig(self); return; }
 
             SkylandsGeneratorStateManager.SendLocation(self);
 
-            if (SkylandsGeneratorStateManager.ToGeneratorType(self.name) != GeneratorType.FIRE)
+            if (SkylandsGeneratorStateManager.ToGeneratorType(self.name) != GeneratorType.FIRE && self.wall.activeSelf)
             {
                 Manager<AudioManager>.Instance.PlaySoundEffect(self.wallDisappearSFX);
                 self.wall.SetActive(value: false);
@@ -102,15 +100,25 @@ namespace MessengerRando.Hooks
 
         public static void ElementalSkylandGenerator_OnDeactivateDone(On.ElementalSkylandGenerator.orig_OnDeactivateDone orig, global::ElementalSkylandGenerator self)
         {
+            if (!SkylandsGeneratorStateManager.AreGeneratorsShuffled) { orig(self); return; }
             if (SkylandsGeneratorStateManager.AreAllGeneratorsShutdownReceived())
             {
                 SkylandsGeneratorStateManager.OpenFireGeneratorDoor();
             }
+
+            if (SkylandsGeneratorStateManager.ToGeneratorType(self.name) != GeneratorType.FIRE && self.wall.activeSelf)
+            {
+                Manager<AudioManager>.Instance.PlaySoundEffect(self.wallDisappearSFX);
+                self.wall.SetActive(value: false);
+            }
+
             self.StartCoroutine((IEnumerator)ReflectionHelpers.InvokeMethodWithReturn(self, "ShakeCamCoroutine"));
         }
 
         public static void ElementalSkylandGenerator_OnDisable(On.ElementalSkylandGenerator.orig_OnDisable orig, global::ElementalSkylandGenerator self)
         {
+            if (!SkylandsGeneratorStateManager.AreGeneratorsShuffled) { orig(self); return; }
+
             SkylandsGeneratorStateManager.CleanupGenerator(self);
             orig(self);
         }

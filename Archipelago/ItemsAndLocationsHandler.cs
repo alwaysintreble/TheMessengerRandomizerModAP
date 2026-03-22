@@ -13,7 +13,7 @@ namespace MessengerRando.Archipelago
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
         private static Dictionary<EItems, long> EItemsLocationsLookup;
-        private static Dictionary<long, LocationRO> IDtoLocationsLookup;
+        public static Dictionary<long, LocationRO> IDtoLocationsLookup;
 
         public static RandomizerStateManager RandoStateManager;
 
@@ -39,10 +39,7 @@ namespace MessengerRando.Archipelago
                 new RandoItemRO("Money Wrench", EItems.MONEY_WRENCH),
                 new RandoItemRO("Teleport Trap", EItems.NONE),
                 new RandoItemRO("Prophecy Trap", EItems.NONE),
-                new RandoItemRO("Air Generator Shutdown", EItems.NONE),
-                new RandoItemRO("Earth Generator Shutdown", EItems.NONE),
-                new RandoItemRO("Water Generator Shutdown", EItems.NONE),
-                new RandoItemRO("Fire Generator Shutdown", EItems.NONE),
+                new RandoItemRO("Progressive Generator Shutdown", EItems.NONE),
                 new RandoItemRO("Darkness Trap", EItems.NONE),
                 new RandoItemRO("Health", EItems.POTION),
                 new RandoItemRO("Mana", EItems.MANA),

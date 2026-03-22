@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
-using Archipelago.MultiClient.Net.Packets;
 using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils.Constants;
 using MessengerRando.Utils.Menus;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 using WebSocketSharp;
 using Random = System.Random;
@@ -43,9 +42,9 @@ namespace MessengerRando.Utils
 
         public RandomizerStateManager()
         {
-            #if DEBUG
+#if DEBUG
             // SkipPhantom = true;
-            #endif
+#endif
             try
             {
                 //Create initial values for the state machine
@@ -56,8 +55,9 @@ namespace MessengerRando.Utils
                     { 2, new ArchipelagoData() },
                     { 3, new ArchipelagoData() },
                 };
-                if (ArchipelagoClient.Authenticated) InitializeSeed();   
-            } catch (Exception e) {Console.WriteLine(e);}
+                if (ArchipelagoClient.Authenticated) InitializeSeed();
+            }
+            catch (Exception e) { Console.WriteLine(e); }
         }
 
         public static void InitializeSeed()
@@ -142,6 +142,19 @@ namespace MessengerRando.Utils
                     "SearingCragsPortal",
                     "GlacialPeakPortal"
                 ];
+            }
+
+            if (ArchipelagoClient.Session.Locations.AllLocations.Any(location =>
+                  ItemsAndLocationsHandler.IDtoLocationsLookup.TryGetValue(location, out var loc)
+                  && loc.LocationName.StartsWith("Elemental Skylands - Shutdown")))
+            {
+                Console.WriteLine("Found at least one location for skylands generator shutdown, meaning generators are shuffled");
+                SkylandsGeneratorStateManager.AreGeneratorsShuffled = true;
+
+            }
+            else
+            {
+                Console.WriteLine("No locations found for skylands generator shutdown, meaning generators are not shuffled");
             }
         }
 
@@ -240,13 +253,13 @@ namespace MessengerRando.Utils
             invManager.ItemQuantityByItemId = new ItemQuantityByItemID();
             invManager.shopUpgradeUnlocked = [];
             invManager.figurinesCollected = [];
-            
+
             invManager.ItemQuantityByItemId.Add(EItems.SCROLL_UPGRADE, 1);
             invManager.ItemQuantityByItemId.Add(EItems.TIME_SHARD, 0);
             invManager.ItemQuantityByItemId.Add(EItems.MAP, 1);
             invManager.ItemQuantityByItemId.Add(EItems.CLIMBING_CLAWS, 1);
             invManager.AllTimeItemQuantityByItemId = invManager.ItemQuantityByItemId;
-            
+
             progManager.secondQuest = true;
             // var discoveredLevels = new List<ELevel>
             // {
@@ -269,7 +282,7 @@ namespace MessengerRando.Utils
             // progManager.levelsDiscovered.AddRange(discoveredLevels);
             // progManager.allTimeDiscoveredLevels.AddRange(discoveredLevels);
             progManager.isLevelDiscoveredAwarded = true;
-            
+
             var skipCutscenes = new List<string>
             {
                 "MessengerCutScene",

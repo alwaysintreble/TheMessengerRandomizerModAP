@@ -107,18 +107,18 @@ namespace MessengerRando.GameOverrideManagers
         {
             if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.EarthGeneratorDeactivated))
             {
-                Console.WriteLine($"Earth generator already deactivated, so shutting down Fire generator");
+                Console.WriteLine($"Water generator already deactivated, so shutting down Fire generator");
                 return GeneratorType.FIRE;
             }
             if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.WaterGeneratorDeactivated))
             {
                 Console.WriteLine($"Water generator already deactivated, so shutting down Earth generator");
-                return GeneratorType.EARTH;
+                return GeneratorType.WATER;
             }
             if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.AirGeneratorDeactivated))
             {
-                Console.WriteLine($"Air generator already deactivated, so shutting down Water generator");
-                return GeneratorType.WATER;
+                Console.WriteLine($"Air generator already deactivated, so shutting down Earth generator");
+                return GeneratorType.EARTH;
             }
 
             Console.WriteLine($"No generators already deactivated, so shutting down Air generator");

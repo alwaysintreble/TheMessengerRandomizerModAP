@@ -1,8 +1,8 @@
-﻿using MessengerRando.Archipelago;
+﻿using System;
+using System.Collections;
+using MessengerRando.Archipelago;
 using MessengerRando.GameOverrideManagers;
 using MessengerRando.Utils;
-using System;
-using System.Collections;
 
 
 namespace MessengerRando.Hooks

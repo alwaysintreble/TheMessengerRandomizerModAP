@@ -57,7 +57,7 @@ namespace MessengerRando.GameOverrideManagers
         {
             Console.WriteLine($"Received {generatorShutdownItem}");
 
-            if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.FireGeneratorDeactivated))
+            if (AreAllGeneratorsShutdownReceived())
             {
                 Console.WriteLine($"All generators already deactivated, so ignoring received shutdown");
                 return;
@@ -66,6 +66,7 @@ namespace MessengerRando.GameOverrideManagers
             var generatorType = FindNextGeneratorToShutdown();
             var generatorFlag = FlagsByGenerator[generatorType];
             Manager<ProgressionManager>.Instance.SetFlag(generatorFlag, false);
+            Console.WriteLine($"Current flags are [{string.Join(", ", [.. Manager<ProgressionManager>.Instance.flags])}]");
 
             if (LoadedGenerators.TryGetValue(generatorType, out var generator) && generator != null)
             {
@@ -105,14 +106,14 @@ namespace MessengerRando.GameOverrideManagers
 
         private static GeneratorType FindNextGeneratorToShutdown()
         {
-            if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.EarthGeneratorDeactivated))
+            if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.WaterGeneratorDeactivated))
             {
                 Console.WriteLine($"Water generator already deactivated, so shutting down Fire generator");
                 return GeneratorType.FIRE;
             }
-            if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.WaterGeneratorDeactivated))
+            if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.EarthGeneratorDeactivated))
             {
-                Console.WriteLine($"Water generator already deactivated, so shutting down Earth generator");
+                Console.WriteLine($"Earth generator already deactivated, so shutting down Water generator");
                 return GeneratorType.WATER;
             }
             if (Manager<ProgressionManager>.Instance.IsFlagSet(Flags.AirGeneratorDeactivated))

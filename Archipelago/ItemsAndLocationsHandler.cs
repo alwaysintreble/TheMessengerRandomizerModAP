@@ -449,7 +449,7 @@ namespace MessengerRando.Archipelago
         public static bool IsLocationChecked(LocationRO location)
         {
             LocationsLookup.TryGetValue(location, out var locationID);
-            return ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID);
+            return RandomizerStateManager.HasCompletedCheck(locationID);
         }
 
         public static void SendLocationCheck(LocationRO checkedLocation)

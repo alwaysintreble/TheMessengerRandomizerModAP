@@ -95,7 +95,7 @@
     <Compile Include="Exceptions\RandomizerException.cs" />
     <Compile Include="GameOverrideManagers\LostWoodsManager.cs" />
     <Compile Include="GameOverrideManagers\RandoBossManager.cs" />
-    <Compile Include="GameOverrideManagers\SkylandsGeneratorStateManager.cs" />
+    <Compile Include="GameOverrideManagers\SkylandsGeneratorManager.cs" />
     <Compile Include="GameOverrideManagers\RandoMusicManager.cs" />
     <Compile Include="GameOverrideManagers\RandoPortalManager.cs" />
     <Compile Include="GameOverrideManagers\RandoPowerSealManager.cs" />
@@ -105,7 +105,6 @@
     <Compile Include="GameOverrideManagers\RandoTimeShardManager.cs" />
     <Compile Include="GameOverrideManagers\FlavorDialogManager.cs" />
     <Compile Include="GameOverrideManagers\TrapManager.cs" />
-    <Compile Include="Hooks\ElementalSkylandGenerator.cs" />
     <Compile Include="Overrides\RandoCatacombLevelInitializer.cs" />
     <Compile Include="RO\RandoItemRO.cs" />
     <Compile Include="RO\LocationRO.cs" />

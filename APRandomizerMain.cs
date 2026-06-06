@@ -33,6 +33,7 @@ namespace MessengerRando
         public static float UpdateTime = 3.0f;
 
         private RandomizerStateManager randoStateManager;
+        private SkylandsGeneratorManager skylandsGeneratorManager;
 
         private TextMeshProUGUI apTextDisplay8;
         private TextMeshProUGUI apTextDisplay16;
@@ -52,6 +53,9 @@ namespace MessengerRando
             Console.WriteLine("Randomizer loading and ready to try things!");
 
             //Initialize the randomizer state manager
+            skylandsGeneratorManager = new SkylandsGeneratorManager();
+            RandomizerStateManager.skylandsGeneratorManager = skylandsGeneratorManager;
+
             randoStateManager = new RandomizerStateManager();
 
             //Plug in my code :3
@@ -103,7 +107,7 @@ namespace MessengerRando
             // On.PortalOpeningCutscene.OnOpenPortalEvent += RandoPortalManager.OpenPortalEvent;
             On.TotHQ.LeaveToLevel += RandoPortalManager.LeaveHQ;
             // generator deactivation management
-            Hooks.ElementalSkylandGenerator.ApplyHooks();
+            skylandsGeneratorManager.ApplyHooks();
             //These functions let us override and manage power seals ourselves with 'fake' items
             On.ProgressionManager.TotalPowerSealCollected += ProgressionManager_TotalPowerSealCollected;
             On.ShopChestOpenCutscene.OnChestOpened += (orig, self) =>
@@ -129,6 +133,8 @@ namespace MessengerRando
             On.MusicBox.SetNotesState += MusicBox_SetNotesState;
             On.PowerSeal.OnEnterRoom += PowerSeal_OnEnterRoom;
 #endif
+
+            ItemsAndLocationsHandler.SkylandsGeneratorManager = skylandsGeneratorManager;
 
             Console.WriteLine("Randomizer finished loading!");
         }

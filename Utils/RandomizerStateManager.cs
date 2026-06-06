@@ -40,6 +40,8 @@ namespace MessengerRando.Utils
         public static Random SeedRandom;
         public static bool OnMainMenu = true;
 
+        public static SkylandsGeneratorManager skylandsGeneratorManager;
+
         public RandomizerStateManager()
         {
 #if DEBUG
@@ -149,7 +151,7 @@ namespace MessengerRando.Utils
                   && loc.LocationName.StartsWith("Elemental Skylands - Shutdown")))
             {
                 Console.WriteLine("Found at least one location for skylands generator shutdown, meaning generators are shuffled");
-                SkylandsGeneratorStateManager.AreGeneratorsShuffled = true;
+                skylandsGeneratorManager.AreGeneratorsShuffled = true;
 
             }
             else

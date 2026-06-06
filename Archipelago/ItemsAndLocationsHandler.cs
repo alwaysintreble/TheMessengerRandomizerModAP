@@ -16,6 +16,7 @@ namespace MessengerRando.Archipelago
         public static Dictionary<long, LocationRO> IDtoLocationsLookup;
 
         public static RandomizerStateManager RandoStateManager;
+        public static SkylandsGeneratorManager SkylandsGeneratorManager;
 
         public const int APQuantity = 69;
         public const long BaseOffset = 0xADD_000;
@@ -392,7 +393,7 @@ namespace MessengerRando.Archipelago
                     {
                         if (randoItem.Name.EndsWith("Generator Shutdown"))
                         {
-                            SkylandsGeneratorStateManager.ReceiveGeneratorShutdown(randoItem.Name);
+                            SkylandsGeneratorManager.ReceiveGeneratorShutdown(randoItem.Name);
                             break;
                         }
                         switch (randoItem.Name)

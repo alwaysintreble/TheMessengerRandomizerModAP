@@ -546,8 +546,8 @@ namespace MessengerRando.Archipelago
         {
             Synced = true;
             ArchipelagoClient.SyncEvents();
-            if (RandoLevelManager.RandoLevelMapping != null)
-                ArchipelagoClient.SyncVisitedEntrances();
+            ArchipelagoClient.ReconciliateUnlockedPortals();
+
             var receivedItems = new Dictionary<long, int>();
 
             for (int i = 0; i < ArchipelagoClient.ServerData.Index; i++)

@@ -99,41 +99,15 @@ namespace MessengerRando.Utils
             Instance.SkipMusicBox = !Convert.ToBoolean(slotData["music_box"]);
             RandoShopManager.ShopPrices = ((JObject)slotData["shop"]).ToObject<Dictionary<EShopUpgradeID, int>>();
             RandoShopManager.FigurePrices = ((JObject)slotData["figures"]).ToObject<Dictionary<EFigurine, int>>();
+
             if (slotData.TryGetValue("starting_portals", out var portals))
             {
                 var startingPortals = ((JArray)portals).ToObject<List<string>>();
                 RandoPortalManager.StartingPortals = [];
                 foreach (var portal in startingPortals)
                 {
-                    Console.WriteLine(portal);
+                    Console.WriteLine($"Starting portal: {portal}");
                     RandoPortalManager.StartingPortals.Add(portal);
-                }
-
-                var portalExits = ((JArray)slotData["portal_exits"]).ToObject<List<int>>();
-                RandoPortalManager.PortalMapping = [];
-                foreach (var portalExit in portalExits)
-                {
-                    RandoPortalManager.PortalMapping.Add(new RandoPortalManager.Portal(portalExit));
-                }
-
-                if (!slotData.TryGetValue("transitions", out var transitions)) return;
-                RandoLevelManager.RandoLevelMapping =
-                    new Dictionary<string, LevelConstants.RandoLevel>();
-                RandoLevelManager.VisitedEntrances = new List<string>();
-                if (ArchipelagoClient.Session is not null)
-                    ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"].Initialize(new List<string>());
-                var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
-                if (transitionPairs.Count == 0) RandoLevelManager.RandoLevelMapping = null;
-                else
-                {
-                    foreach (var pairing in transitionPairs)
-                    {
-                        var orig = LevelConstants.TransitionNames[pairing[0]];
-                        var replacement =
-                            LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
-                        RandoLevelManager.RandoLevelMapping[orig] = replacement;
-                        Console.WriteLine($"{orig}: {LevelConstants.TransitionNames[pairing[1]]}");
-                    }
                 }
             }
             else
@@ -147,6 +121,36 @@ namespace MessengerRando.Utils
                     "SearingCragsPortal",
                     "GlacialPeakPortal"
                 ];
+            }
+
+            if (slotData.TryGetValue("portal_exits", out var portalExitsJson))
+            {
+                var portalExits = ((JArray)portalExitsJson).ToObject<List<int>>();
+                RandoPortalManager.PortalMapping = [];
+                foreach (var portalExit in portalExits)
+                {
+                    RandoPortalManager.PortalMapping.Add(new RandoPortalManager.Portal(portalExit));
+                }
+            }
+
+            if (slotData.TryGetValue("transitions", out var transitions))
+            {
+                var transitionPairs = ((JArray)transitions).ToObject<List<List<int>>>();
+                if (transitionPairs.Count == 0)
+                {
+                    RandoLevelManager.RandoLevelMapping = null;
+                }
+                else
+                {
+                    RandoLevelManager.RandoLevelMapping = [];
+                    foreach (var pairing in transitionPairs)
+                    {
+                        var orig = LevelConstants.TransitionNames[pairing[0]];
+                        var replacement = LevelConstants.EntranceNameToRandoLevel[LevelConstants.TransitionNames[pairing[1]]];
+                        RandoLevelManager.RandoLevelMapping[orig] = replacement;
+                        Console.WriteLine($"Setting transition from {orig} to {LevelConstants.TransitionNames[pairing[1]]}");
+                    }
+                }
             }
 
             if (ArchipelagoClient.Session.Locations.AllLocations.Any(location =>

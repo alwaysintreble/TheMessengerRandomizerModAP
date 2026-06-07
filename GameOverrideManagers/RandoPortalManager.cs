@@ -329,6 +329,37 @@ namespace MessengerRando.GameOverrideManagers
         };
 
         private static readonly List<string> AccessedStartingPortals = new List<string>();
+
+        public static HashSet<string> UnlockedPortals
+        {
+            get
+            {
+                var unlockedPortals = new HashSet<string>();
+
+                var progressManager = Manager<ProgressionManager>.Instance;
+                if (progressManager.cutscenesPlayed.Contains("PortalOpeningCutscene"))
+                {
+                    unlockedPortals.Add("Autumn Hills Portal");
+                    unlockedPortals.Add("Howling Grotto Portal");
+                    unlockedPortals.Add("Glacial Peak Portal");
+                }
+                if (progressManager.cutscenesPlayed.Contains("SunkenShrinePortalOpeningCutscene"))
+                {
+                    unlockedPortals.Add("Sunken Shrine Portal");
+                }
+                if (progressManager.cutscenesPlayed.Contains("SearingCragsPortalOpeningCutscene"))
+                {
+                    unlockedPortals.Add("Searing Crags Portal");
+                }
+                if (progressManager.cutscenesPlayed.Contains("RiviereTurquoisePortalOpeningCutscene"))
+                {
+                    unlockedPortals.Add("Riviere Turquoise Portal");
+                }
+
+                return unlockedPortals;
+            }
+        }
+
         public static bool ShouldPortalBeOpen(string portal)
         {
             return AccessedStartingPortals.Contains(portal);
@@ -365,7 +396,7 @@ namespace MessengerRando.GameOverrideManagers
                     break;
             }
         }
-        
+
         private static LevelConstants.RandoLevel GetPortalExit(string enteredPortal)
         {
             Console.WriteLine($"getting portal. entered {enteredPortal}");

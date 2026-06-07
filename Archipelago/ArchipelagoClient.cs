@@ -370,11 +370,32 @@ namespace MessengerRando.Archipelago
             }
         }
 
-        public static void SyncVisitedEntrances()
+        public static List<string> AddVisitedEntrance(string entrance)
         {
-            Console.WriteLine("Checking datastorage visited entrances");
-            RandoLevelManager.VisitedEntrances =
-                Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>() ?? new List<string>();
+            if (!Authenticated) return [];
+
+            var visitedEntrances = Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>();
+            if (visitedEntrances.Contains(entrance)) return visitedEntrances;
+
+            Console.WriteLine("Adding visited entrance: " + entrance);
+            visitedEntrances.Add(entrance);
+            visitedEntrances.Sort();
+            Session.DataStorage[Scope.Slot, "VisitedEntrances"] = visitedEntrances;
+
+            return visitedEntrances;
+        }
+
+        public static void ReconciliateUnlockedPortals()
+        {
+            if (!Authenticated) return;
+
+            var unlockedPortals = RandoPortalManager.UnlockedPortals;
+            unlockedPortals.UnionWith(Session.DataStorage[Scope.Slot, "UnlockedPortals"].To<List<string>>());
+
+            var unlockedPortalsList = unlockedPortals.ToList();
+            unlockedPortalsList.Sort();
+            Console.WriteLine($"Updating unlocked portals with Data Storage. Unlocked portals are {string.Join(", ", [.. unlockedPortalsList])}");
+            Session.DataStorage[Scope.Slot, "UnlockedPortals"] = unlockedPortalsList;
         }
 
         private static void OnItemReceived(ReceivedItemsHelper helper)

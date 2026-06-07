@@ -604,12 +604,25 @@ namespace MessengerRando
                     }
                 }
             }
+
             if (ArchipelagoClient.EventsICareAbout.Contains(eventName) && ArchipelagoClient.Authenticated)
             {
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"] +=
                     new List<string> { eventName };
             }
+
+            if (eventName.EndsWith("PortalOpeningCutscene"))
+            {
+                self.onDone += OnAnyPortalOpeningCutsceneDone;
+            }
+
             orig(self);
+        }
+
+        private static void OnAnyPortalOpeningCutsceneDone(Cutscene cutscene)
+        {
+            cutscene.onDone -= OnAnyPortalOpeningCutsceneDone;
+            ArchipelagoClient.ReconciliateUnlockedPortals();
         }
 
         void PhantomIntro_OnEnterRoom(On.PhantomIntroCutscene.orig_OnEnterRoom orig, PhantomIntroCutscene self,

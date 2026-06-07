@@ -19,7 +19,7 @@ public static class RandoLevelManager
 
     // ReSharper disable once UnassignedField.Global
     public static Dictionary<string, LevelConstants.RandoLevel> RandoLevelMapping;
-    public static List<string> VisitedEntrances = new List<string>();
+    public static List<string> VisitedEntrances = [];
 
     public static void LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
     {
@@ -321,8 +321,7 @@ public static class RandoLevelManager
 
     public static void AddVisitedEntrance(string entrance)
     {
-        if (!ArchipelagoClient.Authenticated || VisitedEntrances.Contains(entrance)) return;
-        VisitedEntrances.Add(entrance);
-        ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"] = VisitedEntrances;
+        if (VisitedEntrances.Contains(entrance)) return;
+        VisitedEntrances = ArchipelagoClient.AddVisitedEntrance(entrance);
     }
 }

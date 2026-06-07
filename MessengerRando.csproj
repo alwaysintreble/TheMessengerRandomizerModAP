@@ -141,9 +141,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="BUILD_INSTRUCTIONS.md" />
     <None Include="Directory.Build.props" />
     <None Include="Directory.Build.props.user" />
+    <None Include="docs\BUILD_INSTRUCTIONS.md" />
   </ItemGroup>
 
   <ItemGroup>

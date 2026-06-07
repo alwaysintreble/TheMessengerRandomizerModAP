@@ -13,15 +13,15 @@ using MessengerRando.Utils.Menus;
 using Mod.Courier;
 using Mod.Courier.Module;
 using Mod.Courier.UI;
-using static Mod.Courier.UI.TextEntryButtonInfo;
 using MonoMod.Cil;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using WebSocketSharp;
+using static Mod.Courier.UI.TextEntryButtonInfo;
 using Object = UnityEngine.Object;
 
-namespace MessengerRando 
+namespace MessengerRando
 {
     /// <summary>
     /// Where it all begins! This class defines and injects all the necessary for the mod.
@@ -33,6 +33,7 @@ namespace MessengerRando
         public static float UpdateTime = 3.0f;
 
         private RandomizerStateManager randoStateManager;
+        private SkylandsGeneratorManager skylandsGeneratorManager;
 
         private TextMeshProUGUI apTextDisplay8;
         private TextMeshProUGUI apTextDisplay16;
@@ -52,8 +53,11 @@ namespace MessengerRando
             Console.WriteLine("Randomizer loading and ready to try things!");
 
             //Initialize the randomizer state manager
+            skylandsGeneratorManager = new SkylandsGeneratorManager();
+            RandomizerStateManager.skylandsGeneratorManager = skylandsGeneratorManager;
+
             randoStateManager = new RandomizerStateManager();
-            
+
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
             On.ProgressionManager.SetChallengeRoomAsCompleted += ProgressionManager_SetChallengeRoomAsCompleted;
@@ -102,6 +106,8 @@ namespace MessengerRando
             On.ElementalSkylandsLevelInitializer.OnBeforeInitDone += RandoLevelManager.ElementalSkylandsInit;
             // On.PortalOpeningCutscene.OnOpenPortalEvent += RandoPortalManager.OpenPortalEvent;
             On.TotHQ.LeaveToLevel += RandoPortalManager.LeaveHQ;
+            // generator deactivation management
+            skylandsGeneratorManager.ApplyHooks();
             //These functions let us override and manage power seals ourselves with 'fake' items
             On.ProgressionManager.TotalPowerSealCollected += ProgressionManager_TotalPowerSealCollected;
             On.ShopChestOpenCutscene.OnChestOpened += (orig, self) =>
@@ -121,12 +127,14 @@ namespace MessengerRando
             On.Cutscene.Play += Cutscene_Play;
             On.PlayerController.Awake += OnPlayerController_Awake;
             //temp add
-            #if DEBUG
+#if DEBUG
             On.PhantomIntroCutscene.OnEnterRoom += PhantomIntro_OnEnterRoom; //this lets us skip the phantom fight
             On.UIManager.ShowView += UIManager_ShowView;
             On.MusicBox.SetNotesState += MusicBox_SetNotesState;
             On.PowerSeal.OnEnterRoom += PowerSeal_OnEnterRoom;
-            #endif
+#endif
+
+            ItemsAndLocationsHandler.SkylandsGeneratorManager = skylandsGeneratorManager;
 
             Console.WriteLine("Randomizer finished loading!");
         }
@@ -171,17 +179,17 @@ namespace MessengerRando
 
         public override void Initialize()
         {
-            #if DEBUG
+#if DEBUG
             SceneManager.sceneLoaded += OnSceneLoadedRando;
-            #endif
-            
+#endif
+
             //load config
             Debug.Log("Loading config from APConfig.toml");
             try
             {
                 UserConfig.ReadConfig(ModPath);
             }
-            catch (Exception e) {Console.Write(e);}
+            catch (Exception e) { Console.Write(e); }
             ArchipelagoMenu.BuildArchipelagoMenu();
             RandoMenu.BuildRandoMenu();
             HintMenu.BuildHintMenu();
@@ -245,7 +253,7 @@ namespace MessengerRando
             }
             //Call original add with items
             orig(self, itemId, quantity);
-            
+
         }
 
         void ProgressionManager_SetChallengeRoomAsCompleted(On.ProgressionManager.orig_SetChallengeRoomAsCompleted orig, ProgressionManager self, string roomKey)
@@ -277,7 +285,7 @@ namespace MessengerRando
                 //OLD WAY
                 //Don't actually check for the item i have, check to see if I have the item that was at it's location.
                 //int itemQuantity = Manager<InventoryManager>.Instance.GetItemQuantity(randoStateManager.CurrentLocationToItemMapping[check].Item);
-                
+
                 //NEW WAY
                 //Don't actually check for the item I have, check to see if I have done this check before. We'll do this by seeing if the item at its location has been collected yet or not
                 int itemQuantity = RandomizerStateManager.HasCompletedCheck(check) ? 1 : 0;
@@ -290,7 +298,7 @@ namespace MessengerRando
                         ? 1
                         : 0;
                 }
-                
+
                 switch (self.conditionOperator)
                 {
                     case EConditionOperator.LESS_THAN:
@@ -314,9 +322,9 @@ namespace MessengerRando
             Console.WriteLine("HasItem check was not randomized. Doing vanilla checks.");
             Debug.Log($"Is randomized file : '{ArchipelagoClient.HasConnected}' | Is location '{self.item}' randomized: '{randoStateManager.IsLocationRandomized(self.item, out check)}' | Not in the special triggers list: '{!RandomizerConstants.GetSpecialTriggerNames().Contains(self.Owner.name)}'|");
             return orig(self);
-            
+
         }
-        
+
         bool AwardNoteCutscene_ShouldPlay(On.AwardNoteCutscene.orig_ShouldPlay orig, AwardNoteCutscene self)
         {
             //Need to handle note cutscene triggers so they will play as long as I dont have the actual item it grants
@@ -338,7 +346,7 @@ namespace MessengerRando
             }
             return orig(self);
         }
-        
+
         void SaveGameSelectionScreen_OnLoadGame(On.SaveGameSelectionScreen.orig_OnLoadGame orig, SaveGameSelectionScreen self, int slotIndex)
         {
             //slotIndex is 0-based, going to increment it locally to keep things simple.
@@ -496,7 +504,7 @@ namespace MessengerRando
             }
             orig(self, delete);
         }
-        
+
         void PauseScreen_OnQuitToTitle(On.BackToTitleScreen.orig_GoBackToTitleScreen orig)
         {
             if (ArchipelagoClient.HasConnected)
@@ -524,7 +532,7 @@ namespace MessengerRando
         void CatacombLevelInitializer_OnBeforeInitDone(On.CatacombLevelInitializer.orig_OnBeforeInitDone orig, CatacombLevelInitializer self)
         {
             //check to see if we already have the item at Necro check
-            if(ArchipelagoClient.HasConnected)
+            if (ArchipelagoClient.HasConnected)
             {
                 if (!RandomizerStateManager.HasCompletedCheck(
                         ItemsAndLocationsHandler.LocationsLookup[new LocationRO("Necro")]))
@@ -538,7 +546,7 @@ namespace MessengerRando
                 //we are not rando here, call orig method
                 orig(self);
             }
-            
+
         }
 
         // Breaking into Necro cutscene to fix things
@@ -554,11 +562,11 @@ namespace MessengerRando
         {
             ILCursor cursor = new ILCursor(il);
 
-            while(cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcI4(55)))
+            while (cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcI4(55)))
             {
                 cursor.EmitDelegate<Func<EItems, EItems>>(GetRandoItemByItem);
             }
-            
+
         }
 
         void MegaTimeShard_OnBreakDone(On.MegaTimeShard.orig_OnBreakDone orig, MegaTimeShard self)
@@ -652,7 +660,7 @@ namespace MessengerRando
             // this determines which notes should be shown present in the music box
             orig(self);
         }
-        
+
         public static void OnToggleWindmillShuriken()
         {
             Manager<ProgressionManager>.Instance.useWindmillShuriken = !Manager<ProgressionManager>.Instance.useWindmillShuriken;
@@ -663,7 +671,7 @@ namespace MessengerRando
 
         public static void OnSelectTeleportToHq()
         {
-            Console.WriteLine("Teleporting to HQ!");       
+            Console.WriteLine("Teleporting to HQ!");
 #if DEBUG
             var position = Manager<PlayerManager>.Instance.Player.transform.position;
             Console.WriteLine($"{position.x} {position.y} {position.z}");
@@ -753,7 +761,7 @@ namespace MessengerRando
             {
                 return;
             }
-            
+
             ArchipelagoClient.ConnectAsync(ArchipelagoMenu.ArchipelagoConnectButton);
         }
 
@@ -916,7 +924,7 @@ namespace MessengerRando
                 // just keep trying to solve it until it eventually works lmao
                 LostWoodsManager.SolveLostWoods();
             }
-                
+
             // The game calls the save method after the ending cutscene before rolling credits
             if (ArchipelagoClient.Authenticated
                 && Manager<LevelManager>.Instance.GetCurrentLevelEnum().Equals(ELevel.Level_Ending))

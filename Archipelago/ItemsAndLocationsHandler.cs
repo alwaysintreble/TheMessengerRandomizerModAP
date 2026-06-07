@@ -13,9 +13,10 @@ namespace MessengerRando.Archipelago
         public static Dictionary<long, RandoItemRO> ItemsLookup;
         public static Dictionary<LocationRO, long> LocationsLookup;
         private static Dictionary<EItems, long> EItemsLocationsLookup;
-        private static Dictionary<long, LocationRO> IDtoLocationsLookup;
+        public static Dictionary<long, LocationRO> IDtoLocationsLookup;
 
         public static RandomizerStateManager RandoStateManager;
+        public static SkylandsGeneratorManager SkylandsGeneratorManager;
 
         public const int APQuantity = 69;
         public const long BaseOffset = 0xADD_000;
@@ -39,13 +40,14 @@ namespace MessengerRando.Archipelago
                 new RandoItemRO("Money Wrench", EItems.MONEY_WRENCH),
                 new RandoItemRO("Teleport Trap", EItems.NONE),
                 new RandoItemRO("Prophecy Trap", EItems.NONE),
+                new RandoItemRO("Progressive Generator Shutdown", EItems.NONE),
                 new RandoItemRO("Darkness Trap", EItems.NONE),
                 new RandoItemRO("Health", EItems.POTION),
                 new RandoItemRO("Mana", EItems.MANA),
                 new RandoItemRO("Feather", EItems.FEATHER),
                 new RandoItemRO("Mask Fragment", EItems.MASK_PIECE),
             });
-            
+
             foreach (var item in ArchipelagoItems)
             {
                 ItemsLookup.Add(offset, item);
@@ -58,7 +60,7 @@ namespace MessengerRando.Archipelago
             LocationsLookup = new Dictionary<LocationRO, long>();
             EItemsLocationsLookup = new Dictionary<EItems, long>();
             IDtoLocationsLookup = new Dictionary<long, LocationRO>();
-            
+
             var megaShards = RandoTimeShardManager.MegaShardLookup.Select(item => item.Loc).ToList();
             ArchipelagoLocations.AddRange(megaShards);
             ArchipelagoLocations.AddRange(BossLocations);
@@ -66,7 +68,12 @@ namespace MessengerRando.Archipelago
             foreach (var figurine in Enum.GetValues(typeof(EFigurine)))
                 ArchipelagoLocations.Add(new LocationRO(figurine.ToString()));
             ArchipelagoLocations.Add(new LocationRO("Money Wrench", EItems.MONEY_WRENCH));
-            
+
+            ArchipelagoLocations.Add(new LocationRO("Elemental Skylands - Shutdown Air Generator"));
+            ArchipelagoLocations.Add(new LocationRO("Elemental Skylands - Shutdown Earth Generator"));
+            ArchipelagoLocations.Add(new LocationRO("Elemental Skylands - Shutdown Water Generator"));
+            ArchipelagoLocations.Add(new LocationRO("Elemental Skylands - Shutdown Fire Generator"));
+
             foreach (var progLocation in ArchipelagoLocations)
             {
                 LocationsLookup.Add(progLocation, offset);
@@ -228,7 +235,7 @@ namespace MessengerRando.Archipelago
             //Elemental Skylands
             new LocationRO("-52-20420436", "Elemental Skylands Seal - Air Seal"),
             new LocationRO("18361868372388", "Elemental Skylands Seal - Water Seal"),
-            new LocationRO("28602892356388", "Elemental Skylands Seal - Fire Seal")
+            new LocationRO("28602892356388", "Elemental Skylands Seal - Fire Seal"),
         ];
 
         private static readonly List<LocationRO> BossLocations =
@@ -354,15 +361,20 @@ namespace MessengerRando.Archipelago
                         case "Timeshard":
                             quantity = ArchipelagoClient.ServerData.SlotData.ContainsKey("shop") ? 1 : 100;
                             break;
-                        case "Timeshard (10)": quantity = 10;
+                        case "Timeshard (10)":
+                            quantity = 10;
                             break;
-                        case "Timeshard (50)": quantity = 50;
+                        case "Timeshard (50)":
+                            quantity = 50;
                             break;
-                        case "Timeshard (100)": quantity = 100;
+                        case "Timeshard (100)":
+                            quantity = 100;
                             break;
-                        case "Timeshard (300)": quantity = 300;
+                        case "Timeshard (300)":
+                            quantity = 300;
                             break;
-                        case "Timeshard (500)": quantity = 500;
+                        case "Timeshard (500)":
+                            quantity = 500;
                             break;
                     }
                     Console.WriteLine($"Unlocking time shards... {quantity}");
@@ -379,6 +391,11 @@ namespace MessengerRando.Archipelago
                     }
                     catch
                     {
+                        if (randoItem.Name.EndsWith("Generator Shutdown"))
+                        {
+                            SkylandsGeneratorManager.ReceiveGeneratorShutdown(randoItem.Name);
+                            break;
+                        }
                         switch (randoItem.Name)
                         {
                             case "Darkness Trap":
@@ -430,6 +447,12 @@ namespace MessengerRando.Archipelago
                 ArchipelagoClient.ServerData.ReceivedItems.Add(itemToUnlock, 1);
         }
 
+        public static bool IsLocationChecked(LocationRO location)
+        {
+            LocationsLookup.TryGetValue(location, out var locationID);
+            return RandomizerStateManager.HasCompletedCheck(locationID);
+        }
+
         public static void SendLocationCheck(LocationRO checkedLocation)
         {
             LocationsLookup.TryGetValue(checkedLocation, out var locationID);
@@ -460,7 +483,7 @@ namespace MessengerRando.Archipelago
                 else return;
             }
             ArchipelagoClient.ServerData.CheckedLocations.Add(locationID);
-            
+
             Console.WriteLine("Sending location checks");
             if (ArchipelagoClient.Authenticated)
             {
@@ -493,7 +516,7 @@ namespace MessengerRando.Archipelago
                     Unlock(itemToUnlock);
                 else
                     ArchipelagoClient.ItemQueue.Enqueue(itemToUnlock);
-                
+
                 if (!HasDialog(locationID))
                 {
                     var dialog = SeedGenerator.GetOfflineDialog(locationID);
@@ -518,7 +541,7 @@ namespace MessengerRando.Archipelago
 
             Synced = false;
         }
-        
+
         public static void ReSync()
         {
             Synced = true;

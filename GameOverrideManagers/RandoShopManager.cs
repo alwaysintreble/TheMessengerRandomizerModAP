@@ -139,8 +139,6 @@ namespace MessengerRando.GameOverrideManagers
 
         public static string GetText(On.LocalizationManager.orig_GetText orig, LocalizationManager self, string locid)
         {
-            // if (!InShop()) return orig(self, locid);
-            Console.WriteLine($"Requesting text for {locid}");
             if (!ArchipelagoClient.HasConnected) return orig(self, locid);
             var locType = TextType.None;
             var lookupName = string.Empty;
@@ -190,7 +188,7 @@ namespace MessengerRando.GameOverrideManagers
             var itemOnLocation = RandomizerStateManager.Instance.ScoutedLocations[locationID];
             if (locType.Equals(TextType.Name) && ArchipelagoClient.Authenticated)
             {
-                if(!ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
+                if (!ArchipelagoClient.ServerData.CheckedLocations.Contains(locationID))
                 {
                     ThreadPool.QueueUserWorkItem(_ =>
                         ArchipelagoClient.Session.Locations.ScoutLocationsAsync(

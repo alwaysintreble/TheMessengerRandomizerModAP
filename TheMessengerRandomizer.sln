@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11605.240
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessengerRando", "MessengerRando.csproj", "{6271B317-0737-489F-8319-67F0AC291D20}"
 EndProject
@@ -20,12 +20,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {7039E307-FE1A-44E9-A063-DAB3B0FAE9E1}
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		outputpath = "C:\Program Files (x86)\Steam\steamapps\common\The Messenger\Mods\TheMessengerRandomizer"
-		Policies = $0
-		$0.DotNetNamingPolicy = $1
-		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		SolutionGuid = {33F7DFA5-3CA6-4257-B902-DA08DEB42F50}
 	EndGlobalSection
 EndGlobal

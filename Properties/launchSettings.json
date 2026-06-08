@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Start Messenger": {
+      "commandName": "Executable",
+      "executablePath": "$(GamePath)\\TheMessenger.exe",
+      "workingDirectory": "$(GamePath)"
+    }
+  }
+}

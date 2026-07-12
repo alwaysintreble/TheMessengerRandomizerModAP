@@ -104,11 +104,8 @@ namespace MessengerRando.Utils
             {
                 var startingPortals = ((JArray)portals).ToObject<List<string>>();
                 RandoPortalManager.StartingPortals = [];
-                foreach (var portal in startingPortals)
-                {
-                    Console.WriteLine($"Starting portal: {portal}");
-                    RandoPortalManager.StartingPortals.Add(portal);
-                }
+                Console.WriteLine($"Starting portals:\n\t{string.Join("\n\t", [.. startingPortals])}");
+                RandoPortalManager.StartingPortals.AddRange(startingPortals);
             }
             else
             {

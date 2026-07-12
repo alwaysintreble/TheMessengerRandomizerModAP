@@ -18,6 +18,7 @@ namespace MessengerRando.Archipelago
 
             if (!ArchipelagoClient.Authenticated) return;
             VisitedEntrances = ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>();
+            VisitedEntrances ??= [];
             if (VisitedEntrances.Contains(entrance)) return;
 
             Console.WriteLine("Adding visited entrance: " + entrance);

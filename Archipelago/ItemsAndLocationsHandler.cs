@@ -22,6 +22,7 @@ namespace MessengerRando.Archipelago
         public const long BaseOffset = 0xADD_000;
 
         public static bool Synced;
+        public static TrackerManager TrackerManager;
 
         /// <summary>
         /// Builds the item and lookup dictionaries for converting to and from AP checks. Will always make every location
@@ -546,7 +547,7 @@ namespace MessengerRando.Archipelago
         {
             Synced = true;
             ArchipelagoClient.SyncEvents();
-            ArchipelagoClient.ReconciliateUnlockedPortals();
+            TrackerManager.ReconciliateUnlockedPortals();
 
             var receivedItems = new Dictionary<long, int>();
 

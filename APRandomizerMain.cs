@@ -34,6 +34,7 @@ namespace MessengerRando
 
         private RandomizerStateManager randoStateManager;
         private SkylandsGeneratorManager skylandsGeneratorManager;
+        private TrackerManager trackerManager;
 
         private TextMeshProUGUI apTextDisplay8;
         private TextMeshProUGUI apTextDisplay16;
@@ -57,6 +58,11 @@ namespace MessengerRando
             RandomizerStateManager.skylandsGeneratorManager = skylandsGeneratorManager;
 
             randoStateManager = new RandomizerStateManager();
+
+            trackerManager = new TrackerManager();
+            ItemsAndLocationsHandler.TrackerManager = trackerManager;
+            RandoPortalManager.TrackerManager = trackerManager;
+            RandoLevelManager.TrackerManager = trackerManager;
 
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
@@ -619,10 +625,10 @@ namespace MessengerRando
             orig(self);
         }
 
-        private static void OnAnyPortalOpeningCutsceneDone(Cutscene cutscene)
+        private void OnAnyPortalOpeningCutsceneDone(Cutscene cutscene)
         {
             cutscene.onDone -= OnAnyPortalOpeningCutsceneDone;
-            ArchipelagoClient.ReconciliateUnlockedPortals();
+            trackerManager.ReconciliateUnlockedPortals();
         }
 
         void PhantomIntro_OnEnterRoom(On.PhantomIntroCutscene.orig_OnEnterRoom orig, PhantomIntroCutscene self,

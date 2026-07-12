@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
 using UnityEngine;
 
@@ -48,6 +49,7 @@ namespace MessengerRando.GameOverrideManagers
         public static bool EnteredTower;
         public static List<string> StartingPortals;
         public static List<Portal> PortalMapping;
+        public static TrackerManager TrackerManager;
 
         static readonly List<List<List<LevelConstants.RandoLevel>>> AreaCheckpoints =
             new List<List<List<LevelConstants.RandoLevel>>>
@@ -447,7 +449,7 @@ namespace MessengerRando.GameOverrideManagers
                             return;
                     }
 
-                    RandoLevelManager.AddVisitedEntrance("HQ - " + portal.Replace("- ", ""));
+                    TrackerManager.AddVisitedEntrance("HQ - " + portal.Replace("- ", ""));
                     RandoLevelManager.TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newLevel.Dimension);
                 }
                 catch (Exception e)

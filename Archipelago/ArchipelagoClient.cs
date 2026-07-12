@@ -20,7 +20,7 @@ namespace MessengerRando.Archipelago
     public static class ArchipelagoClient
     {
         private const string ApVersion = "0.5.0";
-        public static ArchipelagoData ServerData = new ();
+        public static ArchipelagoData ServerData = new();
 
         private delegate void OnConnectAttempt(string result);
 
@@ -275,7 +275,7 @@ namespace MessengerRando.Archipelago
             Console.WriteLine(message.ToString());
             if (FilterAPMessages)
             {
-                
+
                 switch (message)
                 {
                     case HintItemSendLogMessage hintMessage:
@@ -368,34 +368,6 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine(cutscene);
                 Manager<ProgressionManager>.Instance.cutscenesPlayed.Add(cutscene);
             }
-        }
-
-        public static List<string> AddVisitedEntrance(string entrance)
-        {
-            if (!Authenticated) return [];
-
-            var visitedEntrances = Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>();
-            if (visitedEntrances.Contains(entrance)) return visitedEntrances;
-
-            Console.WriteLine("Adding visited entrance: " + entrance);
-            visitedEntrances.Add(entrance);
-            visitedEntrances.Sort();
-            Session.DataStorage[Scope.Slot, "VisitedEntrances"] = visitedEntrances;
-
-            return visitedEntrances;
-        }
-
-        public static void ReconciliateUnlockedPortals()
-        {
-            if (!Authenticated) return;
-
-            var unlockedPortals = RandoPortalManager.UnlockedPortals;
-            unlockedPortals.UnionWith(Session.DataStorage[Scope.Slot, "UnlockedPortals"].To<List<string>>());
-
-            var unlockedPortalsList = unlockedPortals.ToList();
-            unlockedPortalsList.Sort();
-            Console.WriteLine($"Updating unlocked portals with Data Storage. Unlocked portals are {string.Join(", ", [.. unlockedPortalsList])}");
-            Session.DataStorage[Scope.Slot, "UnlockedPortals"] = unlockedPortalsList;
         }
 
         private static void OnItemReceived(ReceivedItemsHelper helper)

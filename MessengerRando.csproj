@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <TargetFramework>net35</TargetFramework>
@@ -97,6 +96,7 @@
     <Compile Include="Archipelago\ArchipelagoData.cs" />
     <Compile Include="Archipelago\DeathLinkInterface.cs" />
     <Compile Include="Archipelago\ItemsAndLocationsHandler.cs" />
+    <Compile Include="Archipelago\TrackerManager.cs" />
     <Compile Include="Exceptions\RandomizerException.cs" />
     <Compile Include="GameOverrideManagers\LostWoodsManager.cs" />
     <Compile Include="GameOverrideManagers\RandoBossManager.cs" />

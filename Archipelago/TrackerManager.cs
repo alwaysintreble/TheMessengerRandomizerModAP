@@ -17,9 +17,8 @@ namespace MessengerRando.Archipelago
             if (VisitedEntrances.Contains(entrance)) return;
 
             if (!ArchipelagoClient.Authenticated) return;
-            VisitedEntrances = ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>();
-            VisitedEntrances ??= [];
-            if (VisitedEntrances.Contains(entrance)) return;
+            VisitedEntrances = ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>() ?? [];
+            if (VisitedEntrances.Congcatains(entrance)) return;
 
             Console.WriteLine("Adding visited entrance: " + entrance);
             VisitedEntrances.Add(entrance);
@@ -34,7 +33,7 @@ namespace MessengerRando.Archipelago
             if (!ArchipelagoClient.Authenticated) return;
 
             var unlockedPortals = RandoPortalManager.UnlockedPortals;
-            unlockedPortals.UnionWith(ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedPortals"].To<List<string>>());
+            unlockedPortals.UnionWith(ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedPortals"].To<List<string>>() ?? []);
 
             var unlockedPortalsList = unlockedPortals.ToList();
             unlockedPortalsList.Sort();

@@ -289,7 +289,6 @@ namespace MessengerRando.GameOverrideManagers
                         new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(1909, 411)),
                         new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(2755.5f, 376), EBits.BITS_8),
                         new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(2926.5f, 406)),
-                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-22.5f, 417)),
                     },
                     new List<LevelConstants.RandoLevel>
                     {

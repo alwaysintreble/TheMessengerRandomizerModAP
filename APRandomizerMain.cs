@@ -112,6 +112,7 @@ namespace MessengerRando
             On.ElementalSkylandsLevelInitializer.OnBeforeInitDone += RandoLevelManager.ElementalSkylandsInit;
             // On.PortalOpeningCutscene.OnOpenPortalEvent += RandoPortalManager.OpenPortalEvent;
             On.TotHQ.LeaveToLevel += RandoPortalManager.LeaveHQ;
+            On.TowerOfTimePortal.LoadLevel += RandoPortalManager.TowerOfTimePortal_LoadLevel;
             // generator deactivation management
             skylandsGeneratorManager.ApplyHooks();
             //These functions let us override and manage power seals ourselves with 'fake' items

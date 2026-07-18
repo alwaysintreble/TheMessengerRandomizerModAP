@@ -34,6 +34,7 @@ namespace MessengerRando.Archipelago
 
             var unlockedPortals = RandoPortalManager.UnlockedPortals;
             unlockedPortals.UnionWith(ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedPortals"].To<List<string>>() ?? []);
+            if (unlockedPortals.Count == 0) return;
 
             var unlockedPortalsList = unlockedPortals.ToList();
             unlockedPortalsList.Sort();

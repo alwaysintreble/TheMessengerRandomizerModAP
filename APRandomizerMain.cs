@@ -701,7 +701,7 @@ namespace MessengerRando
             RandoLevelManager.CleanupBeforeOptionsTeleport();
             //Load the HQ
             Manager<TowerOfTimeHQManager>.Instance.TeleportInToTHQ(true, ELevelEntranceID.ENTRANCE_A, null);
-            ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] = ELevel.Level_13_TowerOfTimeHQ.ToString();
+            RandoLevelManager.TrackerManager.SetCurrentRegion(ELevel.Level_13_TowerOfTimeHQ);
             RandoLevelManager.CleanupAfterTeleport();
         }
 

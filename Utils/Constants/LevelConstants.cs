@@ -464,6 +464,19 @@ namespace MessengerRando.Utils.Constants
             "Quillshroom Marsh - Right", "Searing Crags - Left"
         };
 
+        public static readonly Dictionary<string, string> SpecialConnectionSourceExits =
+            new Dictionary<string, string>
+            {
+                { "Howling Grotto - Right", "Quillshroom Marsh - Top Left" },
+                { "Howling Grotto - Top",   "Quillshroom Marsh - Bottom Left" },
+                { "Quillshroom Marsh - Bottom Left",    "Howling Grotto - Top" },
+                { "Quillshroom Marsh - Top Left",  "Howling Grotto - Right" },
+                { "Quillshroom Marsh - Top Right",    "Searing Crags - Left" },
+                { "Quillshroom Marsh - Bottom Right", "Searing Crags - Bottom" },
+                { "Searing Crags - Left",   "Quillshroom Marsh - Top Right" },
+                { "Searing Crags - Bottom", "Quillshroom Marsh - Bottom Right" },
+            };
+
         public static readonly List<string> TransitionNames = new List<string>
         {
             "Ninja Village - Right",

@@ -1,8 +1,8 @@
 ﻿using System;
-using MessengerRando.Utils;
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net.Enums;
 using MessengerRando.Archipelago;
+using MessengerRando.Utils;
 using MessengerRando.Utils.Constants;
 using MessengerRando.Utils.Menus;
 using UnityEngine;
@@ -19,6 +19,7 @@ public static class RandoLevelManager
 
     // ReSharper disable once UnassignedField.Global
     public static Dictionary<string, LevelConstants.RandoLevel> RandoLevelMapping;
+    public static TrackerManager TrackerManager;
 
     public static void LoadLevel(On.LevelManager.orig_LoadLevel orig, LevelManager self, LevelLoadingInfo levelInfo)
     {
@@ -61,7 +62,7 @@ public static class RandoLevelManager
             var playerPos = Manager<PlayerManager>.Instance.Player.transform.position;
             Console.WriteLine(lastLevel);
             Console.WriteLine(currentLevel);
-                
+
             if (RandoLevelMapping == null) return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
 
             string entrance;
@@ -82,7 +83,7 @@ public static class RandoLevelManager
             else if (!LevelConstants.TransitionToEntranceName.TryGetValue(
                          new LevelConstants.Transition(lastLevel, currentLevel), out entrance))
                 return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
-                
+
             if (LevelConstants.SpecialEntranceNames.Contains(entrance))
             {
                 Vector3 comparePos;
@@ -119,8 +120,35 @@ public static class RandoLevelManager
                 }
             }
             Console.WriteLine(entrance);
+            string sourceExit;
+            if (LevelConstants.SpecialConnectionSourceExits.TryGetValue(entrance, out var specialSource))
+            {
+                sourceExit = specialSource + " exit";
+            }
+            else if (entrance.Equals("Corrupted Future"))
+            {
+                sourceExit = "HQ - Artificer's Portal";
+            }
+            else if (entrance.Equals("Tower of Time - Left"))
+            {
+                sourceExit = "HQ - Artificer's Challenge";
+            }
+            else if (entrance.Equals("Glacial Peak - Left"))
+            {
+                sourceExit = "Elemental Skylands - Right exit";
+            }
+            else if (!LevelConstants.TransitionToEntranceName.TryGetValue(new LevelConstants.Transition(currentLevel, lastLevel), out sourceExit))
+            {
+                sourceExit = entrance;
+            }
+            else
+            {
+                sourceExit = sourceExit + " exit";
+            }
+            TrackerManager.AddVisitedEntrance(sourceExit);
             return RandoLevelMapping[entrance];
-        } catch (Exception e){ Console.WriteLine(e);}
+        }
+        catch (Exception e) { Console.WriteLine(e); }
         return new LevelConstants.RandoLevel(ELevel.NONE, new Vector3());
     }
 
@@ -153,7 +181,7 @@ public static class RandoLevelManager
         // progManager.levelsDiscovered.Remove(ELevel.Level_05_B_SunkenShrine);
         // progManager.allTimeDiscoveredLevels.Remove(ELevel.Level_05_B_SunkenShrine);
         // }
-            
+
         if (teleporting)
         {
             teleporting = false;
@@ -165,19 +193,19 @@ public static class RandoLevelManager
         var shouldTeleport =
             (RandoPortalManager.PortalMapping != null && RandoPortalManager.PortalMapping.Count > 0 &&
              RandoPortalManager.LeftHQPortal) || RandoLevelMapping is { Count: > 0 };
-            
+
         if (!shouldTeleport)
         {
             AddCurrentRegionToStorage(self);
         }
-            
+
         if (currentLevel.Equals(ELevel.Level_11_B_MusicBox) &&
             RandomizerStateManager.Instance.SkipMusicBox)
         {
             SkipMusicBox();
             return;
         }
-            
+
         Console.WriteLine("loaded into level...");
         Console.WriteLine(self.lastLevelLoaded);
         Console.WriteLine(self.GetCurrentLevelEnum());
@@ -192,7 +220,7 @@ public static class RandoLevelManager
             RandoPortalManager.Teleport();
             return;
         }
-            
+
         if (currentLevel.Equals(ELevel.Level_14_CorruptedFuture) ||
             currentLevel.Equals(ELevel.Level_10_A_TowerOfTime))
         {
@@ -241,7 +269,7 @@ public static class RandoLevelManager
     public static void TeleportInArea(ELevel area, Vector2 position, EBits dimension = EBits.NONE)
     {
 #if DEBUG
-            Console.WriteLine($"Attempting to teleport to {area}, ({position.x}, {position.y}), {dimension}");
+        Console.WriteLine($"Attempting to teleport to {area}, ({position.x}, {position.y}), {dimension}");
 #endif
         CleanupBeforeTeleport();
         Manager<ProgressionManager>.Instance.checkpointSaveInfo.loadedLevelPlayerPosition = position;

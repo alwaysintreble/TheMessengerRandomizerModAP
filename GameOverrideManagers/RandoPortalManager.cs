@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MessengerRando.Archipelago;
 using MessengerRando.Utils.Constants;
 using UnityEngine;
 
@@ -48,6 +49,7 @@ namespace MessengerRando.GameOverrideManagers
         public static bool EnteredTower;
         public static List<string> StartingPortals;
         public static List<Portal> PortalMapping;
+        public static TrackerManager TrackerManager;
 
         static readonly List<List<List<LevelConstants.RandoLevel>>> AreaCheckpoints =
             new List<List<List<LevelConstants.RandoLevel>>>
@@ -287,7 +289,6 @@ namespace MessengerRando.GameOverrideManagers
                         new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(1909, 411)),
                         new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(2755.5f, 376), EBits.BITS_8),
                         new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(2926.5f, 406)),
-                        new LevelConstants.RandoLevel(ELevel.Level_09_B_ElementalSkylands, new Vector3(-22.5f, 417)),
                     },
                     new List<LevelConstants.RandoLevel>
                     {
@@ -329,6 +330,37 @@ namespace MessengerRando.GameOverrideManagers
         };
 
         private static readonly List<string> AccessedStartingPortals = new List<string>();
+
+        public static HashSet<string> UnlockedPortals
+        {
+            get
+            {
+                var unlockedPortals = new HashSet<string>();
+
+                var progressManager = Manager<ProgressionManager>.Instance;
+                if (progressManager.cutscenesPlayed.Contains("PortalOpeningCutscene"))
+                {
+                    unlockedPortals.Add("Autumn Hills Portal");
+                    unlockedPortals.Add("Howling Grotto Portal");
+                    unlockedPortals.Add("Glacial Peak Portal");
+                }
+                if (progressManager.cutscenesPlayed.Contains("SunkenShrinePortalOpeningCutscene"))
+                {
+                    unlockedPortals.Add("Sunken Shrine Portal");
+                }
+                if (progressManager.cutscenesPlayed.Contains("SearingCragsPortalOpeningCutscene"))
+                {
+                    unlockedPortals.Add("Searing Crags Portal");
+                }
+                if (progressManager.cutscenesPlayed.Contains("RiviereTurquoisePortalOpeningCutscene"))
+                {
+                    unlockedPortals.Add("Riviere Turquoise Portal");
+                }
+
+                return unlockedPortals;
+            }
+        }
+
         public static bool ShouldPortalBeOpen(string portal)
         {
             return AccessedStartingPortals.Contains(portal);
@@ -365,7 +397,7 @@ namespace MessengerRando.GameOverrideManagers
                     break;
             }
         }
-        
+
         private static LevelConstants.RandoLevel GetPortalExit(string enteredPortal)
         {
             Console.WriteLine($"getting portal. entered {enteredPortal}");
@@ -416,6 +448,7 @@ namespace MessengerRando.GameOverrideManagers
                             return;
                     }
 
+                    TrackerManager.AddVisitedEntrance("HQ - " + portal.Replace("- ", ""));
                     RandoLevelManager.TeleportInArea(newLevel.LevelName, newLevel.PlayerPos, newLevel.Dimension);
                 }
                 catch (Exception e)

@@ -34,6 +34,7 @@ namespace MessengerRando
 
         private RandomizerStateManager randoStateManager;
         private SkylandsGeneratorManager skylandsGeneratorManager;
+        private TrackerManager trackerManager;
 
         private TextMeshProUGUI apTextDisplay8;
         private TextMeshProUGUI apTextDisplay16;
@@ -57,6 +58,11 @@ namespace MessengerRando
             RandomizerStateManager.skylandsGeneratorManager = skylandsGeneratorManager;
 
             randoStateManager = new RandomizerStateManager();
+
+            trackerManager = new TrackerManager();
+            ItemsAndLocationsHandler.TrackerManager = trackerManager;
+            RandoPortalManager.TrackerManager = trackerManager;
+            RandoLevelManager.TrackerManager = trackerManager;
 
             //Plug in my code :3
             On.InventoryManager.AddItem += InventoryManager_AddItem;
@@ -604,12 +610,25 @@ namespace MessengerRando
                     }
                 }
             }
+
             if (ArchipelagoClient.EventsICareAbout.Contains(eventName) && ArchipelagoClient.Authenticated)
             {
                 ArchipelagoClient.Session.DataStorage[Scope.Slot, "Events"] +=
                     new List<string> { eventName };
             }
+
+            if (eventName.EndsWith("PortalOpeningCutscene"))
+            {
+                self.onDone += OnAnyPortalOpeningCutsceneDone;
+            }
+
             orig(self);
+        }
+
+        private void OnAnyPortalOpeningCutsceneDone(Cutscene cutscene)
+        {
+            cutscene.onDone -= OnAnyPortalOpeningCutsceneDone;
+            trackerManager.ReconciliateUnlockedPortals();
         }
 
         void PhantomIntro_OnEnterRoom(On.PhantomIntroCutscene.orig_OnEnterRoom orig, PhantomIntroCutscene self,
@@ -681,6 +700,7 @@ namespace MessengerRando
             RandoLevelManager.CleanupBeforeOptionsTeleport();
             //Load the HQ
             Manager<TowerOfTimeHQManager>.Instance.TeleportInToTHQ(true, ELevelEntranceID.ENTRANCE_A, null);
+            ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] = ELevel.Level_13_TowerOfTimeHQ.ToString();
             RandoLevelManager.CleanupAfterTeleport();
         }
 

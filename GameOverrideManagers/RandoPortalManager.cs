@@ -363,7 +363,6 @@ namespace MessengerRando.GameOverrideManagers
 
         private static bool PortalShuffleEnabled => PortalMapping is not null && PortalMapping.Count > 0;
 
-
         public static bool ShouldPortalBeOpen(string portal)
         {
             return AccessedStartingPortals.Contains(portal);
@@ -479,6 +478,7 @@ namespace MessengerRando.GameOverrideManagers
                 Console.WriteLine("Left ToT through portal.");
                 orig(self);
 
+                // When portals are shuffled, the teleportation override will set the current region.
                 if (!PortalShuffleEnabled)
                 {
                     TrackerManager.SetCurrentRegion(self.nextLevel);

@@ -2,29 +2,28 @@
 using Mod.Courier.Module;
 
 
-namespace MessengerRando.Utils
-{
-    //This class will be responsible for handling the randomization of items to locations and generating the mapping dictionary.
-    public class ItemRandomizerUtil
-    {
-        public static string ModName = "TheMessengerRandomizerAP";
-        
-        /// <summary>
-        /// Gets the current version number for the mod.
-        /// </summary>
-        /// <returns>the version number or "Unknown" if it has trouble getting the version number.</returns>
-        public static string GetModVersion()
-        {
-            string version = "Unknown";
+namespace MessengerRando.Utils;
 
-            foreach (CourierModuleMetadata modMetadata in Courier.Mods)
+//This class will be responsible for handling the randomization of items to locations and generating the mapping dictionary.
+public class ItemRandomizerUtil
+{
+    public static string ModName = "TheMessengerRandomizerAP";
+
+    /// <summary>
+    /// Gets the current version number for the mod.
+    /// </summary>
+    /// <returns>the version number or "Unknown" if it has trouble getting the version number.</returns>
+    public static string GetModVersion()
+    {
+        string version = "Unknown";
+
+        foreach (CourierModuleMetadata modMetadata in Courier.Mods)
+        {
+            if (ModName.Equals(modMetadata.Name))
             {
-                if (ModName.Equals(modMetadata.Name))
-                {
-                    version = modMetadata.VersionString;
-                }
+                version = modMetadata.VersionString;
             }
-            return version;
         }
+        return version;
     }
 }

@@ -189,9 +189,9 @@ namespace MessengerRando.Archipelago
             new LocationRO("492524-44-28", "Catacombs Seal - Crusher Gauntlet"),
             new LocationRO("556588-60-44", "Catacombs Seal - Dirty Pond"),
             //Bamboo Creek
-            new LocationRO("-84-52-28-12", "Bamboo Creek Seal - Spike crushers and Doors"),
-            new LocationRO("172236-44-28", "Bamboo Creek Seal - Spike ball pits"),
-            new LocationRO("300332-1236", "Bamboo Creek Seal - Spike crushers and Doors v2"),
+            new LocationRO("-84-52-28-12", "Bamboo Creek Seal - Spike Crushers and Doors"),
+            new LocationRO("172236-44-28", "Bamboo Creek Seal - Spike Ball Pits"),
+            new LocationRO("300332-1236", "Bamboo Creek Seal - Spike Crushers and Doors v2"),
             //Howling Grotto
             new LocationRO("108140-28-12", "Howling Grotto Seal - Windy Saws and Balls"),
             new LocationRO("300332-92-76", "Howling Grotto Seal - Crushing Pits"),
@@ -203,15 +203,15 @@ namespace MessengerRando.Archipelago
             //Searing Crags
             new LocationRO("761085268", "Searing Crags Seal - Triple Ball Spinner"),
             new LocationRO("300332196212", "Searing Crags Seal - Raining Rocks"),
-            new LocationRO("364396292308", "Searing Crags Seal - Rythym Rocks"),
+            new LocationRO("364396292308", "Searing Crags Seal - Rhythm Rocks"),
             //Glacial Peak
             new LocationRO("140172-492-476", "Glacial Peak Seal - Ice Climbers"),
             new LocationRO("236268-396-380", "Glacial Peak Seal - Projectile Spike Pit"),
             new LocationRO("236268-156-140", "Glacial Peak Seal - Glacial Air Swag"),
-            //TowerOfTime
-            new LocationRO("-84-522036", "TowerOfTime Seal - Time Waster Seal"),
-            new LocationRO("7610852116", "TowerOfTime Seal - Lantern Climb"),
-            new LocationRO("-52-20116132", "TowerOfTime Seal - Arcane Orbs"),
+            //Tower Of Time
+            new LocationRO("-84-522036", "Tower Of Time Seal - Time Waster Seal"),
+            new LocationRO("7610852116", "Tower Of Time Seal - Lantern Climb"),
+            new LocationRO("-52-20116132", "Tower Of Time Seal - Arcane Orbs"),
             //Cloud Ruins
             new LocationRO("-148-116420", "Cloud Ruins Seal - Ghost Pit"),
             new LocationRO("108140-44-28", "Cloud Ruins Seal - Toothbrush Alley"),
@@ -230,9 +230,9 @@ namespace MessengerRando.Archipelago
             new LocationRO("172268-188-172", "Sunken Shrine Seal - Waterfall Paradise"),
             new LocationRO("-148-116-124-60", "Sunken Shrine Seal - Tabi Gauntlet"),
             //Riviere Turquoise
-            new LocationRO("844876-284", "Reviere Turquoise Seal - Bounces and Balls"),
-            new LocationRO("460492-124-108", "Reviere Turquoise Seal - Launch of Faith"),
-            new LocationRO("-180-1483668", "Reviere Turquoise Seal - Flower Power"),
+            new LocationRO("844876-284", "Riviere Turquoise Seal - Bounces and Balls"),
+            new LocationRO("460492-124-108", "Riviere Turquoise Seal - Launch of Faith"),
+            new LocationRO("-180-1483668", "Riviere Turquoise Seal - Flower Power"),
             //Elemental Skylands
             new LocationRO("-52-20420436", "Elemental Skylands Seal - Air Seal"),
             new LocationRO("18361868372388", "Elemental Skylands Seal - Water Seal"),

@@ -20,7 +20,7 @@ namespace MessengerRando.Archipelago
     public static class ArchipelagoClient
     {
         private const string ApVersion = "0.5.0";
-        public static ArchipelagoData ServerData = new ();
+        public static ArchipelagoData ServerData = new();
 
         private delegate void OnConnectAttempt(string result);
 
@@ -275,7 +275,7 @@ namespace MessengerRando.Archipelago
             Console.WriteLine(message.ToString());
             if (FilterAPMessages)
             {
-                
+
                 switch (message)
                 {
                     case HintItemSendLogMessage hintMessage:

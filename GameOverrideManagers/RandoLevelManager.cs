@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Archipelago.MultiClient.Net.Enums;
 using MessengerRando.Archipelago;
 using MessengerRando.Utils;
 using MessengerRando.Utils.Constants;
@@ -251,12 +250,11 @@ public static class RandoLevelManager
         if (!ArchipelagoClient.Authenticated) return;
         // put the region we just loaded into in AP data storage for tracking
         if (self.lastLevelLoaded.Equals(ELevel.Level_13_TowerOfTimeHQ + "_Build"))
-            ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
-                ELevel.Level_13_TowerOfTimeHQ.ToString();
+            TrackerManager.SetCurrentRegion(ELevel.Level_13_TowerOfTimeHQ);
         else
-            ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] =
-                self.GetCurrentLevelEnum().ToString();
+            TrackerManager.SetCurrentRegion(self.GetCurrentLevelEnum());
     }
+
     public static void SkipMusicBox()
     {
         var playerPosition = RandomizerStateManager.Instance.SkipMusicBox

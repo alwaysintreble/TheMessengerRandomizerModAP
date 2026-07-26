@@ -34,11 +34,18 @@ namespace MessengerRando.Archipelago
 
             var unlockedPortals = RandoPortalManager.UnlockedPortals;
             unlockedPortals.UnionWith(ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedPortals"].To<List<string>>() ?? []);
+            if (unlockedPortals.Count == 0) return;
 
             var unlockedPortalsList = unlockedPortals.ToList();
             unlockedPortalsList.Sort();
             Console.WriteLine($"Updating unlocked portals with Data Storage. Unlocked portals are\n\t{string.Join("\n\t", [.. unlockedPortalsList])}");
             ArchipelagoClient.Session.DataStorage[Scope.Slot, "UnlockedPortals"] = unlockedPortalsList;
+        }
+
+        public void SetCurrentRegion(ELevel level)
+        {
+            if (!ArchipelagoClient.Authenticated) return;
+            ArchipelagoClient.Session.DataStorage[Scope.Slot, "CurrentRegion"] = level.ToString();
         }
     }
 }

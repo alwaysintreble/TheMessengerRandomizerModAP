@@ -361,6 +361,8 @@ namespace MessengerRando.GameOverrideManagers
             }
         }
 
+        private static bool PortalShuffleEnabled => PortalMapping is not null && PortalMapping.Count > 0;
+
         public static bool ShouldPortalBeOpen(string portal)
         {
             return AccessedStartingPortals.Contains(portal);
@@ -430,7 +432,7 @@ namespace MessengerRando.GameOverrideManagers
                     return;
                 }
 
-                if (PortalMapping is null || PortalMapping.Count == 0)
+                if (!PortalShuffleEnabled)
                 {
                     LeftHQPortal = false;
                     return;
@@ -468,5 +470,27 @@ namespace MessengerRando.GameOverrideManagers
             Console.WriteLine($"Force teleport: {ForceTeleport}");
             orig(self, playLevelMusic, loadingNewLevel);
         }
+
+        public static void TowerOfTimePortal_LoadLevel(On.TowerOfTimePortal.orig_LoadLevel orig, TowerOfTimePortal self)
+        {
+            try
+            {
+                Console.WriteLine("Left ToT through portal.");
+                orig(self);
+
+                // When portals are shuffled, the teleportation override will set the current region.
+                if (!PortalShuffleEnabled)
+                {
+                    TrackerManager.SetCurrentRegion(self.nextLevel);
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Write("Error in TowerOfTimePortal_LoadLevel");
+                Console.WriteLine(e);
+            }
+        }
+
     }
 }

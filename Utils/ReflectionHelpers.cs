@@ -1,32 +1,31 @@
 ﻿using System.Reflection;
 
-namespace MessengerRando.Utils
+namespace MessengerRando.Utils;
+
+public static class ReflectionHelpers
 {
-    public static class ReflectionHelpers
+    private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
+
+    public static T GetPrivateField<T>(this object o, string fieldName)
     {
-        private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
+        var field = o.GetType().GetField(fieldName, Flags);
+        if (field != null) return (T)field.GetValue(o);
+        return default;
+    }
 
-        public static T GetPrivateField<T>(this object o, string fieldName)
-        {
-            var field = o.GetType().GetField(fieldName, Flags);
-            if (field != null) return (T)field.GetValue(o);
-            return default;
-        }
+    public static void SetPrivateField(this object o, string fieldName, object value)
+    {
+        var field = o.GetType().GetField(fieldName, Flags);
+        field?.SetValue(o, value);
+    }
 
-        public static void SetPrivateField(this object o, string fieldName, object value)
-        {
-            var field = o.GetType().GetField(fieldName, Flags);
-            field?.SetValue(o, value);
-        }
+    public static void InvokeMethod(this object o, string methodName, object[] parameters = null)
+    {
+        o.GetType().GetMethod(methodName, Flags)?.Invoke(o, parameters ?? []);
+    }
 
-        public static void InvokeMethod(this object o, string methodName, object[] parameters = null)
-        {
-            o.GetType().GetMethod(methodName, Flags)?.Invoke(o, parameters ?? []);
-        }
-
-        public static object InvokeMethodWithReturn(this object o, string methodName, object[] parameters = null)
-        {
-            return o.GetType().GetMethod(methodName, Flags)?.Invoke(o, parameters ?? []);
-        }
+    public static object InvokeMethodWithReturn(this object o, string methodName, object[] parameters = null)
+    {
+        return o.GetType().GetMethod(methodName, Flags)?.Invoke(o, parameters ?? []);
     }
 }

@@ -15,547 +15,546 @@ using Mod.Courier.UI;
 using UnityEngine;
 using static Mod.Courier.UI.TextEntryButtonInfo;
 
-namespace MessengerRando.Archipelago
+namespace MessengerRando.Archipelago;
+
+public static class ArchipelagoClient
 {
-    public static class ArchipelagoClient
+    private const string ApVersion = "0.5.0";
+    public static ArchipelagoData ServerData = new();
+
+    private delegate void OnConnectAttempt(string result);
+
+    public static bool Authenticated;
+    public static bool HasConnected;
+    private static bool attemptingConnection;
+    public static bool Offline;
+
+    public static bool DisplayAPMessages = true;
+    public static bool FilterAPMessages = true;
+    public static bool DisplayStatus = true;
+    public static bool HintPopUps = true;
+
+    public static ArchipelagoSession Session;
+    public static DeathLinkInterface DeathLinkHandler;
+
+    public static Queue ItemQueue = new();
+    public static Queue DialogQueue = new();
+    private static Queue messageQueue = new();
+    public static int OfflineReceivedItems;
+    private static string statusText = string.Empty;
+    private static bool roomUpdate;
+
+    public static List<string> EventsICareAbout =
+    [
+        "DecurseQueenCutscene",
+        "QueenDefrostLanternsCutscene",
+        "ElderAwardSeedCutscene",
+        "PlantTeaSeedCutscene",
+    ];
+
+    public static void ConnectAsync()
     {
-        private const string ApVersion = "0.5.0";
-        public static ArchipelagoData ServerData = new();
+        if (attemptingConnection || Authenticated) return;
+        attemptingConnection = true;
+        Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
+        ThreadPool.QueueUserWorkItem(_ => Connect(OnConnected));
+    }
 
-        private delegate void OnConnectAttempt(string result);
+    public static void ConnectAsync(SubMenuButtonInfo connectButton)
+    {
+        if (attemptingConnection || Authenticated) return;
+        attemptingConnection = true;
+        if (ServerData == null)
+            ServerData = new ArchipelagoData();
+        Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
+        Connect(result => OnConnected(result, connectButton));
+    }
 
-        public static bool Authenticated;
-        public static bool HasConnected;
-        private static bool attemptingConnection;
-        public static bool Offline;
-
-        public static bool DisplayAPMessages = true;
-        public static bool FilterAPMessages = true;
-        public static bool DisplayStatus = true;
-        public static bool HintPopUps = true;
-
-        public static ArchipelagoSession Session;
-        public static DeathLinkInterface DeathLinkHandler;
-
-        public static Queue ItemQueue = new();
-        public static Queue DialogQueue = new();
-        private static Queue messageQueue = new();
-        public static int OfflineReceivedItems;
-        private static string statusText = string.Empty;
-        private static bool roomUpdate;
-
-        public static List<string> EventsICareAbout =
-        [
-            "DecurseQueenCutscene",
-            "QueenDefrostLanternsCutscene",
-            "ElderAwardSeedCutscene",
-            "PlantTeaSeedCutscene",
-        ];
-
-        public static void ConnectAsync()
+    private static void OnConnected(string connectStats)
+    {
+        if (ServerData.CheckedLocations != null)
         {
-            if (attemptingConnection || Authenticated) return;
-            attemptingConnection = true;
-            Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
-            ThreadPool.QueueUserWorkItem(_ => Connect(OnConnected));
+            Session.Locations.CompleteLocationChecksAsync(
+                _ => ServerData.CheckedLocations = Session.Locations.AllLocationsChecked.ToList(),
+                ServerData.CheckedLocations.ToArray());
         }
 
-        public static void ConnectAsync(SubMenuButtonInfo connectButton)
+        attemptingConnection = false;
+    }
+
+    private static void OnConnected(string outputText, SubMenuButtonInfo connectButton)
+    {
+        TextEntryPopup successPopup = InitTextEntryPopup(connectButton.addedTo, string.Empty,
+            _ => true, 0, null, CharsetFlags.Space);
+
+        successPopup.Init(outputText);
+        successPopup.gameObject.SetActive(true);
+        // Object.Destroy(successPopup.transform.Find("BigFrame").Find("SymbolsGrid").gameObject);
+        Console.WriteLine(outputText);
+        attemptingConnection = false;
+    }
+
+    private static ArchipelagoSession CreateSession()
+    {
+        var session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
+        SetupSession(session);
+        return session;
+    }
+
+    private static ArchipelagoSession CreateSession(Uri uri)
+    {
+        var session = ArchipelagoSessionFactory.CreateSession(uri);
+        SetupSession(session);
+        return session;
+    }
+
+    private static void SetupSession(ArchipelagoSession session)
+    {
+        session.MessageLog.OnMessageReceived += OnMessageReceived;
+        session.Socket.ErrorReceived += SessionErrorReceived;
+        session.Socket.SocketClosed += SessionSocketClosed;
+        session.Socket.PacketReceived += OnPacketReceived;
+    }
+
+    private static void OnPacketReceived(ArchipelagoPacketBase packet)
+    {
+        if (packet is RoomUpdatePacket)
         {
-            if (attemptingConnection || Authenticated) return;
-            attemptingConnection = true;
-            if (ServerData == null)
-                ServerData = new ArchipelagoData();
-            Debug.Log($"Connecting to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}");
-            Connect(result => OnConnected(result, connectButton));
+            roomUpdate = true;
+        }
+    }
+
+    public static string Connect(Uri uri)
+    {
+        if (Authenticated) return "already connected";
+
+        try
+        {
+            Session = CreateSession(uri);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error: {e}");
+            return e.ToString();
         }
 
-        private static void OnConnected(string connectStats)
-        {
-            if (ServerData.CheckedLocations != null)
-            {
-                Session.Locations.CompleteLocationChecksAsync(
-                    _ => ServerData.CheckedLocations = Session.Locations.AllLocationsChecked.ToList(),
-                    ServerData.CheckedLocations.ToArray());
-            }
+        return TryConnect();
+    }
 
-            attemptingConnection = false;
+    public static string Connect()
+    {
+        if (Authenticated) return "already connected";
+
+        try
+        {
+            Session = CreateSession();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error: {e}");
+            return e.ToString();
         }
 
-        private static void OnConnected(string outputText, SubMenuButtonInfo connectButton)
-        {
-            TextEntryPopup successPopup = InitTextEntryPopup(connectButton.addedTo, string.Empty,
-                _ => true, 0, null, CharsetFlags.Space);
+        return TryConnect();
+    }
 
-            successPopup.Init(outputText);
-            successPopup.gameObject.SetActive(true);
-            // Object.Destroy(successPopup.transform.Find("BigFrame").Find("SymbolsGrid").gameObject);
-            Console.WriteLine(outputText);
-            attemptingConnection = false;
+    private static string TryConnect()
+    {
+        if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
+        var needSlotData = ServerData.SlotData == null;
+        LoginResult result;
+
+        try
+        {
+            result = Session.TryConnectAndLogin(
+                "The Messenger",
+                ServerData.SlotName,
+                ItemsHandlingFlags.AllItems,
+                new Version(ApVersion),
+                password: ServerData.Password,
+                requestSlotData: needSlotData
+            );
+        }
+        catch (Exception e)
+        {
+            Console.Write($"Error: {e}");
+            result = new LoginFailure(e.GetBaseException().Message);
         }
 
-        private static ArchipelagoSession CreateSession()
-        {
-            var session = ArchipelagoSessionFactory.CreateSession(ServerData.Uri, ServerData.Port);
-            SetupSession(session);
-            return session;
-        }
+        return HandleConnectResult(result, needSlotData);
+    }
 
-        private static ArchipelagoSession CreateSession(Uri uri)
+    private static string HandleConnectResult(LoginResult result, bool needSlotData)
+    {
+        string outputText;
+        if (result.Successful)
         {
-            var session = ArchipelagoSessionFactory.CreateSession(uri);
-            SetupSession(session);
-            return session;
-        }
-
-        private static void SetupSession(ArchipelagoSession session)
-        {
-            session.MessageLog.OnMessageReceived += OnMessageReceived;
-            session.Socket.ErrorReceived += SessionErrorReceived;
-            session.Socket.SocketClosed += SessionSocketClosed;
-            session.Socket.PacketReceived += OnPacketReceived;
-        }
-
-        private static void OnPacketReceived(ArchipelagoPacketBase packet)
-        {
-            if (packet is RoomUpdatePacket)
-            {
-                roomUpdate = true;
-            }
-        }
-
-        public static string Connect(Uri uri)
-        {
-            if (Authenticated) return "already connected";
+            var success = (LoginSuccessful)result;
+            if (needSlotData)
+                ServerData.SlotData = success.SlotData;
+            ServerData.SeedName = Session.RoomState.Seed;
+            Authenticated = true;
 
             try
             {
-                Session = CreateSession(uri);
+                RandomizerStateManager.InitializeSeed();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {e}");
-                return e.ToString();
-            }
-
-            return TryConnect();
-        }
-
-        public static string Connect()
-        {
-            if (Authenticated) return "already connected";
-
-            try
-            {
-                Session = CreateSession();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error: {e}");
-                return e.ToString();
-            }
-
-            return TryConnect();
-        }
-
-        private static string TryConnect()
-        {
-            if (ItemsAndLocationsHandler.ItemsLookup == null) ItemsAndLocationsHandler.Initialize();
-            var needSlotData = ServerData.SlotData == null;
-            LoginResult result;
-
-            try
-            {
-                result = Session.TryConnectAndLogin(
-                    "The Messenger",
-                    ServerData.SlotName,
-                    ItemsHandlingFlags.AllItems,
-                    new Version(ApVersion),
-                    password: ServerData.Password,
-                    requestSlotData: needSlotData
-                );
-            }
-            catch (Exception e)
-            {
-                Console.Write($"Error: {e}");
-                result = new LoginFailure(e.GetBaseException().Message);
-            }
-
-            return HandleConnectResult(result, needSlotData);
-        }
-
-        private static string HandleConnectResult(LoginResult result, bool needSlotData)
-        {
-            string outputText;
-            if (result.Successful)
-            {
-                var success = (LoginSuccessful)result;
-                if (needSlotData)
-                    ServerData.SlotData = success.SlotData;
-                ServerData.SeedName = Session.RoomState.Seed;
-                Authenticated = true;
-
-                try
-                {
-                    RandomizerStateManager.InitializeSeed();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    outputText =
-                        "Something went wrong.\n" +
-                        "Please submit a bug report with the log.txt, " +
-                        "which can be found by the game executable.";
-                    Authenticated = false;
-                    Disconnect();
-                    return outputText;
-                }
-
-                DeathLinkHandler = new DeathLinkInterface();
-
-                ThreadPool.QueueUserWorkItem(_ =>
-                    Session.Locations.CompleteLocationChecksAsync(null,
-                        ServerData.CheckedLocations.ToArray()));
-
-                HasConnected = true;
-                outputText = $"Successfully connected to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}!";
-            }
-            else
-            {
-                LoginFailure failure = (LoginFailure)result;
-                outputText = $"Failed to connect to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}\n";
-                outputText +=
-                    failure.Errors.Aggregate(outputText, (current, error) => current + $"\n    {error}");
-
-                Console.WriteLine(outputText);
-
+                Console.WriteLine(e);
+                outputText =
+                    "Something went wrong.\n" +
+                    "Please submit a bug report with the log.txt, " +
+                    "which can be found by the game executable.";
                 Authenticated = false;
                 Disconnect();
+                return outputText;
             }
 
-            return outputText;
+            DeathLinkHandler = new DeathLinkInterface();
+
+            ThreadPool.QueueUserWorkItem(_ =>
+                Session.Locations.CompleteLocationChecksAsync(null,
+                    ServerData.CheckedLocations.ToArray()));
+
+            HasConnected = true;
+            outputText = $"Successfully connected to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}!";
         }
-
-        private static void Connect(OnConnectAttempt attempt)
+        else
         {
-            attempt(Connect());
-        }
+            LoginFailure failure = (LoginFailure)result;
+            outputText = $"Failed to connect to {ServerData.Uri}:{ServerData.Port} as {ServerData.SlotName}\n";
+            outputText +=
+                failure.Errors.Aggregate(outputText, (current, error) => current + $"\n    {error}");
 
-        public static string ColorizePlayerName(int player)
-        {
-            var color = player.Equals(Session.ConnectionInfo.Slot)
-                ? UserConfig.PlayerColor
-                : UserConfig.OtherPlayerColor;
-            return $"<color=#{color}>{Session.Players.GetPlayerAlias(player)}</color>";
-        }
+            Console.WriteLine(outputText);
 
-        public static string ColorizeLocation(long locID)
-        {
-            var color = UserConfig.LocationColor;
-            return $"<color=#{color}>{Session.Locations.GetLocationNameFromId(locID)}</color>";
-        }
-
-        private static string ConvertHintMessage(HintItemSendLogMessage hintMessage)
-        {
-            var colorizedMessage = hintMessage.ToString();
-            colorizedMessage = colorizedMessage.Replace(hintMessage.Sender.Name,
-                ColorizePlayerName(hintMessage.Sender.Slot));
-            colorizedMessage = colorizedMessage.Replace(hintMessage.Receiver.Name,
-                ColorizePlayerName(hintMessage.Receiver.Slot));
-            colorizedMessage = colorizedMessage.Replace(hintMessage.Item.LocationDisplayName,
-                hintMessage.Item.ColorizeLocation());
-            colorizedMessage = colorizedMessage.Replace(hintMessage.Item.ItemDisplayName,
-                hintMessage.Item.Colorize());
-            Console.WriteLine(colorizedMessage);
-            return colorizedMessage;
-        }
-
-        private static void OnMessageReceived(LogMessage message)
-        {
-            Console.WriteLine(message.ToString());
-            if (FilterAPMessages)
-            {
-
-                switch (message)
-                {
-                    case HintItemSendLogMessage hintMessage:
-                        if (hintMessage.IsFound || !hintMessage.IsRelatedToActivePlayer || !HintPopUps ||
-                            RandomizerStateManager.SeenHints.Contains(hintMessage.Item.ItemId) ||
-                            ItemsAndLocationsHandler.ShopLocation(hintMessage.Item.LocationId, out var shopLoc)) break;
-                        RandomizerStateManager.SeenHints.Add(hintMessage.Item.ItemId);
-                        messageQueue.Enqueue(hintMessage.ToString());
-                        DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
-                        break;
-                    case ItemSendLogMessage itemSendMessage:
-                        if (itemSendMessage.IsRelatedToActivePlayer)
-                        {
-                            messageQueue.Enqueue(itemSendMessage.ToString());
-                        }
-
-                        break;
-                }
-            }
-            else
-            {
-                if (HintPopUps && message is HintItemSendLogMessage hintMessage &&
-                    !ItemsAndLocationsHandler.ShopLocation(hintMessage.Item.LocationId, out var shopLoc))
-                    DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
-                messageQueue.Enqueue(message.ToString());
-            }
-        }
-
-        public static void SyncLocations()
-        {
-            if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
-            var checkedLocations = Session.Locations.AllLocationsChecked;
-            if (ServerData.CheckedLocations.Count == checkedLocations.Count) return;
-            foreach (var location in checkedLocations)
-            {
-                try
-                {
-                    if (ServerData.CheckedLocations.Contains(location)) continue;
-                    var locName = Session.Locations.GetLocationNameFromId(location);
-                    if (locName.Contains("Seal"))
-                    {
-                        var roomKey =
-                            ItemsAndLocationsHandler.ArchipelagoLocations.Find(
-                                loc => loc.PrettyLocationName.Equals(locName)).LocationName;
-                        Manager<ProgressionManager>.Instance.SetChallengeRoomAsCompleted(roomKey);
-                    }
-                    else if (ItemsAndLocationsHandler.ShopLocation(location, out var shopLoc))
-                    {
-                        Debug.Log($"collecting {shopLoc.LocationName} ({shopLoc.PrettyLocationName})");
-                        try
-                        {
-                            var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.LocationName);
-                            Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
-                        }
-                        catch (Exception e1)
-                        {
-                            Debug.Log(e1);
-                            try
-                            {
-                                var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID),
-                                    shopLoc.PrettyLocationName);
-                                Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
-                            }
-                            catch (Exception e2)
-                            {
-                                Debug.Log(e2);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        RandoBossManager.TryCollectLocation(location);
-                    }
-
-                    ServerData.CheckedLocations.Add(location);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    Console.WriteLine($"{Session.Locations.GetLocationNameFromId(location)}: {location}");
-                }
-            }
-        }
-
-        public static void SyncEvents()
-        {
-            Console.WriteLine("Checking datastorage events");
-            foreach (var cutscene in Session.DataStorage[Scope.Slot, "Events"].To<List<string>>())
-            {
-                Console.WriteLine(cutscene);
-                Manager<ProgressionManager>.Instance.cutscenesPlayed.Add(cutscene);
-            }
-        }
-
-        private static void OnItemReceived(ReceivedItemsHelper helper)
-        {
-            var itemToUnlock = helper.DequeueItem();
-            Console.WriteLine($"helper index: {helper.Index}");
-            Console.WriteLine($"Saved index: {ServerData.Index}");
-            if (helper.Index <= ServerData.Index) return;
-
-            if (RandomizerStateManager.OnMainMenu)
-            {
-                OfflineReceivedItems++;
-            }
-            else
-            {
-                ServerData.Index++;
-            }
-
-            ItemQueue.Enqueue(itemToUnlock.ItemId);
-            if (itemToUnlock.Player != Session.ConnectionInfo.Slot)
-                DialogQueue.Enqueue(itemToUnlock.ToReadableString());
-        }
-
-        private static void SessionErrorReceived(Exception e, string message)
-        {
-            Console.WriteLine(message);
-            Console.WriteLine(e.GetBaseException().Message);
-        }
-
-        private static void SessionSocketClosed(string reason)
-        {
-            Console.WriteLine($"Connection to Archipelago lost: {reason}");
+            Authenticated = false;
             Disconnect();
         }
 
-        public static void Disconnect()
-        {
-            Console.WriteLine("Disconnecting from server...");
-            Session?.Socket.Disconnect();
-            Session = null;
-            Authenticated = false;
-            attemptingConnection = false;
-            DialogQueue = new Queue();
-            ItemQueue = new Queue();
-            messageQueue = new Queue();
-        }
+        return outputText;
+    }
 
-        public static void UpdateArchipelagoState()
+    private static void Connect(OnConnectAttempt attempt)
+    {
+        attempt(Connect());
+    }
+
+    public static string ColorizePlayerName(int player)
+    {
+        var color = player.Equals(Session.ConnectionInfo.Slot)
+            ? UserConfig.PlayerColor
+            : UserConfig.OtherPlayerColor;
+        return $"<color=#{color}>{Session.Players.GetPlayerAlias(player)}</color>";
+    }
+
+    public static string ColorizeLocation(long locID)
+    {
+        var color = UserConfig.LocationColor;
+        return $"<color=#{color}>{Session.Locations.GetLocationNameFromId(locID)}</color>";
+    }
+
+    private static string ConvertHintMessage(HintItemSendLogMessage hintMessage)
+    {
+        var colorizedMessage = hintMessage.ToString();
+        colorizedMessage = colorizedMessage.Replace(hintMessage.Sender.Name,
+            ColorizePlayerName(hintMessage.Sender.Slot));
+        colorizedMessage = colorizedMessage.Replace(hintMessage.Receiver.Name,
+            ColorizePlayerName(hintMessage.Receiver.Slot));
+        colorizedMessage = colorizedMessage.Replace(hintMessage.Item.LocationDisplayName,
+            hintMessage.Item.ColorizeLocation());
+        colorizedMessage = colorizedMessage.Replace(hintMessage.Item.ItemDisplayName,
+            hintMessage.Item.Colorize());
+        Console.WriteLine(colorizedMessage);
+        return colorizedMessage;
+    }
+
+    private static void OnMessageReceived(LogMessage message)
+    {
+        Console.WriteLine(message.ToString());
+        if (FilterAPMessages)
         {
-            while (ItemQueue.Count > 0)
+
+            switch (message)
             {
-                ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
-            }
+                case HintItemSendLogMessage hintMessage:
+                    if (hintMessage.IsFound || !hintMessage.IsRelatedToActivePlayer || !HintPopUps ||
+                        RandomizerStateManager.SeenHints.Contains(hintMessage.Item.ItemId) ||
+                        ItemsAndLocationsHandler.ShopLocation(hintMessage.Item.LocationId, out var shopLoc)) break;
+                    RandomizerStateManager.SeenHints.Add(hintMessage.Item.ItemId);
+                    messageQueue.Enqueue(hintMessage.ToString());
+                    DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
+                    break;
+                case ItemSendLogMessage itemSendMessage:
+                    if (itemSendMessage.IsRelatedToActivePlayer)
+                    {
+                        messageQueue.Enqueue(itemSendMessage.ToString());
+                    }
 
-            if (DialogQueue.Count > 0)
-            {
-                var message = (string)DialogQueue.Dequeue();
-                Console.WriteLine(message);
-                DialogChanger.CreateDialogBox(message);
+                    break;
             }
-
-            TrapManager.UpdateTrapStatus();
-            if (Offline) return;
-            if (!Authenticated)
-            {
-                Console.WriteLine("Attempting to reconnect to Archipelago Server...");
-                ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
-                return;
-            }
-
-            if (ServerData.Index < Session.Items.AllItemsReceived.Count)
-            {
-                ItemsAndLocationsHandler.UnlockItems();
-                return;
-            }
-            if (!ItemsAndLocationsHandler.Synced)
-                ItemsAndLocationsHandler.ReSync();
         }
-
-        public static void UpdateClientStatus(ArchipelagoClientState newState)
+        else
         {
-            Console.WriteLine($"Updating client status to {newState}");
-            var statusUpdatePacket = new StatusUpdatePacket { Status = newState };
-            Session.Socket.SendPacket(statusUpdatePacket);
+            if (HintPopUps && message is HintItemSendLogMessage hintMessage &&
+                !ItemsAndLocationsHandler.ShopLocation(hintMessage.Item.LocationId, out var shopLoc))
+                DialogQueue.Enqueue(ConvertHintMessage(hintMessage));
+            messageQueue.Enqueue(message.ToString());
         }
+    }
 
-        private static bool ClientFinished()
+    public static void SyncLocations()
+    {
+        if (RandomizerStateManager.Instance.CurrentFileSlot == 0) return;
+        var checkedLocations = Session.Locations.AllLocationsChecked;
+        if (ServerData.CheckedLocations.Count == checkedLocations.Count) return;
+        foreach (var location in checkedLocations)
         {
-            return Session.DataStorage.GetClientStatus() == ArchipelagoClientState.ClientGoal;
-        }
-
-        public static bool CanRelease()
-        {
-            if (!Authenticated) return false;
             try
             {
-                return Session.RoomState.ReleasePermissions switch
+                if (ServerData.CheckedLocations.Contains(location)) continue;
+                var locName = Session.Locations.GetLocationNameFromId(location);
+                if (locName.Contains("Seal"))
                 {
-                    Permissions.Goal => ClientFinished(),
-                    Permissions.Enabled => true,
-                    _ => false
-                };
+                    var roomKey =
+                        ItemsAndLocationsHandler.ArchipelagoLocations.Find(
+                            loc => loc.PrettyLocationName.Equals(locName)).LocationName;
+                    Manager<ProgressionManager>.Instance.SetChallengeRoomAsCompleted(roomKey);
+                }
+                else if (ItemsAndLocationsHandler.ShopLocation(location, out var shopLoc))
+                {
+                    Debug.Log($"collecting {shopLoc.LocationName} ({shopLoc.PrettyLocationName})");
+                    try
+                    {
+                        var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID), shopLoc.LocationName);
+                        Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                    }
+                    catch (Exception e1)
+                    {
+                        Debug.Log(e1);
+                        try
+                        {
+                            var shopID = (EShopUpgradeID)Enum.Parse(typeof(EShopUpgradeID),
+                                shopLoc.PrettyLocationName);
+                            Manager<InventoryManager>.Instance.SetShopUpgradeAsUnlocked(shopID);
+                        }
+                        catch (Exception e2)
+                        {
+                            Debug.Log(e2);
+                        }
+                    }
+                }
+                else
+                {
+                    RandoBossManager.TryCollectLocation(location);
+                }
+
+                ServerData.CheckedLocations.Add(location);
             }
             catch (Exception e)
             {
-                if (e is ArchipelagoSocketClosedException)
-                {
-                    Disconnect();
-                }
-                Debug.Log(e);
-                return false;
+                Console.WriteLine(e);
+                Console.WriteLine($"{Session.Locations.GetLocationNameFromId(location)}: {location}");
             }
         }
+    }
 
-        public static bool CanCollect()
+    public static void SyncEvents()
+    {
+        Console.WriteLine("Checking datastorage events");
+        foreach (var cutscene in Session.DataStorage[Scope.Slot, "Events"].To<List<string>>())
         {
-            if (!Authenticated) return false;
-            try
+            Console.WriteLine(cutscene);
+            Manager<ProgressionManager>.Instance.cutscenesPlayed.Add(cutscene);
+        }
+    }
+
+    private static void OnItemReceived(ReceivedItemsHelper helper)
+    {
+        var itemToUnlock = helper.DequeueItem();
+        Console.WriteLine($"helper index: {helper.Index}");
+        Console.WriteLine($"Saved index: {ServerData.Index}");
+        if (helper.Index <= ServerData.Index) return;
+
+        if (RandomizerStateManager.OnMainMenu)
+        {
+            OfflineReceivedItems++;
+        }
+        else
+        {
+            ServerData.Index++;
+        }
+
+        ItemQueue.Enqueue(itemToUnlock.ItemId);
+        if (itemToUnlock.Player != Session.ConnectionInfo.Slot)
+            DialogQueue.Enqueue(itemToUnlock.ToReadableString());
+    }
+
+    private static void SessionErrorReceived(Exception e, string message)
+    {
+        Console.WriteLine(message);
+        Console.WriteLine(e.GetBaseException().Message);
+    }
+
+    private static void SessionSocketClosed(string reason)
+    {
+        Console.WriteLine($"Connection to Archipelago lost: {reason}");
+        Disconnect();
+    }
+
+    public static void Disconnect()
+    {
+        Console.WriteLine("Disconnecting from server...");
+        Session?.Socket.Disconnect();
+        Session = null;
+        Authenticated = false;
+        attemptingConnection = false;
+        DialogQueue = new Queue();
+        ItemQueue = new Queue();
+        messageQueue = new Queue();
+    }
+
+    public static void UpdateArchipelagoState()
+    {
+        while (ItemQueue.Count > 0)
+        {
+            ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
+        }
+
+        if (DialogQueue.Count > 0)
+        {
+            var message = (string)DialogQueue.Dequeue();
+            Console.WriteLine(message);
+            DialogChanger.CreateDialogBox(message);
+        }
+
+        TrapManager.UpdateTrapStatus();
+        if (Offline) return;
+        if (!Authenticated)
+        {
+            Console.WriteLine("Attempting to reconnect to Archipelago Server...");
+            ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
+            return;
+        }
+
+        if (ServerData.Index < Session.Items.AllItemsReceived.Count)
+        {
+            ItemsAndLocationsHandler.UnlockItems();
+            return;
+        }
+        if (!ItemsAndLocationsHandler.Synced)
+            ItemsAndLocationsHandler.ReSync();
+    }
+
+    public static void UpdateClientStatus(ArchipelagoClientState newState)
+    {
+        Console.WriteLine($"Updating client status to {newState}");
+        var statusUpdatePacket = new StatusUpdatePacket { Status = newState };
+        Session.Socket.SendPacket(statusUpdatePacket);
+    }
+
+    private static bool ClientFinished()
+    {
+        return Session.DataStorage.GetClientStatus() == ArchipelagoClientState.ClientGoal;
+    }
+
+    public static bool CanRelease()
+    {
+        if (!Authenticated) return false;
+        try
+        {
+            return Session.RoomState.ReleasePermissions switch
             {
-                return Session.RoomState.CollectPermissions switch
-                {
-                    Permissions.Goal => ClientFinished(),
-                    Permissions.Enabled => true,
-                    _ => false
-                };
-            }
-            catch (Exception e)
+                Permissions.Goal => ClientFinished(),
+                Permissions.Enabled => true,
+                _ => false
+            };
+        }
+        catch (Exception e)
+        {
+            if (e is ArchipelagoSocketClosedException)
             {
-                if (e is ArchipelagoSocketClosedException)
-                {
-                    Disconnect();
-                }
-                Debug.Log(e);
-                return false;
+                Disconnect();
             }
+            Debug.Log(e);
+            return false;
         }
+    }
 
-        private static int GetHintCost()
+    public static bool CanCollect()
+    {
+        if (!Authenticated) return false;
+        try
         {
-            return Session.RoomState.HintCost;
-        }
-
-
-        public static bool CanHint()
-        {
-            return Authenticated && GetHintCost() <= Session.RoomState.HintPoints;
-        }
-
-        public static string UpdateStatusText()
-        {
-            if (!roomUpdate) return statusText;
-            roomUpdate = false;
-            statusText = string.Empty;
-            if (!DisplayStatus) return statusText;
-            if (Authenticated)
+            return Session.RoomState.CollectPermissions switch
             {
-                statusText = $"Connected to Archipelago v{Session.RoomState.Version}";
-                var hintCost = GetHintCost();
-                if (hintCost > 0)
-                {
-                    statusText += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
-                }
-            }
-            else if (HasConnected)
+                Permissions.Goal => ClientFinished(),
+                Permissions.Enabled => true,
+                _ => false
+            };
+        }
+        catch (Exception e)
+        {
+            if (e is ArchipelagoSocketClosedException)
             {
-                statusText = "Disconnected from Archipelago server.";
+                Disconnect();
             }
-            return statusText;
+            Debug.Log(e);
+            return false;
         }
+    }
 
-        public static string UpdateMessagesText()
-        {
-            var text = string.Empty;
-            if (messageQueue.Count <= 0) return text;
-            if (DisplayAPMessages)
-                text = (string)messageQueue.Dequeue();
-            return text;
-        }
+    private static int GetHintCost()
+    {
+        return Session.RoomState.HintCost;
+    }
 
-        public static void SendSayPacket(string text)
-        {
-            Session.Say(text);
-        }
 
-        public static void ClearMessages()
+    public static bool CanHint()
+    {
+        return Authenticated && GetHintCost() <= Session.RoomState.HintPoints;
+    }
+
+    public static string UpdateStatusText()
+    {
+        if (!roomUpdate) return statusText;
+        roomUpdate = false;
+        statusText = string.Empty;
+        if (!DisplayStatus) return statusText;
+        if (Authenticated)
         {
-            messageQueue = new Queue();
-            DialogQueue = new Queue();
+            statusText = $"Connected to Archipelago v{Session.RoomState.Version}";
+            var hintCost = GetHintCost();
+            if (hintCost > 0)
+            {
+                statusText += $"\nHint points available: {Session.RoomState.HintPoints}\nHint point cost: {hintCost}";
+            }
         }
+        else if (HasConnected)
+        {
+            statusText = "Disconnected from Archipelago server.";
+        }
+        return statusText;
+    }
+
+    public static string UpdateMessagesText()
+    {
+        var text = string.Empty;
+        if (messageQueue.Count <= 0) return text;
+        if (DisplayAPMessages)
+            text = (string)messageQueue.Dequeue();
+        return text;
+    }
+
+    public static void SendSayPacket(string text)
+    {
+        Session.Say(text);
+    }
+
+    public static void ClearMessages()
+    {
+        messageQueue = new Queue();
+        DialogQueue = new Queue();
     }
 }

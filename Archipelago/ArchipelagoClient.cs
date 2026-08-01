@@ -395,38 +395,6 @@ namespace MessengerRando.Archipelago
             messageQueue = new Queue();
         }
 
-        public static void UpdateArchipelagoState()
-        {
-            while (ItemQueue.Count > 0)
-            {
-                ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
-            }
-
-            if (DialogQueue.Count > 0)
-            {
-                var message = (string)DialogQueue.Dequeue();
-                Console.WriteLine(message);
-                DialogChanger.CreateDialogBox(message);
-            }
-
-            TrapManager.UpdateTrapStatus();
-            if (Offline) return;
-            if (!Authenticated)
-            {
-                Console.WriteLine("Attempting to reconnect to Archipelago Server...");
-                ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
-                return;
-            }
-
-            if (ServerData.Index < Session.Items.AllItemsReceived.Count)
-            {
-                ItemsAndLocationsHandler.UnlockItems();
-                return;
-            }
-            if (!ItemsAndLocationsHandler.Synced)
-                ItemsAndLocationsHandler.ReSync();
-        }
-
         public static void UpdateClientStatus(ArchipelagoClientState newState)
         {
             Console.WriteLine($"Updating client status to {newState}");

@@ -60,7 +60,6 @@ namespace MessengerRando
             randoStateManager = new RandomizerStateManager();
 
             trackerManager = new TrackerManager();
-            ItemsAndLocationsHandler.TrackerManager = trackerManager;
             RandoPortalManager.TrackerManager = trackerManager;
             RandoLevelManager.TrackerManager = trackerManager;
 
@@ -877,8 +876,41 @@ namespace MessengerRando
             TrapManager.TrapTimer += Time.deltaTime;
             if (!(updateTimer >= UpdateTime)) return;
             updateTimer = 0;
-            ArchipelagoClient.UpdateArchipelagoState();
+            UpdateArchipelagoState();
             apMessagesDisplay16.text = apMessagesDisplay8.text = ArchipelagoClient.UpdateMessagesText();
+        }
+
+        public void UpdateArchipelagoState()
+        {
+            while (ArchipelagoClient.ItemQueue.Count > 0)
+            {
+                ItemsAndLocationsHandler.Unlock((long)ArchipelagoClient.ItemQueue.Dequeue());
+            }
+
+            if (ArchipelagoClient.DialogQueue.Count > 0)
+            {
+                var message = (string)ArchipelagoClient.DialogQueue.Dequeue();
+                logger.Log(message);
+                DialogChanger.CreateDialogBox(message);
+            }
+
+            TrapManager.UpdateTrapStatus();
+            if (ArchipelagoClient.Offline) return;
+            if (!ArchipelagoClient.Authenticated)
+            {
+                Console.WriteLine("Attempting to reconnect to Archipelago Server...");
+                ThreadPool.QueueUserWorkItem(_ => ArchipelagoClient.ConnectAsync());
+                return;
+            }
+
+            if (ArchipelagoClient.ServerData.Index < ArchipelagoClient.Session.Items.AllItemsReceived.Count)
+            {
+                ItemsAndLocationsHandler.UnlockItems();
+                return;
+            }
+
+            if (!ItemsAndLocationsHandler.Synced) ItemsAndLocationsHandler.ReSync();
+            if (!trackerManager.Synced) trackerManager.ReSync();
         }
 
         private void InGameHud_OnGUI(On.InGameHud.orig_OnGUI orig, InGameHud self)

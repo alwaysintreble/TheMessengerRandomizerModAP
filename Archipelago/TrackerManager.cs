@@ -42,16 +42,16 @@ namespace MessengerRando.Archipelago
         {
             if (visitedEntrances.Contains(entrance)) return;
 
-        if (ArchipelagoClient.Offline) return;
-        if (!ArchipelagoClient.Authenticated)
-        {
-            Synced = false;
-            unsentVisitedEntrances.Add(entrance);
-            return;
-        }
+            if (ArchipelagoClient.Offline) return;
+            if (!ArchipelagoClient.Authenticated)
+            {
+                Synced = false;
+                unsentVisitedEntrances.Add(entrance);
+                return;
+            }
 
-        visitedEntrances = ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>() ?? [];
-        if (visitedEntrances.Contains(entrance)) return;
+            visitedEntrances = ArchipelagoClient.Session.DataStorage[Scope.Slot, "VisitedEntrances"].To<List<string>>() ?? [];
+            if (visitedEntrances.Contains(entrance)) return;
 
             Console.WriteLine("Adding visited entrance: " + entrance);
             visitedEntrances.Add(entrance);
@@ -64,7 +64,7 @@ namespace MessengerRando.Archipelago
         public void ReconciliateUnlockedPortals()
         {
             if (ArchipelagoClient.Offline) return;
-                if (!ArchipelagoClient.Authenticated)
+            if (!ArchipelagoClient.Authenticated)
             {
                 Synced = false;
                 needsUnlockedPortalsReconciliation = true;

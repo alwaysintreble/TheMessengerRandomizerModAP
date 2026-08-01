@@ -890,7 +890,7 @@ namespace MessengerRando
             if (ArchipelagoClient.DialogQueue.Count > 0)
             {
                 var message = (string)ArchipelagoClient.DialogQueue.Dequeue();
-                logger.Log(message);
+                Console.WriteLine(message);
                 DialogChanger.CreateDialogBox(message);
             }
 

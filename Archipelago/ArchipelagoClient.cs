@@ -178,7 +178,7 @@ namespace MessengerRando.Archipelago
                 }
                 catch (Exception e)
                 {
-                    logger.Exception(e);
+                    Console.WriteLine(e);
                     outputText =
                         "Something went wrong.\n" +
                         "Please submit a bug report with the log.txt, " +

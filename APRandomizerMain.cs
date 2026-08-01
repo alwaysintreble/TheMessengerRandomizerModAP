@@ -888,8 +888,10 @@ namespace MessengerRando
             {
                 apTextDisplay8 = Object.Instantiate(self.hud_8.coinCount, self.hud_8.gameObject.transform);
                 apTextDisplay16 = Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
-                apTextDisplay8.transform.Translate(0f, -110f, 0f);
-                apTextDisplay16.transform.Translate(0f, -110f, 0f);
+                apTextDisplay8.rectTransform.Translate(0f, -110f, 0f);
+                apTextDisplay16.rectTransform.Translate(0f, -110f, 0f);
+                apTextDisplay8.rectTransform.sizeDelta = new Vector2(apTextDisplay8.rectTransform.sizeDelta.x + 100f, apTextDisplay8.rectTransform.sizeDelta.y);
+                apTextDisplay16.rectTransform.sizeDelta = new Vector2(apTextDisplay16.rectTransform.sizeDelta.x + 100f, apTextDisplay16.rectTransform.sizeDelta.y);
                 apTextDisplay16.fontSize = apTextDisplay8.fontSize = UserConfig.StatusTextSize;
                 apTextDisplay16.alignment = apTextDisplay8.alignment = TextAlignmentOptions.TopRight;
                 apTextDisplay16.enableWordWrapping = apTextDisplay8.enableWordWrapping = true;
@@ -897,8 +899,8 @@ namespace MessengerRando
 
                 apMessagesDisplay8 = Object.Instantiate(self.hud_8.coinCount, self.hud_8.gameObject.transform);
                 apMessagesDisplay16 = Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
-                apMessagesDisplay8.transform.Translate(0f, -200f, 0f);
-                apMessagesDisplay16.transform.Translate(0f, -200f, 0f);
+                apMessagesDisplay8.rectTransform.Translate(0f, -200f, 0f);
+                apMessagesDisplay16.rectTransform.Translate(0f, -200f, 0f);
                 apMessagesDisplay16.fontSize = apMessagesDisplay8.fontSize = UserConfig.MessageTextSize;
                 apMessagesDisplay16.alignment = apMessagesDisplay8.alignment = TextAlignmentOptions.BottomRight;
                 apMessagesDisplay16.enableWordWrapping = apMessagesDisplay16.enableWordWrapping = true;

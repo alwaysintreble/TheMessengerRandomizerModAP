@@ -60,7 +60,6 @@ namespace MessengerRando
             randoStateManager = new RandomizerStateManager();
 
             trackerManager = new TrackerManager();
-            ItemsAndLocationsHandler.TrackerManager = trackerManager;
             RandoPortalManager.TrackerManager = trackerManager;
             RandoLevelManager.TrackerManager = trackerManager;
 
@@ -877,8 +876,41 @@ namespace MessengerRando
             TrapManager.TrapTimer += Time.deltaTime;
             if (!(updateTimer >= UpdateTime)) return;
             updateTimer = 0;
-            ArchipelagoClient.UpdateArchipelagoState();
+            UpdateArchipelagoState();
             apMessagesDisplay16.text = apMessagesDisplay8.text = ArchipelagoClient.UpdateMessagesText();
+        }
+
+        public void UpdateArchipelagoState()
+        {
+            while (ArchipelagoClient.ItemQueue.Count > 0)
+            {
+                ItemsAndLocationsHandler.Unlock((long)ArchipelagoClient.ItemQueue.Dequeue());
+            }
+
+            if (ArchipelagoClient.DialogQueue.Count > 0)
+            {
+                var message = (string)ArchipelagoClient.DialogQueue.Dequeue();
+                Console.WriteLine(message);
+                DialogChanger.CreateDialogBox(message);
+            }
+
+            TrapManager.UpdateTrapStatus();
+            if (ArchipelagoClient.Offline) return;
+            if (!ArchipelagoClient.Authenticated)
+            {
+                Console.WriteLine("Attempting to reconnect to Archipelago Server...");
+                ThreadPool.QueueUserWorkItem(_ => ArchipelagoClient.ConnectAsync());
+                return;
+            }
+
+            if (ArchipelagoClient.ServerData.Index < ArchipelagoClient.Session.Items.AllItemsReceived.Count)
+            {
+                ItemsAndLocationsHandler.UnlockItems();
+                return;
+            }
+
+            if (!ItemsAndLocationsHandler.Synced) ItemsAndLocationsHandler.ReSync();
+            if (!trackerManager.Synced) trackerManager.ReSync();
         }
 
         private void InGameHud_OnGUI(On.InGameHud.orig_OnGUI orig, InGameHud self)
@@ -888,8 +920,10 @@ namespace MessengerRando
             {
                 apTextDisplay8 = Object.Instantiate(self.hud_8.coinCount, self.hud_8.gameObject.transform);
                 apTextDisplay16 = Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
-                apTextDisplay8.transform.Translate(0f, -110f, 0f);
-                apTextDisplay16.transform.Translate(0f, -110f, 0f);
+                apTextDisplay8.rectTransform.Translate(0f, -110f, 0f);
+                apTextDisplay16.rectTransform.Translate(0f, -110f, 0f);
+                apTextDisplay8.rectTransform.sizeDelta = new Vector2(apTextDisplay8.rectTransform.sizeDelta.x + 100f, apTextDisplay8.rectTransform.sizeDelta.y);
+                apTextDisplay16.rectTransform.sizeDelta = new Vector2(apTextDisplay16.rectTransform.sizeDelta.x + 100f, apTextDisplay16.rectTransform.sizeDelta.y);
                 apTextDisplay16.fontSize = apTextDisplay8.fontSize = UserConfig.StatusTextSize;
                 apTextDisplay16.alignment = apTextDisplay8.alignment = TextAlignmentOptions.TopRight;
                 apTextDisplay16.enableWordWrapping = apTextDisplay8.enableWordWrapping = true;
@@ -897,8 +931,8 @@ namespace MessengerRando
 
                 apMessagesDisplay8 = Object.Instantiate(self.hud_8.coinCount, self.hud_8.gameObject.transform);
                 apMessagesDisplay16 = Object.Instantiate(self.hud_16.coinCount, self.hud_16.gameObject.transform);
-                apMessagesDisplay8.transform.Translate(0f, -200f, 0f);
-                apMessagesDisplay16.transform.Translate(0f, -200f, 0f);
+                apMessagesDisplay8.rectTransform.Translate(0f, -200f, 0f);
+                apMessagesDisplay16.rectTransform.Translate(0f, -200f, 0f);
                 apMessagesDisplay16.fontSize = apMessagesDisplay8.fontSize = UserConfig.MessageTextSize;
                 apMessagesDisplay16.alignment = apMessagesDisplay8.alignment = TextAlignmentOptions.BottomRight;
                 apMessagesDisplay16.enableWordWrapping = apMessagesDisplay16.enableWordWrapping = true;

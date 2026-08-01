@@ -101,13 +101,6 @@ namespace MessengerRando.Archipelago
             return session;
         }
 
-        private static ArchipelagoSession CreateSession(Uri uri)
-        {
-            var session = ArchipelagoSessionFactory.CreateSession(uri);
-            SetupSession(session);
-            return session;
-        }
-
         private static void SetupSession(ArchipelagoSession session)
         {
             session.MessageLog.OnMessageReceived += OnMessageReceived;
@@ -122,23 +115,6 @@ namespace MessengerRando.Archipelago
             {
                 roomUpdate = true;
             }
-        }
-
-        public static string Connect(Uri uri)
-        {
-            if (Authenticated) return "already connected";
-
-            try
-            {
-                Session = CreateSession(uri);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error: {e}");
-                return e.ToString();
-            }
-
-            return TryConnect();
         }
 
         public static string Connect()
@@ -194,6 +170,7 @@ namespace MessengerRando.Archipelago
                     ServerData.SlotData = success.SlotData;
                 ServerData.SeedName = Session.RoomState.Seed;
                 Authenticated = true;
+                roomUpdate = true;
 
                 try
                 {
@@ -207,6 +184,7 @@ namespace MessengerRando.Archipelago
                         "Please submit a bug report with the log.txt, " +
                         "which can be found by the game executable.";
                     Authenticated = false;
+                    roomUpdate = true;
                     Disconnect();
                     return outputText;
                 }
@@ -230,6 +208,7 @@ namespace MessengerRando.Archipelago
                 Console.WriteLine(outputText);
 
                 Authenticated = false;
+                roomUpdate = true;
                 Disconnect();
             }
 
@@ -409,42 +388,11 @@ namespace MessengerRando.Archipelago
             Session?.Socket.Disconnect();
             Session = null;
             Authenticated = false;
+            roomUpdate = true;
             attemptingConnection = false;
             DialogQueue = new Queue();
             ItemQueue = new Queue();
             messageQueue = new Queue();
-        }
-
-        public static void UpdateArchipelagoState()
-        {
-            while (ItemQueue.Count > 0)
-            {
-                ItemsAndLocationsHandler.Unlock((long)ItemQueue.Dequeue());
-            }
-
-            if (DialogQueue.Count > 0)
-            {
-                var message = (string)DialogQueue.Dequeue();
-                Console.WriteLine(message);
-                DialogChanger.CreateDialogBox(message);
-            }
-
-            TrapManager.UpdateTrapStatus();
-            if (Offline) return;
-            if (!Authenticated)
-            {
-                Console.WriteLine("Attempting to reconnect to Archipelago Server...");
-                ThreadPool.QueueUserWorkItem(_ => ConnectAsync());
-                return;
-            }
-
-            if (ServerData.Index < Session.Items.AllItemsReceived.Count)
-            {
-                ItemsAndLocationsHandler.UnlockItems();
-                return;
-            }
-            if (!ItemsAndLocationsHandler.Synced)
-                ItemsAndLocationsHandler.ReSync();
         }
 
         public static void UpdateClientStatus(ArchipelagoClientState newState)
@@ -533,7 +481,7 @@ namespace MessengerRando.Archipelago
             }
             else if (HasConnected)
             {
-                statusText = "Disconnected from Archipelago server.";
+                statusText = "Disconnected from Archipelago server\nWill attempt to reconnect...";
             }
             return statusText;
         }
